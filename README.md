@@ -61,7 +61,6 @@ app/src/Shell.cs        context menu install/uninstall
 ```
 
 ## Not done yet / next steps
-- Not compiled or tested in this environment. Build on Windows and try it on a test folder first.
 - Single-file context menu (`*\shell`): hash, data URI, unblock.
 - Windows 11 compact (top-level) menu needs a signed MSIX + IExplorerCommand, which is skipped to stay lean.
 - Dark mode, and a settings file (for example a default flatten target).
