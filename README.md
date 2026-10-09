@@ -62,5 +62,5 @@ app/src/Shell.cs        context menu install/uninstall
 
 ## Not done yet / next steps
 - Single-file context menu (`*\shell`): hash, data URI, unblock.
-- Windows 11 compact (top-level) menu needs a signed MSIX + IExplorerCommand, which is skipped to stay lean.
+- Windows 11 compact (top-level) menu .
 - Dark mode, and a settings file (for example a default flatten target).
