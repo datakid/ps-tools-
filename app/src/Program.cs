@@ -1,9 +1,3 @@
-// PS Tools - ultra-lean file management app for Windows 10/11.
-// Built with the C# 5 compiler that ships with .NET Framework 4.x (already part of Windows).
-// Usage:
-//   PSTools.exe                         open the GUI
-//   PSTools.exe <action> "<folder>"     run one action (used by the context menu)
-//   PSTools.exe --install | --uninstall add/remove the per-user context menu (HKCU only)
 using System;
 using System.IO;
 using System.Windows.Forms;
@@ -17,9 +11,11 @@ namespace PSTools
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            UI.Init();
 
-            if (args.Length >= 1 && args[0] == "--install") { Shell.Install(); Msg("Context menu installed.\n\nWindows 11: right-click > Show more options."); return 0; }
-            if (args.Length >= 1 && args[0] == "--uninstall") { Shell.Uninstall(); Msg("Context menu removed. You can now delete PSTools.exe."); return 0; }
+            if (args.Length >= 1 && args[0] == "--install") { Shell.Install(); Msg("Explorer menu installed.\n\nWindows 11: right-click > Show more options (or turn on the classic menu in the System module)."); return 0; }
+            if (args.Length >= 1 && args[0] == "--uninstall") { Msg(Shell.UninstallAll()); return 0; }
+            if (args.Length >= 1 && args[0] == "--status") { Msg(Shell.Status()); return 0; }
 
             if (args.Length >= 2)
             {
@@ -27,7 +23,9 @@ namespace PSTools
                 if (args[0] == "open") { Application.Run(new MainForm(path)); return 0; }
                 Action a = Actions.Find(args[0]);
                 if (a == null) { Msg("Unknown action: " + args[0]); return 1; }
-                Runner.RunWithUI(a, path, null);
+                string[] paths = a.Multi ? Collector.Gather(a.Id, path) : new[] { path };
+                if (paths == null) return 0;
+                Runner.Execute(a, paths, null);
                 return 0;
             }
 
@@ -35,7 +33,6 @@ namespace PSTools
             return 0;
         }
 
-        // Explorer can pass "C:\" as C:" or with trailing quotes/backslashes.
         public static string Clean(string p)
         {
             p = p.Trim().Trim('"');
