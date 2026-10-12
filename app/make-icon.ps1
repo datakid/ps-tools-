@@ -1,4 +1,3 @@
-# Draws a simple 32x32 + 16x16 icon (blue tile with ">_") and writes app.ico. Run once by build.cmd.
 Add-Type -AssemblyName System.Drawing
 function Draw($s) {
     $b = New-Object Drawing.Bitmap $s, $s

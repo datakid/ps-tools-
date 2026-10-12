@@ -48,7 +48,7 @@
       "category": "files",
       "title": "Flatten a folder tree (copy)",
       "description": "Copies every file from all subfolders into one folder. Duplicate names become name_1.ext, name_2.ext instead of overwriting.",
-      "command": "$src = \"C:\\Project\"; $dest = \"C:\\Project-flat\"\nNew-Item -ItemType Directory -Path $dest -Force | Out-Null\nGet-ChildItem $src -Recurse -File | ForEach-Object {\n    $name = $_.Name; $i = 1\n    while (Test-Path (Join-Path $dest $name)) { $name = \"{0}_{1}{2}\" -f $_.BaseName, $i++, $_.Extension }\n    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $dest $name)\n}",
+      "command": "$src = '{path}'; $dest = '{path}-flat'\nNew-Item -ItemType Directory -Path $dest -Force | Out-Null\nGet-ChildItem $src -Recurse -File | ForEach-Object {\n    $name = $_.Name; $i = 1\n    while (Test-Path (Join-Path $dest $name)) { $name = \"{0}_{1}{2}\" -f $_.BaseName, $i++, $_.Extension }\n    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $dest $name)\n}",
       "risk": "modifies",
       "admin": false,
       "tags": [
@@ -63,7 +63,7 @@
       "category": "files",
       "title": "Flatten a folder tree (move)",
       "description": "Same as the copy version but moves files, leaving the empty subfolders behind.",
-      "command": "$src = \"C:\\Project\"; $dest = \"C:\\Project-flat\"\nNew-Item -ItemType Directory -Path $dest -Force | Out-Null\nGet-ChildItem $src -Recurse -File | ForEach-Object {\n    $name = $_.Name; $i = 1\n    while (Test-Path (Join-Path $dest $name)) { $name = \"{0}_{1}{2}\" -f $_.BaseName, $i++, $_.Extension }\n    Move-Item -LiteralPath $_.FullName -Destination (Join-Path $dest $name)\n}",
+      "command": "$src = '{path}'; $dest = '{path}-flat'\nNew-Item -ItemType Directory -Path $dest -Force | Out-Null\nGet-ChildItem $src -Recurse -File | ForEach-Object {\n    $name = $_.Name; $i = 1\n    while (Test-Path (Join-Path $dest $name)) { $name = \"{0}_{1}{2}\" -f $_.BaseName, $i++, $_.Extension }\n    Move-Item -LiteralPath $_.FullName -Destination (Join-Path $dest $name)\n}",
       "risk": "modifies",
       "admin": false,
       "tags": [
@@ -107,7 +107,7 @@
       "category": "files",
       "title": "Find the largest files",
       "description": "Top 50 biggest files under a path with sizes in GB.",
-      "command": "Get-ChildItem C:\\ -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object -First 50 FullName, @{N=\"GB\"; E={[math]::Round($_.Length/1GB, 2)}}",
+      "command": "Get-ChildItem '{path}' -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object -First 50 FullName, @{N=\"GB\"; E={[math]::Round($_.Length/1GB, 2)}}",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -149,7 +149,7 @@
       "category": "files",
       "title": "Find files by name pattern",
       "description": "Searches the whole tree for a filename pattern.",
-      "command": "Get-ChildItem C:\\Users\\YourName -Recurse -Filter \"*invoice*.pdf\" -ErrorAction SilentlyContinue | Select-Object FullName, Length, LastWriteTime",
+      "command": "Get-ChildItem '{path}' -Recurse -Filter \"*invoice*.pdf\" -ErrorAction SilentlyContinue | Select-Object FullName, Length, LastWriteTime",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -162,7 +162,7 @@
       "category": "files",
       "title": "Find files not touched in 3 years",
       "description": "Lists files whose last write time is older than three years, oldest first.",
-      "command": "Get-ChildItem C:\\Users\\YourName -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -lt (Get-Date).AddYears(-3) | Sort-Object LastWriteTime | Select-Object FullName, LastWriteTime",
+      "command": "Get-ChildItem '{path}' -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -lt (Get-Date).AddYears(-3) | Sort-Object LastWriteTime | Select-Object FullName, LastWriteTime",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -176,7 +176,7 @@
       "category": "files",
       "title": "Delete files older than 30 days",
       "description": "Removes files whose last write time is older than 30 days.",
-      "command": "Get-ChildItem C:\\Data -Recurse -File | Where-Object LastWriteTime -lt (Get-Date).AddDays(-30) | Remove-Item -WhatIf",
+      "command": "Get-ChildItem '{path}' -Recurse -File | Where-Object LastWriteTime -lt (Get-Date).AddDays(-30) | Remove-Item -WhatIf",
       "risk": "destructive",
       "admin": false,
       "tags": [
@@ -205,7 +205,7 @@
       "category": "files",
       "title": "Files created today",
       "description": "Lists files whose creation time is today.",
-      "command": "Get-ChildItem C:\\Data -Recurse -File | Where-Object CreationTime -ge (Get-Date).Date",
+      "command": "Get-ChildItem '{path}' -Recurse -File | Where-Object CreationTime -ge (Get-Date).Date",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -273,7 +273,7 @@
       "category": "files",
       "title": "Compare two folders",
       "description": "Shows files that exist in only one of two folders, compared by relative path.",
-      "command": "$a = \"C:\\A\"; $b = \"C:\\B\"\nCompare-Object (Get-ChildItem $a -Recurse -File | ForEach-Object { $_.FullName.Substring($a.Length) }) (Get-ChildItem $b -Recurse -File | ForEach-Object { $_.FullName.Substring($b.Length) })",
+      "command": "$a = '{path}'; $b = \"C:\\B\"\nCompare-Object (Get-ChildItem $a -Recurse -File | ForEach-Object { $_.FullName.Substring($a.Length) }) (Get-ChildItem $b -Recurse -File | ForEach-Object { $_.FullName.Substring($b.Length) })",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -318,8 +318,8 @@
       "category": "files",
       "title": "Export a folder inventory to CSV",
       "description": "Dumps path, size, and dates for everything under a folder.",
-      "command": "Get-ChildItem C:\\Projects -Recurse -File | Select-Object FullName, Length, CreationTime, LastWriteTime | Export-Csv inventory.csv -NoTypeInformation -Encoding UTF8",
-      "risk": "safe",
+      "command": "Get-ChildItem '{path}' -Recurse -File | Select-Object FullName, Length, CreationTime, LastWriteTime | Export-Csv inventory.csv -NoTypeInformation -Encoding UTF8",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "report",
@@ -466,7 +466,7 @@
       "category": "search",
       "title": "Search inside files",
       "description": "Finds a string in file contents across a project, showing file, line number, and the line.",
-      "command": "Get-ChildItem C:\\Projects -Recurse -File -Include *.js,*.html,*.css,*.json | Select-String \"API_KEY\"",
+      "command": "Get-ChildItem '{path}' -Recurse -File -Include *.js,*.html,*.css,*.json | Select-String \"API_KEY\"",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -479,7 +479,7 @@
       "category": "search",
       "title": "Search for several terms at once",
       "description": "Matches any of several words and lists the hits.",
-      "command": "Get-ChildItem C:\\Projects -Recurse -File | Select-String -Pattern \"password\", \"token\", \"secret\"",
+      "command": "Get-ChildItem '{path}' -Recurse -File | Select-String -Pattern \"password\", \"token\", \"secret\"",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -520,7 +520,7 @@
       "category": "search",
       "title": "Replace text across a project",
       "description": "Replaces a string in every matching file, rewriting only the files that contain it.",
-      "command": "Get-ChildItem C:\\Project -Recurse -File -Include *.js,*.html,*.css,*.json | ForEach-Object {\n    $t = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8\n    if ($t.Contains(\"old-api.example.com\")) {\n        $t.Replace(\"old-api.example.com\", \"new-api.example.com\") | Set-Content -LiteralPath $_.FullName -Encoding UTF8 -NoNewline\n    }\n}",
+      "command": "Get-ChildItem '{path}' -Recurse -File -Include *.js,*.html,*.css,*.json | ForEach-Object {\n    $t = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8\n    if ($t.Contains(\"old-api.example.com\")) {\n        $t.Replace(\"old-api.example.com\", \"new-api.example.com\") | Set-Content -LiteralPath $_.FullName -Encoding UTF8 -NoNewline\n    }\n}",
       "risk": "modifies",
       "admin": false,
       "tags": [
@@ -564,7 +564,7 @@
       "title": "Merge every CSV in a folder",
       "description": "Combines all CSVs that share the same columns into one file.",
       "command": "Get-ChildItem *.csv | ForEach-Object { Import-Csv $_.FullName } | Export-Csv merged.csv -NoTypeInformation -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "csv",
@@ -577,7 +577,7 @@
       "title": "Filter a CSV",
       "description": "Keeps only rows that match a condition and saves the result.",
       "command": "Import-Csv data.csv | Where-Object { [int]$_.Qty -gt 10 } | Export-Csv filtered.csv -NoTypeInformation -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "csv",
@@ -590,7 +590,7 @@
       "title": "Remove duplicate CSV rows",
       "description": "Drops rows that are identical across every column.",
       "command": "Import-Csv in.csv | Sort-Object * -Unique | Export-Csv out.csv -NoTypeInformation -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "csv",
@@ -619,7 +619,7 @@
       "title": "Convert CSV to JSON",
       "description": "Turns a CSV into a JSON array of objects.",
       "command": "Import-Csv data.csv | ConvertTo-Json -Depth 5 | Set-Content data.json -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "csv",
@@ -633,7 +633,7 @@
       "title": "Convert JSON to CSV",
       "description": "Flattens a JSON array of flat objects into a CSV.",
       "command": "Get-Content data.json -Raw | ConvertFrom-Json | Export-Csv data.csv -NoTypeInformation -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "csv",
@@ -660,7 +660,7 @@
       "title": "Merge text files",
       "description": "Concatenates many text files into one.",
       "command": "Get-ChildItem *.txt | Sort-Object Name | Get-Content | Set-Content merged.txt -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "text",
@@ -673,7 +673,7 @@
       "title": "Sort and deduplicate lines",
       "description": "Writes each unique line once, in sorted order.",
       "command": "Get-Content in.txt | Sort-Object -Unique | Set-Content out.txt -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "text",
@@ -701,7 +701,7 @@
       "title": "Export command output to an HTML table",
       "description": "Generates a standalone HTML report from any output.",
       "command": "Get-Process | Select-Object Name, Id, @{N=\"MB\"; E={[math]::Round($_.WorkingSet64/1MB, 1)}} | ConvertTo-Html -Title \"Processes\" | Out-File processes.html -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "html",
@@ -715,7 +715,7 @@
       "title": "Generate a large test CSV",
       "description": "Creates 100,000 rows of fake data for testing import and search code.",
       "command": "1..100000 | ForEach-Object { [pscustomobject]@{ ID = $_; Name = \"User$_\"; Value = Get-Random -Minimum 1 -Maximum 10000 } } | Export-Csv test-data.csv -NoTypeInformation -Encoding UTF8",
-      "risk": "safe",
+      "risk": "modifies",
       "admin": false,
       "tags": [
         "testing",
@@ -1193,7 +1193,7 @@
       "category": "dev",
       "title": "Watch a folder for new files",
       "description": "Prints a message whenever a file appears in a folder or its subfolders, for as long as the session stays open.",
-      "command": "$w = New-Object IO.FileSystemWatcher \"C:\\Watched\"\n$w.IncludeSubdirectories = $true\n$w.EnableRaisingEvents = $true\nRegister-ObjectEvent $w Created -SourceIdentifier NewFile -Action { Write-Host \"New file: $($Event.SourceEventArgs.FullPath)\" }",
+      "command": "$w = New-Object IO.FileSystemWatcher '{path}'\n$w.IncludeSubdirectories = $true\n$w.EnableRaisingEvents = $true\nRegister-ObjectEvent $w Created -SourceIdentifier NewFile -Action { Write-Host \"New file: $($Event.SourceEventArgs.FullPath)\" }",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -1208,7 +1208,7 @@
       "category": "dev",
       "title": "Time how long something takes",
       "description": "Wraps any script block and reports the duration.",
-      "command": "Measure-Command { Get-ChildItem C:\\Windows -Recurse -File -ErrorAction SilentlyContinue | Out-Null } | Select-Object TotalSeconds",
+      "command": "Measure-Command { Get-ChildItem '{path}' -Recurse -File -ErrorAction SilentlyContinue | Out-Null } | Select-Object TotalSeconds",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -1404,7 +1404,7 @@
       "category": "fast",
       "title": "Search one folder by extension",
       "description": "Restricts the search to a folder tree and several extensions.",
-      "command": "es.exe -path C:\\Projects -n 200 ext:js;html;css",
+      "command": "es.exe -path '{path}' -n 200 ext:js;html;css",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -1508,7 +1508,7 @@
       "category": "fast",
       "title": "Fastest built-in recursive file listing",
       "description": "Streams files through .NET directly, skipping the per-object overhead of Get-ChildItem, and ignores folders it cannot open.",
-      "command": "[IO.Directory]::EnumerateFiles(\"C:\\Users\\YourName\", \"*\", [IO.EnumerationOptions]@{ RecurseSubdirectories = $true; IgnoreInaccessible = $true })",
+      "command": "[IO.Directory]::EnumerateFiles('{path}', \"*\", [IO.EnumerationOptions]@{ RecurseSubdirectories = $true; IgnoreInaccessible = $true })",
       "risk": "safe",
       "admin": false,
       "tags": [
@@ -1524,7 +1524,7 @@
       "category": "fast",
       "title": "Fast listing with cmd dir",
       "description": "Plain-text recursive file listing that is usually much faster than Get-ChildItem on large trees.",
-      "command": "cmd /c dir C:\\Users\\YourName /s /b /a-d",
+      "command": "cmd /c dir \"$((Get-Location).Path)\" /s /b /a-d",
       "risk": "safe",
       "admin": false,
       "tags": [

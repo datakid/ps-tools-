@@ -1,6 +1,6 @@
 # PS Tools
 
-A single small native `PSTools.exe` (C# / WinForms on the .NET Framework that Windows already has). Real GUI, modular Explorer right-click menu, no installer, no background process, no admin rights for the app itself.
+A single small native `PSTools.exe` (C# / WinForms on the .NET Framework that Windows already has). Real GUI, a curated Explorer right-click menu, no installer, no background process, no admin rights for the app itself.
 
 ## Build (Windows, no SDK)
 ```
@@ -9,27 +9,50 @@ build.cmd          -> app\out\PSTools.exe + commands.json
 ```
 Uses `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe` (C# 5). The first build creates `app.ico`.
 
-## Use
-- **GUI:** run `PSTools.exe`. Pick a folder (type, Browse, or drop one), search with Ctrl+K, pick an action, Run.
-- **Menu page:** tick modules or single actions, pin favorites to the top level, press **Apply to Explorer menu**.
-- **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--uninstall`.
+## First run
+Run `PSTools.exe` with no arguments. One dialog asks how much to put in the right-click menu:
 
-## Modules (tick on or off on the Menu page)
-| Module | Default | What it does |
-|---|---|---|
-| Copy | on | name, name without extension, paths (/ slashes, quoted, parent, file://, WSL, UNC, JSON), size, SHA-256/SHA-1/MD5, verify hash from clipboard, file contents, data URI, folder tree / all subfolder paths (absolute or relative), Folder structure window (tree, ASCII, markdown, indented, full or relative paths; depth, files, counts, hidden) |
-| Create | on | paste clipboard image as PNG, paste text as file, folder named from clipboard, dated folder, move selection into new folder, unwrap folder, dated snapshot copy |
-| Organize / Clean up / Inspect / Export | on | flatten, sort, batch rename (with Tidy), empty folders, duplicates, unblock, sizes, types, largest, recent, long paths, inventory |
-| Fix | off | force delete stubborn items, set dates to now, hide/read-only, unblock files, LF/CRLF, add/remove BOM, take ownership (admin) |
-| Links | off | mark, then junction / symlink / hard link here, compare with marked folder |
-| Dev | off | serve folder on localhost, find removable build folders, git status / pull across repos, open PowerShell / cmd / admin / WSL / VS Code / Notepad |
-| Disk | off | NTFS (LZX) compress and uncompress |
-| System | off | update everything, export/import app list, restart Explorer, rebuild icon cache, toggle hidden files / extensions / classic menu, system summary, what is using a port, battery report, DNS flush, network reset, power requests, DISM cleanup, sfc |
-| PowerShell / Library | on | browse `commands.json`; pin any snippet to the menu |
+| Preset | What you get |
+|---|---|
+| Minimal | 9 entries: copy name and path, SHA-256, paste image or text as a file, download a link, search, open PowerShell, undo |
+| Everyday (default) | Minimal plus zip, extract, image tools, folder structure, dated folders, group into folder, duplicates, batch rename, subfolder sizes |
+| Developer | Everyday plus all Dev tools (terminals, VS Code, local server, git across repos) and Links |
+| Everything | Every action that does not need administrator rights |
+
+On Windows 11 the dialog also offers the classic right-click menu, because Windows 11 only shows registry-based menus under "Show more options". The switch is tracked and reverted by a full uninstall. Choosing Not now installs nothing and the dialog does not return.
+
+## Use
+- **Right-click:** the flat entries at the top are the daily ones (paste image or text as a file, download link, search, undo, zip). Everything else is grouped in submenus. Image entries appear for pictures, Extract for zip files. Rare or risky entries (force delete, take ownership, restart Explorer) show only with Shift+right-click.
+- **GUI:** pick a folder (type, Browse, or drop one), search with Ctrl+K, pick an action, Run.
+- **Menu page:** choose a preset or tick single actions, pin favorites to the top, press **Apply to Explorer menu**.
+- **Undo:** actions that change files show a toast with an **Undo** link for 5 seconds. **Undo last PS Tools action** is also in the folder background menu, and **Undo last** is in the window.
+- **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--repair`, `--uninstall`. Add `--quiet` to print to the console instead of showing windows; actions that need a confirmation are not run in quiet mode.
+
+## Modules
+| Module | What it does |
+|---|---|
+| Copy | name, name without extension, paths (/ slashes, quoted, parent, file://, WSL, UNC, JSON), size, SHA-256/SHA-1/MD5, verify hash from clipboard, file contents, data URI, folder tree / all subfolder paths, Folder structure window |
+| Create | paste clipboard image as PNG, paste text as file, download link from clipboard, folder named from clipboard, dated folder, move selection into new folder, unwrap folder, dated snapshot copy, undo last |
+| Archive | zip that leaves out `.git`, `node_modules`, `.vs`, `__pycache__`, `bin`, `obj` and says so; extract a zip into its own folder (single top folder is not nested twice, unsafe entries are skipped) |
+| Image | convert to PNG or JPEG, shrink to 1600 or 800 px, strip metadata (EXIF, location). Copies are written next to the originals; nothing is overwritten |
+| Organize / Clean up / Inspect / Export | flatten, sort, batch rename, empty folders, duplicates, unblock, search here (names and text inside files), sizes, types, largest, recent, long paths, inventory |
+| Fix | force delete stubborn items, set dates to now, hide/read-only, unblock files, LF/CRLF, add/remove BOM, take ownership (admin) |
+| Links | mark, then junction / symlink / hard link here, compare with marked folder |
+| Dev | serve folder on localhost, find removable build folders, git status / pull across repos, open PowerShell / cmd / admin / WSL / VS Code / Notepad |
+| Disk | NTFS (LZX) compress and uncompress |
+| System | update everything, export/import app list, restart Explorer, rebuild icon cache, toggle hidden files / extensions / classic menu, system summary, what is using a port, battery report, DNS flush, network reset, power requests, DISM cleanup, sfc |
+| PowerShell / Library | browse `commands.json`; run or pin any snippet |
 
 Multi-select works: several Explorer processes are merged into one run.
 
-Safety tiers: read-only actions run directly; actions that change files ask first and are journaled where possible (**Undo last** covers moves, renames, new folders, pasted files, links, timestamps, attributes, text rewrites); admin actions show the exact script and need UAC. Same-name conflicts become `name_1.ext`, deletions use the Recycle Bin (except force delete and build-folder delete, which say so), junctions and symlinks are not followed.
+## Command library
+`commands.json` holds PowerShell snippets. `{path}` in a snippet becomes the folder you are in (or right-clicked), quoted for a single-quoted PowerShell string, and PowerShell starts in that folder.
+- **Run here** (library window) and pinned snippets run in a PowerShell window that stays open.
+- Snippets marked `safe` start immediately. Snippets that `modifies` or are `destructive`, and admin snippets, first show the exact script and wait for **Run in PowerShell**.
+- **Copy** and **Open PowerShell here** put the filled-in command on the clipboard without running it.
+
+## Safety tiers
+Read-only actions run directly; actions that change files ask first and are journaled where possible (**Undo** covers moves, renames, new folders, pasted and downloaded files, zips, extractions, converted images, links, timestamps, attributes, text rewrites); admin actions show the exact script and need UAC. Same-name conflicts become `name_1.ext`, deletions use the Recycle Bin (except force delete and build-folder delete, which say so), junctions and symlinks are not followed. Undo keeps the most recent action only.
 
 ## Footprint / clean uninstall
 Writes only:
@@ -40,21 +63,29 @@ Writes only:
 - `%LOCALAPPDATA%\PSTools\` (settings, undo journal, marks, temporary files)
 - only if you use them: the Explorer hidden-files / extensions values and the classic-menu key, tracked in `changes.txt`
 
-`PSTools.exe --status` lists what exists. **Remove Explorer menu** removes only the menu. **Full uninstall** (or `--uninstall`) also restores the Windows settings it changed and deletes the data folder; then delete the exe folder.
+`PSTools.exe --status` lists what exists, the active preset, and whether the menu still points at this exe. **Remove Explorer menu** removes only the menu. **Full uninstall** (or `--uninstall`) also restores the Windows settings it changed and deletes the data folder; then delete the exe folder.
+
+If you move or rename the exe folder, the menu entries would point at the old path. Starting the exe from its new place re-creates them automatically; `--repair` does the same on demand.
+
+`app\tools\footprint-check.ps1` proves the contract on your machine: it snapshots the registry classes, the data folder and the Explorer values, installs, runs an action, uninstalls, and fails if anything differs. Run it on an account where PS Tools is not installed. `-IncludeTweaks` also toggles the hidden-files and extensions settings to check they are restored.
 
 ## Project structure
 ```
-src/Program.cs       entry and CLI          src/Shell.cs        menu install/uninstall/status
-src/Model.cs         actions, modules       src/Settings.cs     enabled set, favorites, pins, theme
-src/Actions.cs       registry of actions    src/Collector.cs    multi-select merge
-src/CopyActions.cs   Copy module            src/Structure.cs    folder structure builder
-src/CreateActions.cs Create, Fix, Links     src/Tweaks.cs       reversible Windows toggles
-src/DevActions.cs    Dev, Disk              src/Launch.cs       PowerShell / process helpers
-src/SystemActions.cs System module          src/Fs.cs           file helpers and undo journal
-src/Classic.cs       Organize/Clean/...     src/Runner.cs       run, progress, results
-src/MainForm.cs, ResultsForm.cs, RenameForm.cs, LibraryForm.cs, StructureForm.cs, ToolForms.cs, UI.cs
+app/src/Program.cs       entry and CLI          app/src/Shell.cs        menu install/repair/uninstall/status
+app/src/Model.cs         actions, modules,      app/src/Settings.cs     enabled set, favorites, pins, theme
+                         presets                app/src/Collector.cs    multi-select merge
+app/src/Actions.cs       registry of actions    app/src/Structure.cs    folder structure builder
+app/src/CopyActions.cs   Copy module            app/src/Tweaks.cs       reversible Windows toggles
+app/src/CreateActions.cs Create, Fix, Links     app/src/Launch.cs       PowerShell / process helpers
+app/src/QuickActions.cs  undo, download, zip,   app/src/Fs.cs           file helpers and undo journal
+                         extract, images        app/src/Runner.cs       run, progress, results
+app/src/DevActions.cs    Dev, Disk
+app/src/SystemActions.cs System module
+app/src/Classic.cs       Organize/Clean/...
+app/src/MainForm.cs, FirstRunForm.cs, SearchForm.cs, ResultsForm.cs, RenameForm.cs, LibraryForm.cs, StructureForm.cs, ToolForms.cs, UI.cs
+app/tools/footprint-check.ps1
 ```
 
 ## Extending
-- **New action:** add a `new Action { Id, Group, Label, Hint, Targets, Run }` to a module list. It appears in the GUI and on the Menu page. Set `Tier.Confirm` plus `Confirm` text for anything that changes files; set `Multi` to receive every selected item; set `Fast` for instant clipboard-style actions.
-- **New snippet:** edit `commands.json`, then pin it from the library window.
+- **New action:** add a `new Action { Id, Group, Label, Hint, Targets, Run }` to a module list. It appears in the GUI and on the Menu page. Set `Tier.Confirm` plus `Confirm` text for anything that changes files; set `Multi` to receive every selected item; set `Fast` for instant clipboard-style actions; set `AppliesTo` (an Explorer query such as `Modules.ZipQuery`) to show it only for matching files; set `Extended` to show it only with Shift+right-click; set `DefaultFav` to put it flat at the top of the default menu. Journal anything that creates or changes files so Undo works. To include it in a preset, add its id to the lists in `Presets` in `Model.cs`.
+- **New snippet:** edit `commands.json` (use `{path}` for the folder), then run or pin it from the library window.

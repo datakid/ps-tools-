@@ -141,8 +141,10 @@ namespace PSTools
     class Toast : Form
     {
         readonly Timer timer = new Timer { Interval = 1700 };
+        readonly Label text;
+        LinkLabel undo;
 
-        Toast(string text)
+        Toast(string message, bool undoable)
         {
             FormBorderStyle = FormBorderStyle.None;
             ShowInTaskbar = false;
@@ -151,17 +153,52 @@ namespace PSTools
             BackColor = UI.Panel;
             ForeColor = UI.Text;
             Font = UI.Font;
-            var l = new Label { Text = text, AutoSize = true, MaximumSize = new Size(460, 0), ForeColor = UI.Text, Location = new Point(18, 12) };
-            Controls.Add(l);
-            ClientSize = new Size(l.PreferredSize.Width + 36, l.PreferredSize.Height + 24);
-            Paint += (s, e) => e.Graphics.DrawRectangle(new Pen(UI.Border), 0, 0, Width - 1, Height - 1);
-            Shown += (s, e) =>
+            text = new Label { Text = message, AutoSize = true, MaximumSize = new Size(460, 0), ForeColor = UI.Text, Location = new Point(18, 12) };
+            Controls.Add(text);
+            if (undoable)
             {
-                var wa = Screen.PrimaryScreen.WorkingArea;
-                Location = new Point(wa.Right - Width - 24, wa.Bottom - Height - 24);
-            };
+                timer.Interval = 5000;
+                undo = new LinkLabel { Text = "Undo", AutoSize = true, LinkColor = UI.Accent, ActiveLinkColor = UI.Accent, Cursor = Cursors.Hand };
+                undo.LinkClicked += (s, e) => DoUndo();
+                Controls.Add(undo);
+            }
+            Fit();
+            Paint += (s, e) => e.Graphics.DrawRectangle(new Pen(UI.Border), 0, 0, Width - 1, Height - 1);
+            Shown += (s, e) => Place();
             timer.Tick += (s, e) => { timer.Stop(); Close(); };
             Load += (s, e) => timer.Start();
+        }
+
+        void Fit()
+        {
+            int w = text.PreferredSize.Width + 36;
+            int h = text.PreferredSize.Height + 24;
+            if (undo != null)
+            {
+                undo.Location = new Point(18, 12 + text.PreferredSize.Height + 6);
+                h += undo.PreferredSize.Height + 6;
+                w = Math.Max(w, undo.PreferredSize.Width + 36);
+            }
+            ClientSize = new Size(w, h);
+        }
+
+        void Place()
+        {
+            var wa = Screen.PrimaryScreen.WorkingArea;
+            Location = new Point(wa.Right - Width - 24, wa.Bottom - Height - 24);
+        }
+
+        void DoUndo()
+        {
+            timer.Stop();
+            string result = Journal.Undo();
+            Controls.Remove(undo);
+            undo = null;
+            text.Text = result;
+            Fit();
+            Place();
+            timer.Interval = 2500;
+            timer.Start();
         }
 
         protected override bool ShowWithoutActivation { get { return true; } }
@@ -171,9 +208,9 @@ namespace PSTools
             get { var p = base.CreateParams; p.ExStyle |= 0x08000000 | 0x80; return p; }
         }
 
-        public static void Run(string text)
+        public static void Run(string message, bool undoable)
         {
-            Application.Run(new Toast(text));
+            Application.Run(new Toast(message, undoable));
         }
     }
 

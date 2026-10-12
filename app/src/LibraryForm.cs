@@ -52,6 +52,27 @@ namespace PSTools
             return cmds;
         }
 
+        public static string Fill(string code, string folder)
+        {
+            return code.Replace("{path}", (folder ?? "").Replace("'", "''"));
+        }
+
+        public static bool RunHere(IWin32Window owner, string folder, LibCmd c, string code)
+        {
+            string script = Fill(code, folder);
+            bool admin = c != null && c.Admin;
+            bool review = c == null || c.Risk != "safe" || admin;
+            if (review && !ScriptReview.Confirm(owner, c == null ? "Run script" : c.Title, folder, script, c != null && c.Risk == "destructive", admin)) return false;
+            try
+            {
+                if (admin) Launch.Console("Set-Location -LiteralPath '" + folder.Replace("'", "''") + "'\r\n" + script, true, false);
+                else Launch.PowerShell(folder, script, false);
+                return true;
+            }
+            catch (System.ComponentModel.Win32Exception) { return false; }
+            catch (Exception ex) { Program.Msg(ex.Message); return false; }
+        }
+
         public static void OpenShell(string folder, LibCmd c)
         {
             string intro = "Write-Host 'Command copied. Press Ctrl+V to paste it, review, then Enter.' -ForegroundColor Cyan";
@@ -73,12 +94,10 @@ namespace PSTools
                 {
                     Id = "lib-" + cmd.Id, Group = "Library", Label = cmd.Title, Targets = Target.Dirs, Fast = true,
                     Tier = cmd.Admin ? Tier.Elevated : Tier.Instant,
-                    Hint = cmd.Desc + "\n\nCopies the command and opens PowerShell in the folder. It never runs by itself: paste, review, press Enter.",
+                    Hint = cmd.Desc + "\n\nRuns in PowerShell in the folder you click. Read-only snippets start right away; anything that changes files shows you the exact script first.",
                     Run = (paths, ctx) =>
                     {
-                        Clip.Set(cmd.Code);
-                        LibraryData.OpenShell(DirOf(paths[0]), cmd);
-                        return new Result { Summary = "Command copied. Paste it in the PowerShell window." };
+                        return LibraryData.RunHere(null, DirOf(paths[0]), cmd, cmd.Code) ? new Result { Summary = "Started in PowerShell" } : null;
                     }
                 };
             }
@@ -121,14 +140,16 @@ namespace PSTools
             code.Dock = DockStyle.Fill; code.Multiline = true; code.ScrollBars = ScrollBars.Both; code.WordWrap = false; code.Tag = "code";
             code.Font = UI.Mono; code.BackColor = Color.FromArgb(30, 30, 30); code.ForeColor = Color.FromArgb(225, 225, 225);
             var btns = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, Padding = new Padding(0, 8, 0, 0) };
-            var copy = new Button { Text = "Copy", Width = 90, Height = 30 }; copy.Click += (s, e) => { if (code.Text.Length > 0) Clip.Set(code.Text); };
+            var copy = new Button { Text = "Copy", Width = 90, Height = 30 }; copy.Click += (s, e) => { if (code.Text.Length > 0) Clip.Set(LibraryData.Fill(code.Text, folder)); };
+            var runHere = new Button { Text = "Run here", Width = 100, Height = 30 };
+            UI.Primary(runHere); runHere.Click += (s, e) => RunHere();
             var shell = new Button { Text = "Open PowerShell here", Width = 170, Height = 30 };
-            UI.Primary(shell); shell.Click += (s, e) => Open();
+            shell.Click += (s, e) => Open();
             var edit = new Button { Text = "Edit commands.json", Width = 150, Height = 30 };
             edit.Click += (s, e) => { try { Process.Start("notepad.exe", "\"" + LibraryData.JsonPath + "\""); } catch { } };
             pin.Click += (s, e) => TogglePin();
-            btns.Controls.Add(shell); btns.Controls.Add(copy); btns.Controls.Add(pin); btns.Controls.Add(edit);
-            var hint = new Label { Dock = DockStyle.Bottom, Height = 36, ForeColor = UI.Muted, Text = "Edit the code above before running. Open PowerShell here runs nothing: the command is on your clipboard, so press Ctrl+V, review, then Enter." };
+            btns.Controls.Add(runHere); btns.Controls.Add(shell); btns.Controls.Add(copy); btns.Controls.Add(pin); btns.Controls.Add(edit);
+            var hint = new Label { Dock = DockStyle.Bottom, Height = 36, ForeColor = UI.Muted, Text = "{path} in the code becomes the folder shown in the title. Edit the code before running. Run here shows changing commands for review first. Open PowerShell here runs nothing: the command is on your clipboard." };
             right.Controls.Add(code); right.Controls.Add(desc); right.Controls.Add(hint); right.Controls.Add(btns);
             split.Panel2.Controls.Add(right);
 
@@ -184,8 +205,45 @@ namespace PSTools
         void Open()
         {
             if (code.Text.Length == 0) return;
-            Clip.Set(code.Text);
+            Clip.Set(LibraryData.Fill(code.Text, folder));
             LibraryData.OpenShell(folder, Current);
+        }
+
+        void RunHere()
+        {
+            if (code.Text.Length == 0) return;
+            LibraryData.RunHere(this, folder, Current, code.Text);
+        }
+    }
+
+    class ScriptReview : Form
+    {
+        public static bool Confirm(IWin32Window owner, string title, string folder, string script, bool destructive, bool admin)
+        {
+            using (var f = new ScriptReview(title, folder, script, destructive, admin)) return f.ShowDialog(owner) == DialogResult.OK;
+        }
+
+        ScriptReview(string title, string folder, string script, bool destructive, bool admin)
+        {
+            Text = title; Font = UI.Font; ClientSize = new Size(780, 520); StartPosition = FormStartPosition.CenterScreen;
+            MinimizeBox = false; MaximizeBox = false; FormBorderStyle = FormBorderStyle.FixedDialog;
+            try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
+            string note = "Runs in PowerShell in:  " + folder;
+            if (admin) note += "\nAdministrator rights: Windows will ask for permission.";
+            if (destructive) note += "\nThis can delete or overwrite data. Read it first.";
+            var head = new Label { Dock = DockStyle.Top, Height = 66, Padding = new Padding(14, 12, 14, 0), Text = note, BackColor = UI.Panel, ForeColor = destructive ? UI.Danger : UI.Text };
+            var code = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Tag = "code", Font = UI.Mono };
+            code.Text = script.Replace("\r\n", "\n").Replace("\n", "\r\n");
+            var bar = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 50, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(10, 8, 10, 4), BackColor = UI.Panel };
+            var run = new Button { Text = "Run in PowerShell", Width = 160, Height = 32, DialogResult = DialogResult.OK };
+            UI.Primary(run);
+            var cancel = new Button { Text = "Cancel", Width = 100, Height = 32, DialogResult = DialogResult.Cancel };
+            bar.Controls.Add(run); bar.Controls.Add(cancel);
+            Controls.Add(code); Controls.Add(bar); Controls.Add(head);
+            AcceptButton = run; CancelButton = cancel;
+            UI.Apply(this);
+            code.BackColor = Color.FromArgb(30, 30, 30); code.ForeColor = Color.FromArgb(225, 225, 225);
+            Shown += (s, e) => { code.SelectionStart = 0; code.SelectionLength = 0; run.Focus(); };
         }
     }
 }

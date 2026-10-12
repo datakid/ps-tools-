@@ -15,6 +15,7 @@ namespace PSTools
         static HashSet<string> favs;
         static HashSet<string> pins = new HashSet<string>();
         static bool loaded;
+        static bool configured;
 
         static void Load()
         {
@@ -39,13 +40,34 @@ namespace PSTools
                     }
             }
             catch { }
-            if (any) { enabled = en; favs = fv; }
+            if (any) { enabled = en; favs = fv; configured = true; }
         }
 
         static void Defaults()
         {
-            enabled = new HashSet<string>(Actions.All.Where(a => a.Targets != Target.None && a.Tier != Tier.Elevated && Modules.Find(a.Group) != null && Modules.Find(a.Group).DefaultOn).Select(a => a.Id));
-            favs = new HashSet<string>(Actions.All.Where(a => a.DefaultFav).Select(a => a.Id));
+            enabled = Presets.Ids("Everyday");
+            favs = new HashSet<string>(Actions.All.Where(a => a.DefaultFav && enabled.Contains(a.Id)).Select(a => a.Id));
+        }
+
+        public static bool Configured { get { Load(); return configured; } }
+
+        public static string CurrentPreset { get { EnsureLoaded(); return Presets.Match(enabled); } }
+
+        public static void ApplyPreset(string name)
+        {
+            EnsureLoaded();
+            enabled = Presets.Ids(name);
+            favs = new HashSet<string>(Actions.All.Where(a => a.DefaultFav && enabled.Contains(a.Id)).Select(a => a.Id));
+            loaded = true;
+            configured = true;
+            Save();
+        }
+
+        public static void MarkConfigured()
+        {
+            EnsureLoaded();
+            configured = true;
+            Save();
         }
 
         public static void EnsureLoaded()

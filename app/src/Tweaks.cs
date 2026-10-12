@@ -83,6 +83,22 @@ namespace PSTools
 
         public static bool HiddenShown { get { return GetAdv("Hidden", 2) == 1; } }
         public static bool ExtShown { get { return GetAdv("HideFileExt", 1) == 0; } }
+        public static bool IsWindows11
+        {
+            get
+            {
+                try
+                {
+                    using (var k = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+                    {
+                        int build;
+                        return k != null && int.TryParse(Convert.ToString(k.GetValue("CurrentBuildNumber")), out build) && build >= 22000;
+                    }
+                }
+                catch { return false; }
+            }
+        }
+
         public static bool Classic { get { using (var k = Registry.CurrentUser.OpenSubKey(ClassicKey + @"\InprocServer32")) return k != null; } }
 
         public static string ToggleHidden()

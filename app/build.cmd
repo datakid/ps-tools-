@@ -1,6 +1,4 @@
 @echo off
-rem Builds PSTools.exe with the C# compiler that ships with Windows (.NET Framework 4.x).
-rem No SDK, no Visual Studio, no downloads.
 setlocal
 cd /d "%~dp0"
 set CSC=%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe
@@ -14,6 +12,7 @@ if not exist app.ico powershell -NoProfile -ExecutionPolicy Bypass -File make-ic
   /win32icon:app.ico /win32manifest:app.manifest ^
   /r:System.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll ^
   /r:Microsoft.VisualBasic.dll /r:System.Web.Extensions.dll ^
+  /r:System.IO.Compression.dll /r:System.IO.Compression.FileSystem.dll ^
   src\*.cs
 if errorlevel 1 exit /b 1
 

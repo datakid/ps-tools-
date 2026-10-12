@@ -12,6 +12,7 @@ namespace PSTools
         {
             var l = new List<Action>();
             l.AddRange(CopyModule());
+            l.AddRange(QuickModule());
             l.AddRange(CreateModule());
             l.AddRange(Classic());
             l.AddRange(FixModule());

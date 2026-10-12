@@ -53,7 +53,7 @@ namespace PSTools
 
             yield return new Action
             {
-                Id = "paste-text", Group = "Create", Label = "Paste clipboard text as file", Targets = Target.Dirs, Fast = true,
+                Id = "paste-text", Group = "Create", Label = "Paste clipboard text as file", Targets = Target.Dirs, Fast = true, DefaultFav = true,
                 Hint = "Saves the text on the clipboard as clip-<date>.txt (.json or .html when it clearly is one).",
                 Run = (paths, c) =>
                 {
@@ -279,7 +279,7 @@ namespace PSTools
         {
             yield return new Action
             {
-                Id = "force-delete", Group = "Fix", Label = "Force delete (stubborn items)", Targets = Target.File | Target.Folder, Multi = true, Tier = Tier.Confirm,
+                Id = "force-delete", Group = "Fix", Extended = true, Label = "Force delete (stubborn items)", Targets = Target.File | Target.Folder, Multi = true, Tier = Tier.Confirm,
                 Hint = "Permanently deletes items Explorer refuses to remove: reserved names (nul, aux, con), trailing dots or spaces, over-long paths. Skips the Recycle Bin.",
                 Confirm = "PERMANENTLY delete {0}?\nThis bypasses the Recycle Bin and cannot be undone.",
                 Run = (paths, c) =>
@@ -343,7 +343,7 @@ namespace PSTools
 
             yield return new Action
             {
-                Id = "take-ownership", Group = "Fix", Label = "Take ownership and grant full control", Targets = Target.File | Target.Folder, Multi = true, Tier = Tier.Elevated,
+                Id = "take-ownership", Group = "Fix", Extended = true, Label = "Take ownership and grant full control", Targets = Target.File | Target.Folder, Multi = true, Tier = Tier.Elevated,
                 Hint = "For \"Access denied\" on your own old folders. Runs takeown and icacls in an elevated PowerShell. Refuses drives, Windows, Program Files and your profile root.",
                 Script = paths =>
                 {

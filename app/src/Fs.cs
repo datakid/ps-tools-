@@ -322,6 +322,8 @@ namespace PSTools
         static string FilePath { get { return Path.Combine(Dir, "undo.txt"); } }
         static string DataDir { get { return Path.Combine(Dir, "undo-data"); } }
 
+        public static bool Wrote;
+
         readonly List<string> lines = new List<string>();
         readonly string title;
         public Journal(string title) { this.title = title; }
@@ -389,6 +391,7 @@ namespace PSTools
             sb.AppendLine("#" + title + "\t" + DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
             foreach (var l in lines) sb.AppendLine(l);
             File.WriteAllText(FilePath, sb.ToString(), Encoding.UTF8);
+            Wrote = true;
         }
 
         public static string LastTitle()

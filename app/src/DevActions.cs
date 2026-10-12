@@ -44,7 +44,7 @@ namespace PSTools
             };
             yield return new Action
             {
-                Id = "open-ps-admin", Group = "Dev", Label = "Open PowerShell here as administrator", Targets = Target.All, Fast = true, Tier = Tier.Elevated,
+                Id = "open-ps-admin", Group = "Dev", Extended = true, Label = "Open PowerShell here as administrator", Targets = Target.All, Fast = true, Tier = Tier.Elevated,
                 Hint = "Elevated PowerShell in this folder. Windows asks for confirmation (UAC).",
                 Run = (paths, c) => { Launch.PowerShell(DirOf(paths[0]), null, true); return new Result { Summary = "Opened elevated PowerShell" }; }
             };

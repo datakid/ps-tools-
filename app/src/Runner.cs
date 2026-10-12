@@ -26,7 +26,12 @@ namespace PSTools
             foreach (var p in paths)
                 if (!Directory.Exists(p) && !File.Exists(p)) { Program.Msg("Not found:\n" + p); return; }
 
-            if (a.Window != null) { ShowForm(a.Window(paths), owner); return; }
+            if (a.Window != null)
+            {
+                if (Program.Quiet) { Program.Msg(a.Label + " opens a window and cannot run with --quiet."); return; }
+                ShowForm(a.Window(paths), owner);
+                return;
+            }
 
             string what = Actions.Describe(paths);
 
@@ -46,8 +51,9 @@ namespace PSTools
 
             Result result = null; Exception error = null;
             var ctx = new Ctx { ClipboardText = ClipText() };
+            Journal.Wrote = false;
 
-            if (a.Fast)
+            if (a.Fast || Program.Quiet)
             {
                 try { result = a.Run(paths, ctx); }
                 catch (Exception ex) { error = ex; }
@@ -76,30 +82,32 @@ namespace PSTools
         static void Finish(Action a, string[] paths, Result result, Exception error, IWin32Window owner)
         {
             if (error is OperationCanceledException) { Program.Msg("Cancelled. Changes made so far can be reverted with Undo last."); return; }
-            if (error != null) { MessageBox.Show(error.Message, "PS Tools - error", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+            if (error != null) { Program.Fail(error.Message); return; }
             if (result == null) return;
 
             if (result.ClipText != null)
             {
                 Clip.Set(result.ClipText);
-                Notify(owner, result.Summary);
+                Notify(owner, result.Summary, false);
                 return;
             }
+            if (Program.Quiet && result.Rows != null) { Program.Msg(result.Summary); return; }
             if (result.Rows != null && result.Rows.Count > 0)
             {
                 ShowForm(new ResultsForm(a.Label + "  -  " + Actions.Describe(paths), result), owner);
                 return;
             }
             string s = result.Summary ?? "";
-            if (a.Fast && s.IndexOf('\n') < 0 && s.Length < 160) Notify(owner, s);
+            if ((a.Fast || Program.Quiet || Journal.Wrote) && s.IndexOf('\n') < 0 && s.Length < 160) Notify(owner, s, Journal.Wrote);
             else Program.Msg(s);
         }
 
-        public static void Notify(IWin32Window owner, string text)
+        public static void Notify(IWin32Window owner, string text, bool undoable)
         {
             var m = owner as MainForm;
             if (m != null) m.SetStatus(text);
-            else Toast.Run(text);
+            else if (Program.Quiet) Console.WriteLine(text);
+            else Toast.Run(text, undoable);
         }
 
         public static void ShowForm(Form f, IWin32Window owner)

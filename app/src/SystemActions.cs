@@ -105,14 +105,14 @@ namespace PSTools
             };
             yield return new Action
             {
-                Id = "restart-explorer", Group = "System", Label = "Restart Explorer", Targets = Target.Background, Tier = Tier.Confirm,
+                Id = "restart-explorer", Group = "System", Extended = true, Label = "Restart Explorer", Targets = Target.Background, Tier = Tier.Confirm,
                 Hint = "Restarts the Windows shell (taskbar and File Explorer windows) when it hangs or after changing the menu style.",
                 Confirm = "Restart Windows Explorer now? Open File Explorer windows will close.",
                 Run = (paths, c) => RestartExplorer(false)
             };
             yield return new Action
             {
-                Id = "clear-icon-cache", Group = "System", Label = "Rebuild icon and thumbnail cache", Targets = Target.Background, Tier = Tier.Confirm,
+                Id = "clear-icon-cache", Group = "System", Extended = true, Label = "Rebuild icon and thumbnail cache", Targets = Target.Background, Tier = Tier.Confirm,
                 Hint = "Fixes wrong, blank or stale icons and thumbnails: restarts Explorer and deletes its icon and thumbnail cache files.",
                 Confirm = "Restart Explorer and delete the icon and thumbnail cache?\nOpen File Explorer windows will close.",
                 Run = (paths, c) => RestartExplorer(true)

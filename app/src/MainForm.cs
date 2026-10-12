@@ -21,6 +21,7 @@ namespace PSTools
         readonly TreeView tree = new TreeView();
         readonly Label menuInfo = new Label(), menuState = new Label();
         readonly ComboBox theme = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 120 };
+        readonly ComboBox preset = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150 };
         readonly HashSet<string> favSet = new HashSet<string>();
         bool building;
 
@@ -73,6 +74,7 @@ namespace PSTools
             StyleTabs();
             Fill();
             RefreshState();
+            if (Program.StartupNote != null) SetStatus(Program.StartupNote);
         }
 
         string Path0 { get { return Program.Clean(folder.Text); } }
@@ -245,14 +247,29 @@ namespace PSTools
         {
             var right = new Panel { Dock = DockStyle.Right, Width = 300, Padding = new Padding(20, 16, 16, 12) };
             menuInfo.Dock = DockStyle.Top; menuInfo.Height = 120; menuInfo.ForeColor = UI.Muted;
-            menuInfo.Text = "Tick what you want in the Explorer right-click menu. Ticking a module ticks all its actions. Pin an action to put it at the top level of the menu. Nothing changes in Explorer until you press Apply.";
+            menuInfo.Text = "Pick a preset or tick what you want in the Explorer right-click menu. Ticking a module ticks all its actions. Pin an action to put it at the top of the menu. Nothing changes in Explorer until you press Apply.";
 
             var apply = new Button { Text = "Apply to Explorer menu", Dock = DockStyle.Top, Height = 36 };
             UI.Primary(apply); apply.Click += (s, e) => ApplyMenu();
             var pinBtn = new Button { Text = "Pin or unpin selected", Dock = DockStyle.Top, Height = 32 };
             pinBtn.Click += (s, e) => PinSelected();
             var reset = new Button { Text = "Reset to defaults", Dock = DockStyle.Top, Height = 32 };
-            reset.Click += (s, e) => { Settings.ResetDefaults(); BuildTree(); SetStatus("Menu selection reset. Press Apply to update Explorer."); };
+            reset.Click += (s, e) => { Settings.ResetDefaults(); BuildTree(); RefreshPreset(); SetStatus("Menu selection reset. Press Apply to update Explorer."); };
+
+            var presetRow = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40, Padding = new Padding(0, 8, 0, 0) };
+            presetRow.Controls.Add(new Label { Text = "Preset", AutoSize = true, Margin = new Padding(0, 5, 8, 0) });
+            preset.Items.AddRange(Presets.Names);
+            preset.Items.Add(Presets.Custom);
+            preset.SelectedIndexChanged += (s, e) =>
+            {
+                if (building) return;
+                string n = (string)preset.SelectedItem;
+                if (n == null || n == Presets.Custom) return;
+                Settings.ApplyPreset(n);
+                BuildTree();
+                SetStatus(n + " selected. Press Apply to update Explorer.");
+            };
+            presetRow.Controls.Add(preset);
 
             var themeRow = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40, Padding = new Padding(0, 8, 0, 0) };
             themeRow.Controls.Add(new Label { Text = "Theme", AutoSize = true, Margin = new Padding(0, 5, 8, 0) });
@@ -274,6 +291,7 @@ namespace PSTools
             right.Controls.Add(full); right.Controls.Add(gap(6)); right.Controls.Add(removeMenu); right.Controls.Add(gap(14));
             right.Controls.Add(themeRow); right.Controls.Add(gap(8));
             right.Controls.Add(reset); right.Controls.Add(gap(6)); right.Controls.Add(pinBtn); right.Controls.Add(gap(6)); right.Controls.Add(apply);
+            right.Controls.Add(gap(8)); right.Controls.Add(presetRow);
             right.Controls.Add(gap(10)); right.Controls.Add(menuInfo);
 
             tree.Dock = DockStyle.Fill; tree.CheckBoxes = true; tree.ShowLines = false; tree.FullRowSelect = true; tree.HideSelection = false; tree.ItemHeight = 26;
@@ -308,6 +326,14 @@ namespace PSTools
             building = false;
             foreach (TreeNode n in tree.Nodes) n.Collapse();
             TreeSelected();
+            RefreshPreset();
+        }
+
+        void RefreshPreset()
+        {
+            building = true;
+            preset.SelectedItem = Settings.CurrentPreset;
+            building = false;
         }
 
         void TreeChecked(object s, TreeViewEventArgs e)
@@ -345,6 +371,7 @@ namespace PSTools
                 foreach (TreeNode n in m.Nodes)
                     if (n.Checked) enabled.Add(((Action)n.Tag).Id);
             Settings.Set(enabled, favSet);
+            RefreshPreset();
             try
             {
                 Shell.Install();
