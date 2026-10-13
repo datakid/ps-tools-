@@ -84,6 +84,7 @@ namespace PSTools
         {
             EnsureLoaded();
             if (id.StartsWith("lib-")) return pins.Contains(id.Substring(4));
+            if (id.StartsWith("recipe-")) return RecipeData.InMenu(id);
             return enabled.Contains(id);
         }
 

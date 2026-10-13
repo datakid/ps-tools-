@@ -41,9 +41,19 @@ On Windows 11 the dialog also offers the classic right-click menu, because Windo
 | Dev | serve folder on localhost, find removable build folders, git status / pull across repos, open PowerShell / cmd / admin / WSL / VS Code / Notepad |
 | Disk | NTFS (LZX) compress and uncompress |
 | System | update everything, export/import app list, restart Explorer, rebuild icon cache, toggle hidden files / extensions / classic menu, system summary, what is using a port, battery report, DNS flush, network reset, power requests, DISM cleanup, sfc |
+| Recipes | your own chains of actions, run in order with one confirmation and one Undo (see below) |
 | PowerShell / Library | browse `commands.json`; run or pin any snippet |
 
 Multi-select works: several Explorer processes are merged into one run.
+
+## Recipes
+A recipe is a named list of actions that run one after another on the same selection. Open **Manage recipes...** (in the action list, the Ctrl+K palette, or the Recipes module) to create, edit, copy, import and export them.
+
+- **One OK, one Undo:** if any step asks for confirmation, you see all the steps and answer once. **Undo last** reverts the whole recipe, not just the last step.
+- **Same selection:** every step runs on the items you picked. A step does not receive files an earlier step created, but it sees the changes earlier steps made to your items (sort, then remove empty folders; clean, then zip).
+- **Right-click menu:** tick *Show in the right-click menu* and press **Apply to Explorer menu**; the recipe appears in a **Recipes** submenu. Recipes work for whatever kinds of item all their steps support.
+- **Which actions can be steps:** the ones that do their work without opening a window or asking a question while running. Result lists (find duplicates, folder sizes, git status), the clipboard-paste actions, the administrator actions and the System module are not offered. If several steps copy to the clipboard, the last one wins.
+- **Where they live:** `recipes.json` next to `PSTools.exe`, in the same spirit as `commands.json`. It is plain JSON you can edit or share, and Full uninstall does not delete it. If the exe is in a protected folder such as Program Files, saving fails with a message; move the exe somewhere you can write to.
 
 ## Command library
 `commands.json` holds PowerShell snippets. `{path}` in a snippet becomes the folder you are in (or right-clicked), quoted for a single-quoted PowerShell string, and PowerShell starts in that folder.
@@ -86,10 +96,12 @@ app/src/SystemActions.cs System module
 app/src/Classic.cs       Organize/Clean/...
 app/src/MainForm.cs, FirstRunForm.cs, SearchForm.cs, ResultsForm.cs, RenameForm.cs, LibraryForm.cs, StructureForm.cs, ToolForms.cs, UI.cs
 app/src/PaletteForm.cs  Ctrl+K command palette       app/src/PreviewForm.cs  right-click menu preview
+app/src/Recipes.cs      recipe data and runner       app/src/RecipesForm.cs  recipe editor and step picker
 app/tools/footprint-check.ps1
 app/tools/layout-check.ps1
 ```
 
 ## Extending
 - **New action:** add a `new Action { Id, Group, Label, Hint, Targets, Run }` to a module list. It appears in the GUI and on the Menu page. Set `Tier.Confirm` plus `Confirm` text for anything that changes files; set `Multi` to receive every selected item; set `Fast` for instant clipboard-style actions; set `AppliesTo` (an Explorer query such as `Modules.ZipQuery`) to show it only for matching files; set `Extended` to show it only with Shift+right-click; set `DefaultFav` to put it flat at the top of the default menu. Journal anything that creates or changes files so Undo works. To include it in a preset, add its id to the lists in `Presets` in `Model.cs`.
+- **New recipe:** use Manage recipes, or edit `recipes.json` (`{ "recipes": [ { "id", "name", "description", "menu", "steps": [ "<action-id>", ... ] } ] }`). Action ids are the `Id` values in the module lists.
 - **New snippet:** edit `commands.json` (use `{path}` for the folder), then run or pin it from the library window.

@@ -88,7 +88,7 @@ namespace PSTools
             if (result.ClipText != null)
             {
                 Clip.Set(result.ClipText);
-                Notify(owner, result.Summary, false);
+                Notify(owner, result.Summary, Journal.Wrote);
                 return;
             }
             if (Program.Quiet && result.Rows != null) { Program.Msg(result.Summary); return; }

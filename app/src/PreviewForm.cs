@@ -40,7 +40,7 @@ namespace PSTools
 
         bool On(Action a)
         {
-            return a.Id.StartsWith("lib-") ? Settings.IsEnabled(a.Id) : enabled.Contains(a.Id);
+            return a.Id.StartsWith("lib-") || a.Id.StartsWith("recipe-") ? Settings.IsEnabled(a.Id) : enabled.Contains(a.Id);
         }
 
         static string Qualifier(Action a)

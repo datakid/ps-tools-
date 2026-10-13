@@ -323,6 +323,29 @@ namespace PSTools
         static string DataDir { get { return Path.Combine(Dir, "undo-data"); } }
 
         public static bool Wrote;
+        static List<string> batch;
+        static string batchTitle;
+
+        public static void BeginBatch(string title)
+        {
+            batch = new List<string>();
+            batchTitle = title;
+        }
+
+        public static void EndBatch()
+        {
+            var collected = batch;
+            string t = batchTitle;
+            batch = null; batchTitle = null;
+            if (collected == null || collected.Count == 0) return;
+            Directory.CreateDirectory(Dir);
+            PurgeOld();
+            var sb = new StringBuilder();
+            sb.AppendLine("#" + t + "\t" + DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+            foreach (var l in collected) sb.AppendLine(l);
+            File.WriteAllText(FilePath, sb.ToString(), Encoding.UTF8);
+            Wrote = true;
+        }
 
         readonly List<string> lines = new List<string>();
         readonly string title;
@@ -385,6 +408,7 @@ namespace PSTools
         public void Save()
         {
             if (lines.Count == 0) return;
+            if (batch != null) { batch.AddRange(lines); return; }
             Directory.CreateDirectory(Dir);
             PurgeOld();
             var sb = new StringBuilder();

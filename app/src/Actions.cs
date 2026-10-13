@@ -6,7 +6,9 @@ namespace PSTools
 {
     static partial class Actions
     {
-        public static readonly List<Action> All = Build();
+        public static List<Action> All = Build();
+
+        public static void Rebuild() { All = Build(); }
 
         static List<Action> Build()
         {
@@ -20,6 +22,7 @@ namespace PSTools
             l.AddRange(DevModule());
             l.AddRange(DiskModule());
             l.AddRange(SystemModule());
+            l.AddRange(RecipeActions(l));
             l.AddRange(PinnedModule());
             return l.OrderBy(a => Modules.Order(a.Group)).ToList();
         }

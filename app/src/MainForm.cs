@@ -240,7 +240,7 @@ namespace PSTools
             else { title.Text = ""; hint.Text = "No match."; meta.Text = ""; FitActions(); }
         }
 
-        static bool Matches(Action a, string q)
+        internal static bool Matches(Action a, string q)
         {
             return q.Length == 0 || (a.Label + " " + a.Hint + " " + a.Group + " " + a.Id).IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0;
         }
@@ -268,6 +268,13 @@ namespace PSTools
             run.Text = a.Window != null ? "Open" : "Run";
             FitActions();
             actionsScroll.AutoScrollPosition = new Point(0, 0);
+        }
+
+        public void RefreshRecipes(string note)
+        {
+            Fill();
+            FitList();
+            if (!string.IsNullOrEmpty(note)) SetStatus(note);
         }
 
         void OpenPalette()
@@ -432,7 +439,7 @@ namespace PSTools
             working = new HashSet<string>();
             foreach (var m in Modules.All)
             {
-                if (m.Name == "Library") continue;
+                if (m.Name == "Library" || m.Name == "Recipes") continue;
                 foreach (var a in TreeActions(m)) if (Settings.IsEnabled(a.Id)) working.Add(a.Id);
             }
             FillTree();
@@ -446,7 +453,7 @@ namespace PSTools
             tree.BeginUpdate(); tree.Nodes.Clear();
             foreach (var m in Modules.All)
             {
-                if (m.Name == "Library") continue;
+                if (m.Name == "Library" || m.Name == "Recipes") continue;
                 var acts = TreeActions(m).Where(a => Matches(a, q)).ToList();
                 if (acts.Count == 0) continue;
                 var mn = new TreeNode(m.Name) { Tag = m, NodeFont = UI.Bold };

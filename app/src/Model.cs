@@ -72,6 +72,7 @@ namespace PSTools
             new Module("Dev", "Serve a folder, clear build folders, git across repos, open in tools"),
             new Module("Disk", "Compress folders with NTFS compression"),
             new Module("System", "Updates, app lists, Explorer fixes, network and repair tools"),
+            new Module("Recipes", "Your own chains of actions, run in order on the same selection"),
             new Module("PowerShell", "Browse and run the command library"),
             new Module("Library", "Snippets from commands.json that you pinned to the menu")
         };
@@ -132,7 +133,7 @@ namespace PSTools
         {
             var ok = new HashSet<string>();
             foreach (var a in Actions.All)
-                if (set.Contains(a.Id) && a.Targets != Target.None && a.Tier != Tier.Elevated && Modules.Find(a.Group) != null && a.Group != "Library" && a.Usable) ok.Add(a.Id);
+                if (set.Contains(a.Id) && a.Targets != Target.None && a.Tier != Tier.Elevated && Modules.Find(a.Group) != null && a.Group != "Library" && a.Group != "Recipes" && a.Usable) ok.Add(a.Id);
             return ok;
         }
 

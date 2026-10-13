@@ -59,7 +59,14 @@ Check $preview 'Menu preview' 0 0
 $first = [Activator]::CreateInstance($asm.GetType('PSTools.FirstRunForm'))
 Check $first 'First run' 0 0
 
-foreach ($f in @($first, $preview, $main)) { $f.Dispose() }
+$recipes = [Activator]::CreateInstance($asm.GetType('PSTools.RecipesForm'))
+Check $recipes 'Recipe editor' 0 0
+Check $recipes 'Recipe editor (minimum)' 820 520
+
+$picker = [Activator]::CreateInstance($asm.GetType('PSTools.StepPickerForm'))
+Check $picker 'Recipe step picker' 0 0
+
+foreach ($f in @($picker, $recipes, $first, $preview, $main)) { $f.Dispose() }
 
 if ($issues.Count -gt 0) {
     Write-Host ''
