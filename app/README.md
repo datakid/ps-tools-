@@ -10,7 +10,7 @@ build.cmd          -> app\out\PSTools.exe + commands.json
 Uses `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe` (C# 5). The first build creates `app.ico`.
 
 ## Use
-- **GUI:** run `PSTools.exe`. Pick a folder (type, Browse, or drop one), search with Ctrl+K, pick an action, Run.
+- **GUI:** run `PSTools.exe`. Pick a folder (type, Browse, or drop one), pick an action, Run. Ctrl+K opens the command palette, Ctrl+F searches the list.
 - **Menu page:** tick modules or single actions, pin favorites to the top level, press **Apply to Explorer menu**.
 - **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--uninstall`.
 

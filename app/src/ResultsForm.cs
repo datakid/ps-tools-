@@ -13,6 +13,7 @@ namespace PSTools
     {
         readonly ListView lv = new ListView();
         readonly TextBox filter = new TextBox();
+        readonly Label empty = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Visible = false };
         readonly Result r;
         int sortCol = -1; bool sortDesc;
         List<string[]> rows;
@@ -32,14 +33,20 @@ namespace PSTools
 
             lv.Dock = DockStyle.Fill; lv.View = View.Details; lv.FullRowSelect = true; lv.GridLines = false;
             lv.CheckBoxes = r.Checkable; lv.BorderStyle = BorderStyle.None;
-            lv.SmallImageList = new ImageList { ImageSize = new Size(1, 24) };
+            lv.SmallImageList = new ImageList { ImageSize = new Size(1, UI.S(24)) };
             int skip = r.Columns[0] == "" ? 1 : 0;
             for (int i = skip; i < r.Columns.Length; i++)
                 lv.Columns.Add(r.Columns[i], i == r.PathColumn ? 520 : 120);
             lv.ColumnClick += (s, e) => { int c = e.Column + skip; sortDesc = sortCol == c && !sortDesc; sortCol = c; Fill(); };
 
+            lv.ShowItemToolTips = true;
             if (r.PathColumn >= 0)
             {
+                lv.ItemDrag += (s, e) =>
+                {
+                    var dragged = SelPaths().Where(p => File.Exists(p) || Directory.Exists(p)).ToArray();
+                    if (dragged.Length > 0) lv.DoDragDrop(new DataObject(DataFormats.FileDrop, dragged), DragDropEffects.Copy);
+                };
                 lv.DoubleClick += (s, e) => OpenSel(false);
                 AddBtn(bar, "Open", () => OpenSel(false));
                 AddBtn(bar, "Show in folder", () => OpenSel(true));
@@ -60,8 +67,10 @@ namespace PSTools
             AddBtn(bar, "Copy table", CopyTable);
             AddBtn(bar, "Export CSV...", ExportCsv);
 
-            Controls.Add(lv); Controls.Add(head); Controls.Add(bar);
+            Controls.Add(lv); Controls.Add(empty); Controls.Add(head); Controls.Add(bar);
             UI.Apply(this);
+            empty.ForeColor = UI.Muted;
+            Shown += (s, e) => SizeColumns();
             foreach (Control c in bar.Controls) { var b = c as Button; if (b != null && b.Text.IndexOf("Recycle") >= 0 || b != null && b.Text.IndexOf("permanently") >= 0) b.ForeColor = UI.Danger; }
             Fill();
         }
@@ -98,6 +107,36 @@ namespace PSTools
             }
             lv.EndUpdate();
             lv.ItemChecked += OnChecked;
+            bool none = lv.Items.Count == 0;
+            empty.Text = f.Length > 0 ? "No rows match \"" + f + "\"." : "Nothing to show.";
+            empty.Visible = none;
+            lv.Visible = !none;
+            if (lv.IsHandleCreated) SizeColumns();
+        }
+
+        void SizeColumns()
+        {
+            if (lv.Columns.Count == 0 || lv.Items.Count == 0) return;
+            int skip = r.Columns[0] == "" ? 1 : 0;
+            int pathIdx = r.PathColumn - skip;
+            int used = 0;
+            for (int i = 0; i < lv.Columns.Count; i++)
+            {
+                if (i == pathIdx) continue;
+                lv.AutoResizeColumn(i, ColumnHeaderAutoResizeStyle.ColumnContent);
+                int content = lv.Columns[i].Width;
+                lv.AutoResizeColumn(i, ColumnHeaderAutoResizeStyle.HeaderSize);
+                int w = Math.Min(UI.S(320), Math.Max(content, lv.Columns[i].Width) + UI.S(16));
+                lv.Columns[i].Width = Math.Max(UI.S(70), w);
+                used += lv.Columns[i].Width;
+            }
+            if (pathIdx >= 0 && pathIdx < lv.Columns.Count)
+            {
+                lv.AutoResizeColumn(pathIdx, ColumnHeaderAutoResizeStyle.ColumnContent);
+                int wanted = Math.Min(UI.S(900), lv.Columns[pathIdx].Width + UI.S(16));
+                int remaining = lv.ClientSize.Width - used - UI.S(4);
+                lv.Columns[pathIdx].Width = Math.Max(UI.S(240), Math.Max(wanted, remaining));
+            }
         }
 
         void OnChecked(object s, ItemCheckedEventArgs e) { var row = (string[])e.Item.Tag; if (r.Columns[0] == "") row[0] = e.Item.Checked ? "x" : ""; }

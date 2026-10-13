@@ -14,7 +14,61 @@ namespace PSTools
         [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
         static extern int SetWindowTheme(IntPtr hwnd, string app, string idList);
 
+        [DllImport("user32.dll")]
+        static extern IntPtr SendMessage(IntPtr hwnd, int msg, IntPtr wp, IntPtr lp);
+
+        [DllImport("user32.dll")]
+        static extern bool ShowScrollBar(IntPtr hwnd, int bar, bool show);
+
+        [DllImport("user32.dll")]
+        static extern IntPtr WindowFromPoint(Point pt);
+
+        class WheelFilter : IMessageFilter
+        {
+            readonly Panel panel;
+            public WheelFilter(Panel p) { panel = p; }
+
+            public bool PreFilterMessage(ref Message m)
+            {
+                if (m.Msg != 0x020A || !panel.IsHandleCreated || !panel.Visible || !panel.VerticalScroll.Visible) return false;
+                long lp = m.LParam.ToInt64();
+                var pt = new Point((short)(lp & 0xFFFF), (short)((lp >> 16) & 0xFFFF));
+                Control c = Control.FromHandle(WindowFromPoint(pt));
+                while (c != null && c != panel) c = c.Parent;
+                if (c == null) return false;
+                int delta = (short)((m.WParam.ToInt64() >> 16) & 0xFFFF);
+                int y = -panel.AutoScrollPosition.Y - delta * 48 / 120;
+                panel.AutoScrollPosition = new Point(0, Math.Max(0, y));
+                return true;
+            }
+        }
+
+        public static void WheelScroll(Panel p)
+        {
+            var f = new WheelFilter(p);
+            Application.AddMessageFilter(f);
+            p.Disposed += (s, e) => Application.RemoveMessageFilter(f);
+        }
+
         public static bool Dark;
+        static float scale = -1f;
+        static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Form, object> scaledForms = new System.Runtime.CompilerServices.ConditionalWeakTable<Form, object>();
+
+        public static float Scale
+        {
+            get
+            {
+                if (scale < 0)
+                {
+                    try { using (var g = Graphics.FromHwnd(IntPtr.Zero)) scale = g.DpiX / 96f; }
+                    catch { scale = 1f; }
+                    if (scale < 1.01f) scale = 1f;
+                }
+                return scale;
+            }
+        }
+
+        public static int S(int v) { return (int)Math.Round(v * Scale); }
         public static Font Font = new Font("Segoe UI", 9f);
         public static Font Bold = new Font("Segoe UI Semibold", 9f);
         public static Font Head = new Font("Segoe UI Semibold", 11f);
@@ -71,6 +125,46 @@ namespace PSTools
             b.ForeColor = OnAccent;
             b.Font = Bold;
             b.UseVisualStyleBackColor = false;
+            Color target = Dark ? Color.White : Color.Black;
+            b.FlatAppearance.MouseOverBackColor = Blend(Accent, target, 0.12f);
+            b.FlatAppearance.MouseDownBackColor = Blend(Accent, target, 0.24f);
+        }
+
+        static int Rgb(Color c) { return c.R | (c.G << 8) | (c.B << 16); }
+
+        public static Color Blend(Color a, Color b, float t)
+        {
+            return Color.FromArgb((int)(a.R + (b.R - a.R) * t), (int)(a.G + (b.G - a.G) * t), (int)(a.B + (b.B - a.B) * t));
+        }
+
+        public static int TextHeight(Label l, int min)
+        {
+            int w = l.ClientSize.Width;
+            if (w < 40 && l.Parent != null) w = l.Parent.ClientSize.Width;
+            if (w < 40) return min;
+            Size sz = TextRenderer.MeasureText(l.Text ?? "", l.Font, new Size(w, 100000), TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix);
+            return Math.Max(min, sz.Height + 8);
+        }
+
+        public static void FitScroll(Panel p)
+        {
+            int h = 0;
+            foreach (Control c in p.Controls) if (c.Dock == DockStyle.Top) h += c.Height;
+            if (p.AutoScrollMinSize.Height != h) p.AutoScrollMinSize = new Size(0, h);
+        }
+
+        public static void HideHScroll(Control c)
+        {
+            try { if (c.IsHandleCreated) ShowScrollBar(c.Handle, 0, false); } catch { }
+        }
+
+        public static void Round(Form f)
+        {
+            f.HandleCreated += (s, e) =>
+            {
+                int pref = 2;
+                try { DwmSetWindowAttribute(f.Handle, 33, ref pref, 4); } catch { }
+            };
         }
 
         public static void Apply(Form f)
@@ -82,8 +176,30 @@ namespace PSTools
                 int on = Dark ? 1 : 0;
                 try { DwmSetWindowAttribute(f.Handle, 20, ref on, 4); } catch { }
                 try { DwmSetWindowAttribute(f.Handle, 19, ref on, 4); } catch { }
+                if (!Tweaks.IsWindows11) return;
+                int cap = Rgb(Panel), txt = Rgb(Text), brd = Rgb(Border);
+                try { DwmSetWindowAttribute(f.Handle, 35, ref cap, 4); } catch { }
+                try { DwmSetWindowAttribute(f.Handle, 36, ref txt, 4); } catch { }
+                try { DwmSetWindowAttribute(f.Handle, 34, ref brd, 4); } catch { }
             };
             Walk(f);
+            object seen;
+            if (Scale > 1f && !scaledForms.TryGetValue(f, out seen))
+            {
+                scaledForms.Add(f, new object());
+                f.Scale(new SizeF(Scale, Scale));
+                ScaleColumns(f);
+            }
+        }
+
+        static void ScaleColumns(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                var lv = c as ListView;
+                if (lv != null) foreach (ColumnHeader h in lv.Columns) h.Width = S(h.Width);
+                if (c.HasChildren) ScaleColumns(c);
+            }
         }
 
         public static void Walk(Control parent)
@@ -105,9 +221,9 @@ namespace PSTools
                 return;
             }
             var lv = c as ListView;
-            if (lv != null) { lv.BackColor = Field; lv.ForeColor = Text; Native(lv); return; }
+            if (lv != null) { lv.BackColor = Field; lv.ForeColor = Text; Native(lv); Smooth(lv, 0x1036, 0x10000); return; }
             var tv = c as TreeView;
-            if (tv != null) { tv.BackColor = Field; tv.ForeColor = Text; tv.BorderStyle = BorderStyle.None; Native(tv); return; }
+            if (tv != null) { tv.BackColor = Field; tv.ForeColor = Text; tv.BorderStyle = BorderStyle.None; Native(tv); Smooth(tv, 0x112C, 0x24); return; }
             var cb = c as ComboBox;
             if (cb != null) { cb.BackColor = Field; cb.ForeColor = Text; cb.FlatStyle = FlatStyle.Flat; return; }
             var nu = c as NumericUpDown;
@@ -122,10 +238,24 @@ namespace PSTools
                 b.UseVisualStyleBackColor = false;
                 b.BackColor = Dark ? Color.FromArgb(58, 58, 58) : Color.White;
                 b.ForeColor = b.ForeColor == Danger ? Danger : Text;
+                Color target = Dark ? Color.White : Color.Black;
+                b.FlatAppearance.MouseOverBackColor = Blend(b.BackColor, target, 0.07f);
+                b.FlatAppearance.MouseDownBackColor = Blend(b.BackColor, target, 0.14f);
                 return;
             }
+            var pn = c as Panel;
+            if (pn != null && pn.AutoScroll) { Native(pn); return; }
             var sc = c as SplitContainer;
             if (sc != null) { sc.BackColor = Border; sc.Panel1.BackColor = Back; sc.Panel2.BackColor = Back; }
+        }
+
+        static void Smooth(Control c, int msg, int flags)
+        {
+            EventHandler apply = (s, e) =>
+            {
+                try { SendMessage(c.Handle, msg, (IntPtr)flags, (IntPtr)flags); } catch { }
+            };
+            if (c.IsHandleCreated) apply(c, EventArgs.Empty); else c.HandleCreated += apply;
         }
 
         static void Native(Control c)
@@ -141,8 +271,10 @@ namespace PSTools
     class Toast : Form
     {
         readonly Timer timer = new Timer { Interval = 1700 };
+        readonly Timer fade = new Timer { Interval = 15 };
         readonly Label text;
         LinkLabel undo;
+        bool fadingOut;
 
         Toast(string message, bool undoable)
         {
@@ -165,8 +297,23 @@ namespace PSTools
             Fit();
             Paint += (s, e) => e.Graphics.DrawRectangle(new Pen(UI.Border), 0, 0, Width - 1, Height - 1);
             Shown += (s, e) => Place();
-            timer.Tick += (s, e) => { timer.Stop(); Close(); };
-            Load += (s, e) => timer.Start();
+            UI.Round(this);
+            Opacity = 0;
+            fade.Tick += (s, e) =>
+            {
+                if (fadingOut)
+                {
+                    Opacity = Math.Max(0, Opacity - 0.1);
+                    if (Opacity <= 0.05) { fade.Stop(); Close(); }
+                }
+                else
+                {
+                    Opacity = Math.Min(1, Opacity + 0.12);
+                    if (Opacity >= 1) fade.Stop();
+                }
+            };
+            timer.Tick += (s, e) => { timer.Stop(); fadingOut = true; fade.Start(); };
+            Load += (s, e) => { timer.Start(); fade.Start(); };
         }
 
         void Fit()
@@ -191,6 +338,9 @@ namespace PSTools
         void DoUndo()
         {
             timer.Stop();
+            fade.Stop();
+            fadingOut = false;
+            Opacity = 1;
             string result = Journal.Undo();
             Controls.Remove(undo);
             undo = null;

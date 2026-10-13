@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace PSTools
@@ -47,12 +48,21 @@ namespace PSTools
             install.Click += (s, e) => DoInstall();
             var later = new Button { Text = "Not now", Width = 110, Height = 34, Location = new Point(168, y + 10) };
             later.Click += (s, e) => Close();
-            Controls.Add(install); Controls.Add(later);
+            var preview = new Button { Text = "Preview menu", Width = 130, Height = 34, Location = new Point(288, y + 10) };
+            preview.Click += (s, e) => ShowPreview();
+            Controls.Add(install); Controls.Add(later); Controls.Add(preview);
             AcceptButton = install; CancelButton = later;
             ClientSize = new Size(570, y + 64);
             UI.Apply(this);
             classic.ForeColor = UI.Text;
             FormClosed += (s, e) => { if (!installed) { try { Settings.MarkConfigured(); } catch { } } };
+        }
+
+        void ShowPreview()
+        {
+            var ids = Presets.Ids(Chosen());
+            var favs = new HashSet<string>(Actions.All.Where(a => a.DefaultFav && ids.Contains(a.Id)).Select(a => a.Id));
+            using (var f = new PreviewForm(ids, favs)) f.ShowDialog(this);
         }
 
         string Chosen()

@@ -174,7 +174,7 @@ namespace PSTools
 
             var head = new Label { Text = "Update everything", Font = UI.Title, Left = 20, Top = 16, AutoSize = true };
             var sub = new Label { Text = "Runs in a PowerShell window so you see every step and can stop with Ctrl+C. Only tools found on this PC are enabled.", Left = 22, Top = 52, Width = 510, Height = 36, ForeColor = UI.Muted };
-            var box = new FlowLayoutPanel { Left = 22, Top = 96, Width = 520, Height = 220, FlowDirection = FlowDirection.TopDown, WrapContents = false };
+            var box = new FlowLayoutPanel { Left = 22, Top = 96, Width = 520, Height = 220, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true };
             foreach (var c in new CheckBox[] { winget, unknown, silent, scoop, npm, wsl, mods }) { c.Margin = new Padding(0, 4, 0, 4); box.Controls.Add(c); }
             unknown.Margin = new Padding(22, 4, 0, 4); silent.Margin = new Padding(22, 4, 0, 4);
 

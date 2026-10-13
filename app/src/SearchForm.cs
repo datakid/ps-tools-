@@ -51,7 +51,7 @@ namespace PSTools
             AcceptButton = go;
 
             list.Dock = DockStyle.Fill; list.View = View.Details; list.FullRowSelect = true; list.HideSelection = false; list.BorderStyle = BorderStyle.None;
-            list.SmallImageList = new ImageList { ImageSize = new Size(1, 24) };
+            list.SmallImageList = new ImageList { ImageSize = new Size(1, UI.S(24)) };
             list.Columns.Add("Name", 260); list.Columns.Add("Found", 320); list.Columns.Add("Folder", 380);
             list.DoubleClick += (s, e) => OpenSel(false);
             list.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) OpenSel(false); };

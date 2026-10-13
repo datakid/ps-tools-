@@ -127,16 +127,17 @@ namespace PSTools
             search.TextChanged += (s, e) => Fill(); top.Controls.Add(search);
 
             var split = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel1 };
-            Load += (s, e) => { try { split.SplitterDistance = 440; } catch { } };
+            Load += (s, e) => { try { split.SplitterDistance = UI.S(440); } catch { } };
             lv.Dock = DockStyle.Fill; lv.View = View.Details; lv.FullRowSelect = true; lv.HideSelection = false; lv.MultiSelect = false; lv.BorderStyle = BorderStyle.None;
             lv.Columns.Add("Command", 290); lv.Columns.Add("Risk", 80); lv.Columns.Add("", 50);
-            lv.SmallImageList = new ImageList { ImageSize = new Size(1, 26) };
+            lv.SmallImageList = new ImageList { ImageSize = new Size(1, UI.S(26)) };
             lv.SelectedIndexChanged += (s, e) => Show_();
             lv.DoubleClick += (s, e) => Open();
             split.Panel1.Controls.Add(lv);
 
             var right = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16, 12, 16, 10) };
             desc.Dock = DockStyle.Top; desc.Height = 110;
+            right.Resize += (s, e) => desc.Height = UI.TextHeight(desc, 48);
             code.Dock = DockStyle.Fill; code.Multiline = true; code.ScrollBars = ScrollBars.Both; code.WordWrap = false; code.Tag = "code";
             code.Font = UI.Mono; code.BackColor = Color.FromArgb(30, 30, 30); code.ForeColor = Color.FromArgb(225, 225, 225);
             var btns = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, Padding = new Padding(0, 8, 0, 0) };
@@ -188,6 +189,7 @@ namespace PSTools
             if (c.Requires.Length > 0) sb.Append("\nRequires: ").Append(c.Requires);
             if (c.Admin) sb.Append("\nNeeds an elevated (admin) PowerShell.");
             desc.Text = sb.ToString();
+            desc.Height = UI.TextHeight(desc, 48);
             code.Text = c.Code.Replace("\r\n", "\n").Replace("\n", "\r\n");
             pin.Text = Settings.Pins.Contains(c.Id) ? "Unpin from menu" : "Pin to menu";
         }

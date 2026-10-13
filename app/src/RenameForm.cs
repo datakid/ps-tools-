@@ -48,7 +48,7 @@ namespace PSTools
 
             lv.Dock = DockStyle.Fill; lv.View = View.Details; lv.FullRowSelect = true; lv.BorderStyle = BorderStyle.None;
             lv.Columns.Add("Current name", 400); lv.Columns.Add("New name", 440);
-            lv.SmallImageList = new ImageList { ImageSize = new Size(1, 24) };
+            lv.SmallImageList = new ImageList { ImageSize = new Size(1, UI.S(24)) };
 
             var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(8, 7, 8, 4), BackColor = UI.Panel };
             UI.Primary(apply);

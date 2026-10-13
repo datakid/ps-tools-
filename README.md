@@ -23,8 +23,8 @@ On Windows 11 the dialog also offers the classic right-click menu, because Windo
 
 ## Use
 - **Right-click:** the flat entries at the top are the daily ones (paste image or text as a file, download link, search, undo, zip). Everything else is grouped in submenus. Image entries appear for pictures, Extract for zip files. Rare or risky entries (force delete, take ownership, restart Explorer) show only with Shift+right-click.
-- **GUI:** pick a folder (type, Browse, or drop one), search with Ctrl+K, pick an action, Run.
-- **Menu page:** choose a preset or tick single actions, pin favorites to the top, press **Apply to Explorer menu**.
+- **GUI:** pick a folder (type, Browse, or drop one), pick an action, Run. **Ctrl+K** opens the command palette (type to find any action, recently used ones first), **Ctrl+F** searches the list, Ctrl+1 and Ctrl+2 (or Ctrl+Tab) switch pages. The window remembers its size and position, and scales with Windows display scaling.
+- **Menu page:** choose a preset or tick single actions (filter the list, Expand and Collapse all), pin favorites to the top, check the result with **Preview the right-click menu**, then press **Apply to Explorer menu**. The first-run dialog has the same preview.
 - **Undo:** actions that change files show a toast with an **Undo** link for 5 seconds. **Undo last PS Tools action** is also in the folder background menu, and **Undo last** is in the window.
 - **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--repair`, `--uninstall`. Add `--quiet` to print to the console instead of showing windows; actions that need a confirmation are not run in quiet mode.
 
@@ -67,6 +67,8 @@ Writes only:
 
 If you move or rename the exe folder, the menu entries would point at the old path. Starting the exe from its new place re-creates them automatically; `--repair` does the same on demand.
 
+`app\tools\layout-check.ps1` opens the main window (both pages, at the minimum and default sizes), the menu preview and the first-run dialog off the live exe and fails if any control is clipped or overflowing. It only reads: it installs nothing and writes no settings.
+
 `app\tools\footprint-check.ps1` proves the contract on your machine: it snapshots the registry classes, the data folder and the Explorer values, installs, runs an action, uninstalls, and fails if anything differs. Run it on an account where PS Tools is not installed. `-IncludeTweaks` also toggles the hidden-files and extensions settings to check they are restored.
 
 ## Project structure
@@ -83,7 +85,9 @@ app/src/DevActions.cs    Dev, Disk
 app/src/SystemActions.cs System module
 app/src/Classic.cs       Organize/Clean/...
 app/src/MainForm.cs, FirstRunForm.cs, SearchForm.cs, ResultsForm.cs, RenameForm.cs, LibraryForm.cs, StructureForm.cs, ToolForms.cs, UI.cs
+app/src/PaletteForm.cs  Ctrl+K command palette       app/src/PreviewForm.cs  right-click menu preview
 app/tools/footprint-check.ps1
+app/tools/layout-check.ps1
 ```
 
 ## Extending
