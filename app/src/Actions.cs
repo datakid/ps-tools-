@@ -22,6 +22,7 @@ namespace PSTools
             l.AddRange(DevModule());
             l.AddRange(DiskModule());
             l.AddRange(SystemModule());
+            l.AddRange(MapActions());
             l.AddRange(RecipeActions(l));
             l.AddRange(PinnedModule());
             return l.OrderBy(a => Modules.Order(a.Group)).ToList();

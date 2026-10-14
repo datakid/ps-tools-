@@ -50,7 +50,8 @@ try {
     if (-not (Test-Path $menuKey)) { throw 'Install did not create the Explorer menu key.' }
 
     $r = Invoke-Tool @('new-dated-folder', ('"{0}"' -f $work), '--quiet')
-    if (-not (Test-Path (Join-Path $data 'undo.txt'))) { throw 'An action that changes files did not write its undo journal.' }
+    $journal = Join-Path $data 'undo'
+    if (-not (Test-Path $journal) -or -not (Get-ChildItem -LiteralPath $journal -Filter '*.txt' -ErrorAction SilentlyContinue)) { throw 'An action that changes files did not write its undo journal.' }
 
     if ($IncludeTweaks) {
         $null = Invoke-Tool @('toggle-hidden', ('"{0}"' -f $work), '--quiet')

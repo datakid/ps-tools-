@@ -66,7 +66,15 @@ Check $recipes 'Recipe editor (minimum)' 820 520
 $picker = [Activator]::CreateInstance($asm.GetType('PSTools.StepPickerForm'))
 Check $picker 'Recipe step picker' 0 0
 
-foreach ($f in @($picker, $recipes, $first, $preview, $main)) { $f.Dispose() }
+$history = [Activator]::CreateInstance($asm.GetType('PSTools.UndoHistoryForm'))
+Check $history 'Undo history' 0 0
+Check $history 'Undo history (minimum)' 700 440
+
+$space = [Activator]::CreateInstance($asm.GetType('PSTools.SpaceForm'), @($env:TEMP))
+Check $space 'Space map' 0 0
+Check $space 'Space map (minimum)' 640 420
+
+foreach ($f in @($space, $history, $picker, $recipes, $first, $preview, $main)) { $f.Dispose() }
 
 if ($issues.Count -gt 0) {
     Write-Host ''

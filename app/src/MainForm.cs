@@ -59,6 +59,9 @@ namespace PSTools
             var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 44, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(10, 7, 10, 4), BackColor = UI.Panel };
             undo.Width = 110; undo.Height = 30; undo.Text = "Undo last"; undo.Click += (s, e) => DoUndo();
             bottom.Controls.Add(undo);
+            var history = new Button { Text = "History...", Width = 100, Height = 30 };
+            history.Click += (s, e) => new UndoHistoryForm().Show(this);
+            bottom.Controls.Add(history);
             var strip = new StatusStrip { SizingGrip = false, BackColor = UI.Panel, ForeColor = UI.Muted };
             status.ForeColor = UI.Muted; strip.Items.Add(status);
 
@@ -322,6 +325,12 @@ namespace PSTools
             if (last == null) { SetStatus("Nothing to undo."); return; }
             if (!Program.Ask("Undo:\n" + last + " ?")) return;
             SetStatus(Journal.Undo());
+            RefreshState();
+        }
+
+        public void AfterUndo(string message)
+        {
+            SetStatus(message);
             RefreshState();
         }
 

@@ -25,7 +25,7 @@ On Windows 11 the dialog also offers the classic right-click menu, because Windo
 - **Right-click:** the flat entries at the top are the daily ones (paste image or text as a file, download link, search, undo, zip). Everything else is grouped in submenus. Image entries appear for pictures, Extract for zip files. Rare or risky entries (force delete, take ownership, restart Explorer) show only with Shift+right-click.
 - **GUI:** pick a folder (type, Browse, or drop one), pick an action, Run. **Ctrl+K** opens the command palette (type to find any action, recently used ones first), **Ctrl+F** searches the list, Ctrl+1 and Ctrl+2 (or Ctrl+Tab) switch pages. The window remembers its size and position, and scales with Windows display scaling.
 - **Menu page:** choose a preset or tick single actions (filter the list, Expand and Collapse all), pin favorites to the top, check the result with **Preview the right-click menu**, then press **Apply to Explorer menu**. The first-run dialog has the same preview.
-- **Undo:** actions that change files show a toast with an **Undo** link for 5 seconds. **Undo last PS Tools action** is also in the folder background menu, and **Undo last** is in the window.
+- **Undo:** actions that change files show a toast with an **Undo** link for 5 seconds. **Undo last PS Tools action** is also in the folder background menu, and **Undo last** and **History...** are in the window.
 - **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--repair`, `--uninstall`. Add `--quiet` to print to the console instead of showing windows; actions that need a confirmation are not run in quiet mode.
 
 ## Modules
@@ -35,7 +35,7 @@ On Windows 11 the dialog also offers the classic right-click menu, because Windo
 | Create | paste clipboard image as PNG, paste text as file, download link from clipboard, folder named from clipboard, dated folder, move selection into new folder, unwrap folder, dated snapshot copy, undo last |
 | Archive | zip that leaves out `.git`, `node_modules`, `.vs`, `__pycache__`, `bin`, `obj` and says so; extract a zip into its own folder (single top folder is not nested twice, unsafe entries are skipped) |
 | Image | convert to PNG or JPEG, shrink to 1600 or 800 px, strip metadata (EXIF, location). Copies are written next to the originals; nothing is overwritten |
-| Organize / Clean up / Inspect / Export | flatten, sort, batch rename, empty folders, duplicates, unblock, search here (names and text inside files), sizes, types, largest, recent, long paths, inventory |
+| Organize / Clean up / Inspect / Export | flatten, sort, batch rename, empty folders, duplicates, unblock, search here (names and text inside files), sizes, **folder space map**, types, largest, recent, long paths, inventory |
 | Fix | force delete stubborn items, set dates to now, hide/read-only, unblock files, LF/CRLF, add/remove BOM, take ownership (admin) |
 | Links | mark, then junction / symlink / hard link here, compare with marked folder |
 | Dev | serve folder on localhost, find removable build folders, git status / pull across repos, open PowerShell / cmd / admin / WSL / VS Code / Notepad |
@@ -45,6 +45,12 @@ On Windows 11 the dialog also offers the classic right-click menu, because Windo
 | PowerShell / Library | browse `commands.json`; run or pin any snippet |
 
 Multi-select works: several Explorer processes are merged into one run.
+
+## Undo history
+**History...** (in the window, in the Ctrl+K palette, and in the folder background menu as **Undo history...**) lists the last 10 operations PS Tools made, newest first. Select one to see exactly what undoing it will do. Undo goes in order, so **Undo this and the N above it** also undoes everything newer. A recipe counts as one operation. The history is capped at 10 operations and 1 GB of backups; when a new operation pushes it over, the oldest entries and their backups are deleted. **Clear history** deletes all of it. The old single `undo.txt` from earlier versions is migrated into the history automatically.
+
+## Folder space map
+**Folder space map...** (Inspect module, also in the right-click menu) scans a folder and draws it as a map of colored tiles, each sized by how much space it takes. Click a folder to open it, Backspace goes up. Right-click a tile to open it, show it in Explorer, copy its path or move it to the Recycle Bin (after asking; you can restore it from the Recycle Bin). Colors show the kind of file: images, video, audio, archives, documents, code, programs. Each folder keeps its 80 largest files as tiles and groups the rest. Links and junctions are skipped. Cancel during a scan shows what was found so far. Nothing is changed unless you choose the Recycle Bin.
 
 ## Recipes
 A recipe is a named list of actions that run one after another on the same selection. Open **Manage recipes...** (in the action list, the Ctrl+K palette, or the Recipes module) to create, edit, copy, import and export them.
@@ -62,7 +68,7 @@ A recipe is a named list of actions that run one after another on the same selec
 - **Copy** and **Open PowerShell here** put the filled-in command on the clipboard without running it.
 
 ## Safety tiers
-Read-only actions run directly; actions that change files ask first and are journaled where possible (**Undo** covers moves, renames, new folders, pasted and downloaded files, zips, extractions, converted images, links, timestamps, attributes, text rewrites); admin actions show the exact script and need UAC. Same-name conflicts become `name_1.ext`, deletions use the Recycle Bin (except force delete and build-folder delete, which say so), junctions and symlinks are not followed. Undo keeps the most recent action only.
+Read-only actions run directly; actions that change files ask first and are journaled where possible (**Undo** covers moves, renames, new folders, pasted and downloaded files, zips, extractions, converted images, links, timestamps, attributes, text rewrites); admin actions show the exact script and need UAC. Same-name conflicts become `name_1.ext`, deletions use the Recycle Bin (except force delete and build-folder delete, which say so), junctions and symlinks are not followed. Undo keeps a history of the last 10 operations (see below).
 
 ## Footprint / clean uninstall
 Writes only:
@@ -70,7 +76,7 @@ Writes only:
 - `HKCU\Software\Classes\Directory\Background\shell\PSTools`
 - `HKCU\Software\Classes\Drive\shell\PSTools`
 - `HKCU\Software\Classes\*\shell\PSTools`
-- `%LOCALAPPDATA%\PSTools\` (settings, undo journal, marks, temporary files)
+- `%LOCALAPPDATA%\PSTools\` (settings, undo history in `undo\` and its backups in `undo-data\`, marks, temporary files)
 - only if you use them: the Explorer hidden-files / extensions values and the classic-menu key, tracked in `changes.txt`
 
 `PSTools.exe --status` lists what exists, the active preset, and whether the menu still points at this exe. **Remove Explorer menu** removes only the menu. **Full uninstall** (or `--uninstall`) also restores the Windows settings it changed and deletes the data folder; then delete the exe folder.
@@ -89,7 +95,8 @@ app/src/Model.cs         actions, modules,      app/src/Settings.cs     enabled 
 app/src/Actions.cs       registry of actions    app/src/Structure.cs    folder structure builder
 app/src/CopyActions.cs   Copy module            app/src/Tweaks.cs       reversible Windows toggles
 app/src/CreateActions.cs Create, Fix, Links     app/src/Launch.cs       PowerShell / process helpers
-app/src/QuickActions.cs  undo, download, zip,   app/src/Fs.cs           file helpers and undo journal
+app/src/QuickActions.cs  undo, download, zip,   app/src/Fs.cs           file helpers
+                         extract, images        app/src/Journal.cs      undo history
                          extract, images        app/src/Runner.cs       run, progress, results
 app/src/DevActions.cs    Dev, Disk
 app/src/SystemActions.cs System module
@@ -97,6 +104,8 @@ app/src/Classic.cs       Organize/Clean/...
 app/src/MainForm.cs, FirstRunForm.cs, SearchForm.cs, ResultsForm.cs, RenameForm.cs, LibraryForm.cs, StructureForm.cs, ToolForms.cs, UI.cs
 app/src/PaletteForm.cs  Ctrl+K command palette       app/src/PreviewForm.cs  right-click menu preview
 app/src/Recipes.cs      recipe data and runner       app/src/RecipesForm.cs  recipe editor and step picker
+app/src/UndoHistoryForm.cs history window         app/src/Space.cs        space map scanner and treemap
+app/src/SpaceForm.cs    space map window             app/src/MapActions.cs   history and space map actions
 app/tools/footprint-check.ps1
 app/tools/layout-check.ps1
 ```

@@ -12,6 +12,7 @@ Uses `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe` (C# 5). The first b
 ## Use
 - **GUI:** run `PSTools.exe`. Pick a folder (type, Browse, or drop one), pick an action, Run. Ctrl+K opens the command palette, Ctrl+F searches the list.
 - **Recipes:** chain actions into your own one-click workflows with a single Undo. Manage recipes... opens the editor. See the main README.
+- **Undo history and space map:** History... lists the last 10 operations with what undoing each does; Folder space map draws a folder as a map of colored tiles. See the main README.
 - **Menu page:** tick modules or single actions, pin favorites to the top level, press **Apply to Explorer menu**.
 - **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--uninstall`.
 

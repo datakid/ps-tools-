@@ -98,7 +98,7 @@ namespace PSTools
             "copy-path-quoted", "copy-parent", "verify-hash", "copy-contents", "structure",
             "new-dated-folder", "group-selected", "zip-smart", "unzip-here",
             "img-png", "img-jpg", "img-resize-1600", "img-strip",
-            "folder-sizes", "duplicates", "rename"
+            "folder-sizes", "space-map", "duplicates", "rename", "undo-history"
         };
 
         public static string Describe(string name)
