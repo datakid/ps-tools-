@@ -44,7 +44,7 @@ namespace PSTools
             query.Dock = DockStyle.Fill; query.Font = new Font("Segoe UI", 10f);
             ResultsForm.SetCue(query, "Words to look for (all must match)");
             inside.Margin = new Padding(12, 6, 12, 0);
-            var go = new Button { Text = "Search", Width = 100, Height = 30 };
+            var go = new FButton { Text = "Search", Width = 100, Height = 30 };
             UI.Primary(go);
             go.Click += (s, e) => Start();
             top.Controls.Add(query, 0, 0); top.Controls.Add(inside, 1, 0); top.Controls.Add(go, 2, 0);
@@ -59,7 +59,7 @@ namespace PSTools
             var bar = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, Padding = new Padding(8, 7, 8, 4), BackColor = UI.Panel };
             Action<string, int, System.Action> add = (text, w, click) =>
             {
-                var b = new Button { Text = text, Width = w, Height = 30, Margin = new Padding(0, 0, 6, 0) };
+                var b = new FButton { Text = text, Width = w, Height = 30, Margin = new Padding(0, 0, 6, 0) };
                 b.Click += (s, e) => click();
                 bar.Controls.Add(b);
             };

@@ -29,12 +29,12 @@ namespace PSTools
 
             var note = new Label { Dock = DockStyle.Top, Height = 40, ForeColor = UI.Muted, Text = "Serving only on this computer (localhost). Closing this window stops the server." };
             var bar = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 44, Padding = new Padding(0, 8, 0, 0) };
-            var open = new Button { Text = "Open in browser", Width = 130, Height = 30 };
+            var open = new FButton { Text = "Open in browser", Width = 130, Height = 30 };
             UI.Primary(open);
             open.Click += (s, e) => { try { Process.Start("http://localhost:" + port + "/"); } catch { } };
-            var copy = new Button { Text = "Copy URL", Width = 100, Height = 30 };
+            var copy = new FButton { Text = "Copy URL", Width = 100, Height = 30 };
             copy.Click += (s, e) => Clip.Set("http://localhost:" + port + "/");
-            var stop = new Button { Text = "Stop and close", Width = 120, Height = 30 };
+            var stop = new FButton { Text = "Stop and close", Width = 120, Height = 30 };
             stop.Click += (s, e) => Close();
             bar.Controls.Add(open); bar.Controls.Add(copy); bar.Controls.Add(stop);
 
@@ -174,6 +174,7 @@ namespace PSTools
 
             var head = new Label { Text = "Update everything", Font = UI.Title, Left = 20, Top = 16, AutoSize = true };
             var sub = new Label { Text = "Runs in a PowerShell window so you see every step and can stop with Ctrl+C. Only tools found on this PC are enabled.", Left = 22, Top = 52, Width = 510, Height = 36, ForeColor = UI.Muted };
+            sub.Height = Math.Max(36, Math.Min(44, UI.MeasureHeight(sub.Text, UI.Font, sub.Width) + 4));
             var box = new FlowLayoutPanel { Left = 22, Top = 96, Width = 520, Height = 220, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true };
             foreach (var c in new CheckBox[] { winget, unknown, silent, scoop, npm, wsl, mods }) { c.Margin = new Padding(0, 4, 0, 4); box.Controls.Add(c); }
             unknown.Margin = new Padding(22, 4, 0, 4); silent.Margin = new Padding(22, 4, 0, 4);
@@ -184,12 +185,12 @@ namespace PSTools
             npm.Enabled = Fs.Which("npm") != null;
             wsl.Enabled = File.Exists(Path.Combine(Environment.SystemDirectory, "wsl.exe"));
 
-            var preview = new Button { Text = "Preview what is outdated", Left = 22, Top = 340, Width = 190, Height = 34 };
+            var preview = new FButton { Text = "Preview what is outdated", Left = 22, Top = 340, Width = 190, Height = 34 };
             preview.Click += (s, e) => Go(false);
-            var run = new Button { Text = "Update now", Left = 224, Top = 340, Width = 140, Height = 34 };
+            var run = new FButton { Text = "Update now", Left = 224, Top = 340, Width = 140, Height = 34 };
             UI.Primary(run);
             run.Click += (s, e) => Go(true);
-            var close = new Button { Text = "Close", Left = 452, Top = 340, Width = 90, Height = 34 };
+            var close = new FButton { Text = "Close", Left = 452, Top = 340, Width = 90, Height = 34 };
             close.Click += (s, e) => Close();
             Controls.AddRange(new Control[] { head, sub, box, preview, run, close });
             UI.Apply(this);

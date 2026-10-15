@@ -22,33 +22,38 @@ namespace PSTools
             int y = 20;
             Controls.Add(new Label { Text = "Add PS Tools to your right-click menu", Font = UI.Title, AutoSize = true, Location = new Point(24, y) });
             y += 42;
-            Controls.Add(new Label { Text = "Pick how much goes in the menu. You can change it any time on the Menu page. Nothing runs in the background, and Full uninstall puts everything back.", ForeColor = UI.Muted, Location = new Point(26, y), Size = new Size(520, 40) });
-            y += 54;
+            string intro = "Pick how much goes in the menu. You can change it any time on the Menu page. Nothing runs in the background, and Full uninstall puts everything back.";
+            int introH = UI.MeasureHeight(intro, UI.Font, 520) + 6;
+            Controls.Add(new Label { Text = intro, ForeColor = UI.Muted, Location = new Point(26, y), Size = new Size(520, introH) });
+            y += introH + 16;
 
             foreach (var name in Presets.Names)
             {
                 var rb = new RadioButton { Text = name, Font = UI.Bold, AutoSize = true, Location = new Point(28, y), Checked = name == "Everyday", Tag = name };
                 choices.Add(rb);
                 Controls.Add(rb);
-                Controls.Add(new Label { Text = Presets.Describe(name), ForeColor = UI.Muted, Location = new Point(50, y + 22), Size = new Size(496, 34) });
-                y += 62;
+                string desc = Presets.Describe(name);
+                int dh = UI.MeasureHeight(desc, UI.Font, 496) + 6;
+                Controls.Add(new Label { Text = desc, ForeColor = UI.Muted, Location = new Point(50, y + 26), Size = new Size(496, dh) });
+                y += 26 + dh + 14;
             }
 
             if (win11)
             {
                 classic.Text = "Use the classic right-click menu. Windows 11 hides PS Tools behind \"Show more options\" otherwise.";
+                int ch = UI.MeasureHeight(classic.Text, UI.Font, 490) + 8;
                 classic.Location = new Point(28, y + 4);
-                classic.Size = new Size(520, 40);
+                classic.Size = new Size(520, Math.Max(28, ch));
                 Controls.Add(classic);
-                y += 52;
+                y += classic.Height + 12;
             }
 
-            var install = new Button { Text = "Install", Width = 130, Height = 34, Location = new Point(28, y + 10) };
+            var install = new FButton { Text = "Install", Width = 130, Height = 34, Location = new Point(28, y + 10) };
             UI.Primary(install);
             install.Click += (s, e) => DoInstall();
-            var later = new Button { Text = "Not now", Width = 110, Height = 34, Location = new Point(168, y + 10) };
+            var later = new FButton { Text = "Not now", Width = 110, Height = 34, Location = new Point(168, y + 10) };
             later.Click += (s, e) => Close();
-            var preview = new Button { Text = "Preview menu", Width = 130, Height = 34, Location = new Point(288, y + 10) };
+            var preview = new FButton { Text = "Preview menu", Width = 130, Height = 34, Location = new Point(288, y + 10) };
             preview.Click += (s, e) => ShowPreview();
             Controls.Add(install); Controls.Add(later); Controls.Add(preview);
             AcceptButton = install; CancelButton = later;

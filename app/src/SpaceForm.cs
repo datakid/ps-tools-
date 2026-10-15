@@ -285,8 +285,8 @@ namespace PSTools
         readonly Label pathLabel = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true, Font = UI.Bold, Padding = new Padding(10, 0, 0, 0) };
         readonly Label sizeLabel = new Label { Dock = DockStyle.Right, Width = 220, TextAlign = ContentAlignment.MiddleRight, ForeColor = UI.Muted };
         readonly Label hover = new Label { Dock = DockStyle.Bottom, Height = 30, ForeColor = UI.Muted, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true, Padding = new Padding(12, 0, 12, 0) };
-        readonly Button up = new Button { Text = "Up", Dock = DockStyle.Left, Width = 70 };
-        readonly Button rescan = new Button { Text = "Rescan", Dock = DockStyle.Right, Width = 100 };
+        readonly Button up = new FButton { Text = "Up", Dock = DockStyle.Left, Width = 70 };
+        readonly Button rescan = new FButton { Text = "Rescan", Dock = DockStyle.Right, Width = 100 };
         readonly System.Windows.Forms.Timer ticker = new System.Windows.Forms.Timer { Interval = 200 };
         SpaceScan scan;
         SpaceNode root, current;

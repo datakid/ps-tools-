@@ -77,7 +77,7 @@ namespace PSTools
 
         static Button AddBtn(Control parent, string text, System.Action onClick)
         {
-            var b = new Button { Text = text, AutoSize = true, Height = 30, Margin = new Padding(0, 0, 6, 0), Padding = new Padding(6, 0, 6, 0) };
+            var b = new FButton { Text = text, AutoSize = true, Height = 30, Margin = new Padding(0, 0, 6, 0), Padding = new Padding(6, 0, 6, 0) };
             b.Click += (s, e) => onClick();
             parent.Controls.Add(b); return b;
         }
@@ -110,7 +110,7 @@ namespace PSTools
             bool none = lv.Items.Count == 0;
             empty.Text = f.Length > 0 ? "No rows match \"" + f + "\"." : "Nothing to show.";
             empty.Visible = none;
-            lv.Visible = !none;
+            Fx.Host(lv).Visible = !none;
             if (lv.IsHandleCreated) SizeColumns();
         }
 

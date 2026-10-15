@@ -12,9 +12,9 @@ namespace PSTools
         readonly ListView details = new ListView();
         readonly Label note = new Label { Dock = DockStyle.Top, Height = 44, ForeColor = UI.Muted, Padding = new Padding(14, 8, 14, 0) };
         readonly Label usage = new Label { AutoSize = false, Dock = DockStyle.Left, Width = 330, ForeColor = UI.Muted, TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(14, 0, 0, 0) };
-        readonly Button undo = new Button { Width = 250, Height = 32, Margin = new Padding(8, 0, 0, 0) };
-        readonly Button clear = new Button { Text = "Clear history", Width = 120, Height = 32 };
-        readonly Button close = new Button { Text = "Close", Width = 90, Height = 32 };
+        readonly Button undo = new FButton { Width = 250, Height = 32, };
+        readonly Button clear = new FButton { Text = "Clear history", Width = 120, Height = 32 };
+        readonly Button close = new FButton { Text = "Close", Width = 90, Height = 32 };
         List<JournalEntry> history = new List<JournalEntry>();
 
         JournalEntry Selected { get { return entries.SelectedItems.Count == 0 ? null : (JournalEntry)entries.SelectedItems[0].Tag; } }
@@ -53,10 +53,12 @@ namespace PSTools
             bar.Controls.Add(buttons); bar.Controls.Add(usage);
 
             Controls.Add(split); Controls.Add(note); Controls.Add(bar);
+            Resize += (s, e) => note.Height = UI.TextHeight(note, 44);
             CancelButton = close;
             Activated += (s, e) => Reload();
             Shown += (s, e) => { split.SplitterDistance = Math.Max(120, split.Height * 45 / 100); };
             UI.Apply(this);
+            note.Height = UI.TextHeight(note, 44);
             Reload();
         }
 

@@ -23,7 +23,7 @@ On Windows 11 the dialog also offers the classic right-click menu, because Windo
 
 ## Use
 - **Right-click:** the flat entries at the top are the daily ones (paste image or text as a file, download link, search, undo, zip). Everything else is grouped in submenus. Image entries appear for pictures, Extract for zip files. Rare or risky entries (force delete, take ownership, restart Explorer) show only with Shift+right-click.
-- **GUI:** pick a folder (type, Browse, or drop one), pick an action, Run. **Ctrl+K** opens the command palette (type to find any action, recently used ones first), **Ctrl+F** searches the list, Ctrl+1 and Ctrl+2 (or Ctrl+Tab) switch pages. The window remembers its size and position, and scales with Windows display scaling.
+- **GUI:** the left rail switches between **Actions** and **Menu and settings** and opens **Recipes**, **Undo history** and **Space map**. Pick a folder (type, Browse, or drop one), pick an action, Run. **Ctrl+K** opens the command palette (type to find any action, recently used ones first), **Ctrl+F** searches the list, Ctrl+1 and Ctrl+2 (or Ctrl+Tab) switch pages. The window remembers its size and position, and scales with Windows display scaling.
 - **Menu page:** choose a preset or tick single actions (filter the list, Expand and Collapse all), pin favorites to the top, check the result with **Preview the right-click menu**, then press **Apply to Explorer menu**. The first-run dialog has the same preview.
 - **Undo:** actions that change files show a toast with an **Undo** link for 5 seconds. **Undo last PS Tools action** is also in the folder background menu, and **Undo last** and **History...** are in the window.
 - **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--repair`, `--uninstall`. Add `--quiet` to print to the console instead of showing windows; actions that need a confirmation are not run in quiet mode.
@@ -45,6 +45,9 @@ On Windows 11 the dialog also offers the classic right-click menu, because Windo
 | PowerShell / Library | browse `commands.json`; run or pin any snippet |
 
 Multi-select works: several Explorer processes are merged into one run.
+
+## Look and feel
+PS Tools follows Windows 11 design: light or dark from your system theme (override it on the Menu page), your Windows accent color, Segoe UI Variable and the Fluent icon font when installed (Segoe UI and Segoe MDL2 Assets on Windows 10), rounded cards and controls, a navigation rail on the left, and a title bar that matches the window. Everything is drawn in code: no images, fonts or runtime files ship with it, it only reads your theme and accent color from the registry, and it writes nothing there. Keyboard: Tab into the rail, Up and Down to move, Enter to open; Ctrl+1 and Ctrl+2 switch pages; every button shows a focus ring.
 
 ## Undo history
 **History...** (in the window, in the Ctrl+K palette, and in the folder background menu as **Undo history...**) lists the last 10 operations PS Tools made, newest first. Select one to see exactly what undoing it will do. Undo goes in order, so **Undo this and the N above it** also undoes everything newer. A recipe counts as one operation. The history is capped at 10 operations and 1 GB of backups; when a new operation pushes it over, the oldest entries and their backups are deleted. **Clear history** deletes all of it. The old single `undo.txt` from earlier versions is migrated into the history automatically.
@@ -106,6 +109,7 @@ app/src/PaletteForm.cs  Ctrl+K command palette       app/src/PreviewForm.cs  rig
 app/src/Recipes.cs      recipe data and runner       app/src/RecipesForm.cs  recipe editor and step picker
 app/src/UndoHistoryForm.cs history window         app/src/Space.cs        space map scanner and treemap
 app/src/SpaceForm.cs    space map window             app/src/MapActions.cs   history and space map actions
+app/src/Fluent.cs       Windows 11 style controls (buttons, cards, rail, list rows, glyph helper)
 app/tools/footprint-check.ps1
 app/tools/layout-check.ps1
 ```

@@ -33,9 +33,9 @@ namespace PSTools
             foreach (var c in new Control[] { files, hidden, counts }) { c.Margin = new Padding(14, 5, 0, 0); opts.Controls.Add(c); }
 
             var bar = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 48, Padding = new Padding(10, 8, 8, 4), BackColor = UI.Panel, FlowDirection = FlowDirection.RightToLeft };
-            var close = new Button { Text = "Close", Width = 80, Height = 30 }; close.Click += (s, e) => Close();
-            var save = new Button { Text = "Save as .txt...", Width = 120, Height = 30 }; save.Click += (s, e) => Save();
-            var copy = new Button { Text = "Copy", Width = 110, Height = 30 }; UI.Primary(copy);
+            var close = new FButton { Text = "Close", Width = 80, Height = 30 }; close.Click += (s, e) => Close();
+            var save = new FButton { Text = "Save as .txt...", Width = 120, Height = 30 }; save.Click += (s, e) => Save();
+            var copy = new FButton { Text = "Copy", Width = 110, Height = 30 }; UI.Primary(copy);
             copy.Click += (s, e) => { Clip.Set(text); info.Text = "Copied."; };
             bar.Controls.Add(close); bar.Controls.Add(save); bar.Controls.Add(copy); bar.Controls.Add(info);
 

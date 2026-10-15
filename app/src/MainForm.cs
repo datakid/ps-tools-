@@ -13,9 +13,11 @@ namespace PSTools
         readonly TextBox search = new TextBox();
         readonly ListView list = new ListView();
         readonly Label title = new Label(), hint = new Label(), meta = new Label();
-        readonly Button run = new Button(), undo = new Button(), tabActions = new Button(), tabMenu = new Button();
+        readonly FButton run = new FButton(), undo = new FButton();
+        readonly NavRail rail = new NavRail();
+        readonly Label tip = new Label { Dock = DockStyle.Bottom, Height = 56, ForeColor = UI.Muted };
         readonly ToolTip tips = new ToolTip();
-        readonly ToolStripStatusLabel status = new ToolStripStatusLabel { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
+        readonly Label status = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true };
         readonly Panel pageActions = new Panel { Dock = DockStyle.Fill };
         readonly Panel pageMenu = new Panel { Dock = DockStyle.Fill, Visible = false };
         readonly TreeView tree = new TreeView();
@@ -31,41 +33,54 @@ namespace PSTools
 
         public MainForm(string startPath)
         {
-            Text = "PS Tools"; Font = UI.Font; ClientSize = new Size(900, 580); MinimumSize = new Size(760, 480);
+            Text = "PS Tools"; Font = UI.Font; ClientSize = new Size(980, 640); MinimumSize = new Size(860, 520);
             StartPosition = FormStartPosition.CenterScreen; AllowDrop = true; KeyPreview = true;
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
             statusTimer.Tick += (s, e) => { statusTimer.Stop(); status.Text = ""; };
 
-            var top = new TableLayoutPanel { Dock = DockStyle.Top, Height = 54, ColumnCount = 3, Padding = new Padding(14, 12, 14, 8), BackColor = UI.Panel };
+            rail.Dock = DockStyle.Left; rail.Width = 216; rail.Heading = "PS Tools"; rail.Footer = "Version " + UI.Version;
+            rail.Items.Add(new NavRail.Item { Text = "Actions", Glyph = Fx.Play, Page = true });
+            rail.Items.Add(new NavRail.Item { Text = "Menu and settings", Glyph = Fx.Settings, Page = true });
+            rail.Items.Add(new NavRail.Item { Divider = true });
+            rail.Items.Add(new NavRail.Item { Text = "Recipes", Glyph = Fx.List });
+            rail.Items.Add(new NavRail.Item { Text = "Undo history", Glyph = Fx.History });
+            rail.Items.Add(new NavRail.Item { Text = "Space map", Glyph = Fx.Folder });
+            rail.ItemClicked += i =>
+            {
+                if (i == 0) ShowPage(true);
+                else if (i == 1) ShowPage(false);
+                else if (i == 3) new RecipesForm().Show(this);
+                else if (i == 4) new UndoHistoryForm().Show(this);
+                else if (i == 5)
+                {
+                    if (Directory.Exists(Path0)) new SpaceForm(Path0).Show(this);
+                    else SetStatus("Folder not found: " + Path0);
+                }
+            };
+
+            var top = new TableLayoutPanel { Dock = DockStyle.Top, Height = 62, ColumnCount = 3, Padding = new Padding(0, 14, 0, 8) };
             top.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             top.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             top.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            folder.Dock = DockStyle.Fill; folder.Font = new Font("Segoe UI", 10f);
+            folder.Dock = DockStyle.Fill;
             folder.Text = startPath ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads";
             folder.AutoCompleteMode = AutoCompleteMode.SuggestAppend; folder.AutoCompleteSource = AutoCompleteSource.FileSystemDirectories;
-            var browse = Btn("Browse...", 90); browse.Click += (s, e) => Browse();
-            var open = Btn("Open", 70); open.Click += (s, e) => { if (Directory.Exists(Path0)) System.Diagnostics.Process.Start("explorer.exe", "\"" + Path0 + "\""); };
+            var browse = Btn("Browse...", 110); browse.Glyph = Fx.FolderOpen; browse.Click += (s, e) => Browse();
+            var open = Btn("Open", 92); open.Glyph = Fx.OpenWindow; open.Click += (s, e) => { if (Directory.Exists(Path0)) System.Diagnostics.Process.Start("explorer.exe", "\"" + Path0 + "\""); };
             top.Controls.Add(folder, 0, 0); top.Controls.Add(browse, 1, 0); top.Controls.Add(open, 2, 0);
-
-            var tabs = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40, Padding = new Padding(14, 6, 14, 0), BackColor = UI.Back };
-            Tab(tabActions, "Actions"); Tab(tabMenu, "Menu and settings");
-            tabActions.Click += (s, e) => ShowPage(true);
-            tabMenu.Click += (s, e) => ShowPage(false);
-            tabs.Controls.Add(tabActions); tabs.Controls.Add(tabMenu);
 
             BuildActionsPage();
             BuildMenuPage();
 
-            var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 44, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(10, 7, 10, 4), BackColor = UI.Panel };
-            undo.Width = 110; undo.Height = 30; undo.Text = "Undo last"; undo.Click += (s, e) => DoUndo();
-            bottom.Controls.Add(undo);
-            var history = new Button { Text = "History...", Width = 100, Height = 30 };
-            history.Click += (s, e) => new UndoHistoryForm().Show(this);
-            bottom.Controls.Add(history);
-            var strip = new StatusStrip { SizingGrip = false, BackColor = UI.Panel, ForeColor = UI.Muted };
-            status.ForeColor = UI.Muted; strip.Items.Add(status);
+            undo.Text = "Undo last"; undo.Glyph = Fx.Undo; undo.Width = 128; undo.Height = 32; undo.Dock = DockStyle.Right; undo.Click += (s, e) => DoUndo();
+            status.ForeColor = UI.Muted;
+            var bottom = new Panel { Dock = DockStyle.Bottom, Height = 46, Padding = new Padding(2, 10, 0, 0) };
+            bottom.Controls.Add(status); bottom.Controls.Add(undo);
 
-            Controls.Add(pageActions); Controls.Add(pageMenu); Controls.Add(tabs); Controls.Add(top); Controls.Add(bottom); Controls.Add(strip);
+            var content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(4, 0, 18, 12) };
+            content.Controls.Add(pageActions); content.Controls.Add(pageMenu); content.Controls.Add(bottom); content.Controls.Add(top);
+            Controls.Add(content); Controls.Add(rail);
+            rail.Selected = 0;
 
             DragEnter += (s, e) => { if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Link; };
             DragDrop += (s, e) =>
@@ -81,12 +96,11 @@ namespace PSTools
                 else if (e.Control && e.KeyCode == Keys.D2) { ShowPage(false); e.SuppressKeyPress = true; }
                 else if (e.Control && e.KeyCode == Keys.Tab) { ShowPage(!pageActions.Visible); e.SuppressKeyPress = true; }
             };
-            Shown += (s, e) => { tree.ItemHeight = UI.S(26); search.Focus(); FitActions(); FitMenu(); UI.HideHScroll(list); };
+            Shown += (s, e) => { tree.ItemHeight = UI.S(30); search.Focus(); FitActions(); FitMenu(); UI.HideHScroll(list); };
             FormClosing += (s, e) => SaveWindow();
 
             UI.Apply(this);
             RestoreWindow();
-            StyleTabs();
             Fill();
             RefreshState();
             if (Program.StartupNote != null) SetStatus(Program.StartupNote);
@@ -119,6 +133,7 @@ namespace PSTools
             if (actionsScroll == null) return;
             hint.Height = UI.TextHeight(hint, 24);
             meta.Height = UI.TextHeight(meta, 24);
+            tip.Height = UI.TextHeight(tip, 40);
             UI.FitScroll(actionsScroll);
         }
 
@@ -138,43 +153,44 @@ namespace PSTools
 
         string Path0 { get { return Program.Clean(folder.Text); } }
 
-        static Button Btn(string text, int w) { return new Button { Text = text, Width = w, Height = 30, Margin = new Padding(6, 0, 0, 0) }; }
-
-        void Tab(Button b, string text)
-        {
-            b.Text = text; b.Height = 32; b.AutoSize = true; b.Margin = new Padding(0, 0, 4, 0); b.Padding = new Padding(8, 0, 8, 0);
-            b.FlatStyle = FlatStyle.Flat; b.FlatAppearance.BorderSize = 0; b.Font = UI.Bold; b.Cursor = Cursors.Hand;
-        }
-
-        void StyleTabs()
-        {
-            bool a = pageActions.Visible;
-            foreach (var pair in new[] { new KeyValuePair<Button, bool>(tabActions, a), new KeyValuePair<Button, bool>(tabMenu, !a) })
-            {
-                pair.Key.UseVisualStyleBackColor = false;
-                pair.Key.BackColor = pair.Value ? UI.Accent : UI.Back;
-                pair.Key.ForeColor = pair.Value ? UI.OnAccent : UI.Text;
-                pair.Key.FlatAppearance.BorderSize = 0;
-                pair.Key.FlatAppearance.MouseOverBackColor = pair.Value ? UI.Accent : UI.Panel;
-                pair.Key.FlatAppearance.MouseDownBackColor = pair.Value ? UI.Accent : UI.Border;
-                pair.Key.Tag = "accent";
-            }
-        }
+        static FButton Btn(string text, int w) { return new FButton { Text = text, Width = w, Height = 32, Margin = new Padding(8, 0, 0, 0) }; }
 
         void ShowPage(bool actions)
         {
             pageActions.Visible = actions;
             pageMenu.Visible = !actions;
-            StyleTabs();
+            rail.Selected = actions ? 0 : 1;
             if (!actions) RefreshMenuState();
             FitActions();
             FitMenu();
         }
 
+        static string ModuleGlyph(string group)
+        {
+            switch (group)
+            {
+                case "Copy": return Fx.Copy;
+                case "Create": return Fx.Add;
+                case "Archive": return Fx.Package;
+                case "Image": return Fx.Image;
+                case "Organize": return Fx.Folder;
+                case "Clean up": return Fx.Delete;
+                case "Inspect": return Fx.Search;
+                case "Export": return Fx.Share;
+                case "Fix": return Fx.Edit;
+                case "Links": return Fx.Link;
+                case "Dev": return Fx.Code;
+                case "Disk": return Fx.Folder;
+                case "System": return Fx.Settings;
+                case "Recipes": return Fx.List;
+                default: return Fx.Code;
+            }
+        }
+
         void BuildActionsPage()
         {
-            var left = new Panel { Dock = DockStyle.Left, Width = 320 };
-            search.Dock = DockStyle.Top; search.Font = new Font("Segoe UI", 10f);
+            var left = new Panel { Dock = DockStyle.Left, Width = 340, Padding = new Padding(0, 0, 10, 0) };
+            search.Dock = DockStyle.Fill;
             ResultsForm.SetCue(search, "Search actions  (Ctrl+F)");
             search.TextChanged += (s, e) => Fill();
             search.KeyDown += (s, e) =>
@@ -182,39 +198,34 @@ namespace PSTools
                 if (e.KeyCode == Keys.Down && list.Items.Count > 0) { list.Focus(); e.SuppressKeyPress = true; }
                 else if (e.KeyCode == Keys.Enter) { RunSelected(); e.SuppressKeyPress = true; }
             };
-            var searchWrap = new Panel { Dock = DockStyle.Top, Height = 44, Padding = new Padding(12, 10, 12, 4) };
+            var searchWrap = new Panel { Dock = DockStyle.Top, Height = 46, Padding = new Padding(0, 0, 0, 10) };
             searchWrap.Controls.Add(search);
 
             list.Dock = DockStyle.Fill; list.View = View.Details; list.HeaderStyle = ColumnHeaderStyle.None;
             list.FullRowSelect = true; list.MultiSelect = false; list.HideSelection = false; list.BorderStyle = BorderStyle.None;
-            list.Columns.Add("", 290); list.Font = new Font("Segoe UI", 9.5f);
-            list.SmallImageList = new ImageList { ImageSize = new Size(1, UI.S(28)) };
+            list.Columns.Add("", 290);
+            FList.Attach(list, 38, it => ModuleGlyph(((Action)it.Tag).Group));
             list.SelectedIndexChanged += (s, e) => ShowSelected();
             list.DoubleClick += (s, e) => RunSelected();
             list.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) RunSelected(); };
             list.Resize += (s, e) => FitList();
             left.Controls.Add(list); left.Controls.Add(searchWrap);
-            var sep = new Panel { Dock = DockStyle.Left, Width = 1, BackColor = UI.Border };
 
-            var right = new Panel { Dock = DockStyle.Fill, Padding = new Padding(28, 22, 20, 14) };
+            var right = new FCard { Dock = DockStyle.Fill, Padding = new Padding(28, 24, 24, 16) };
             actionsScroll = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
-            title.Dock = DockStyle.Top; title.Height = 38; title.Font = UI.Title; title.AutoEllipsis = true;
+            title.Dock = DockStyle.Top; title.Height = 44; title.Font = UI.Title; title.AutoEllipsis = true;
             hint.Dock = DockStyle.Top; hint.Height = 60; hint.ForeColor = UI.Muted;
             meta.Dock = DockStyle.Top; meta.Height = 44; meta.ForeColor = UI.Muted;
             actionsScroll.Controls.Add(meta); actionsScroll.Controls.Add(hint);
             actionsScroll.Resize += (s, e) => FitActions();
             UI.WheelScroll(actionsScroll);
-            var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 50, Padding = new Padding(0, 8, 0, 0) };
-            run.Text = "Run"; run.Width = 130; run.Height = 34; UI.Primary(run); run.Click += (s, e) => RunSelected();
+            var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 56, Padding = new Padding(0, 10, 0, 0) };
+            run.Text = "Run"; run.Glyph = Fx.Play; run.Width = 140; run.Height = 36; UI.Primary(run); run.Click += (s, e) => RunSelected();
             buttons.Controls.Add(run);
-            var tip = new Label
-            {
-                Dock = DockStyle.Bottom, Height = 54, ForeColor = UI.Muted,
-                Text = "Tip: drop a folder on this window. Right-click menu entries are chosen on the Menu page.\nWindows 11: the classic menu is under \"Show more options\" (Shift+F10)."
-            };
+            tip.Text = "Tip: drop a folder on this window. Right-click menu entries are chosen on the Menu page.\nWindows 11: the classic menu is under \"Show more options\" (Shift+F10).";
             right.Controls.Add(actionsScroll); right.Controls.Add(buttons); right.Controls.Add(tip); right.Controls.Add(title);
 
-            pageActions.Controls.Add(right); pageActions.Controls.Add(sep); pageActions.Controls.Add(left);
+            pageActions.Controls.Add(right); pageActions.Controls.Add(left);
         }
 
         void Fill()
@@ -229,7 +240,7 @@ namespace PSTools
                 var g = new ListViewGroup(m.Name, m.Name);
                 list.Groups.Add(g);
                 foreach (var a in acts)
-                    list.Items.Add(new ListViewItem("   " + a.Label + (a.Tier == Tier.Elevated ? "   (admin)" : ""), g) { Tag = a });
+                    list.Items.Add(new ListViewItem(a.Label + (a.Tier == Tier.Elevated ? "   (admin)" : ""), g) { Tag = a });
             }
             list.EndUpdate();
             FitList();
@@ -352,7 +363,7 @@ namespace PSTools
 
         void BuildMenuPage()
         {
-            var rightHost = new Panel { Dock = DockStyle.Right, Width = 308, Padding = new Padding(20, 16, 8, 12) };
+            var rightHost = new FCard { Dock = DockStyle.Right, Width = 340, Padding = new Padding(22, 18, 12, 16) };
             var right = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
             menuScroll = right;
             right.Resize += (s, e) => FitMenu();
@@ -361,11 +372,11 @@ namespace PSTools
             menuInfo.Dock = DockStyle.Top; menuInfo.Height = 120; menuInfo.ForeColor = UI.Muted;
             menuInfo.Text = "Pick a preset or tick what you want in the Explorer right-click menu. Ticking a module ticks all its actions. Pin an action to put it at the top of the menu. Nothing changes in Explorer until you press Apply.";
 
-            var apply = new Button { Text = "Apply to Explorer menu", Dock = DockStyle.Bottom, Height = 36 };
+            var apply = new FButton { Text = "Apply to Explorer menu", Dock = DockStyle.Bottom, Height = 36 };
             UI.Primary(apply); apply.Click += (s, e) => ApplyMenu();
-            var pinBtn = new Button { Text = "Pin or unpin selected", Dock = DockStyle.Top, Height = 32 };
+            var pinBtn = new FButton { Text = "Pin or unpin selected", Dock = DockStyle.Top, Height = 32 };
             pinBtn.Click += (s, e) => PinSelected();
-            var reset = new Button { Text = "Reset to defaults", Dock = DockStyle.Top, Height = 32 };
+            var reset = new FButton { Text = "Reset to defaults", Dock = DockStyle.Top, Height = 32 };
             reset.Click += (s, e) => { Settings.ResetDefaults(); BuildTree(); RefreshPreset(); SetStatus("Menu selection reset. Press Apply to update Explorer."); };
 
             var presetRow = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40, Padding = new Padding(0, 8, 0, 0) };
@@ -392,9 +403,9 @@ namespace PSTools
             theme.SelectedIndexChanged += (s, e) => { Settings.SetTheme((string)theme.SelectedItem); SetStatus("Theme saved. It applies the next time PS Tools starts."); };
             themeRow.Controls.Add(theme);
 
-            var removeMenu = new Button { Text = "Remove Explorer menu", Dock = DockStyle.Top, Height = 32 };
+            var removeMenu = new FButton { Text = "Remove Explorer menu", Dock = DockStyle.Top, Height = 32 };
             removeMenu.Click += (s, e) => { Shell.RemoveMenu(); RefreshMenuState(); SetStatus("Explorer menu removed."); };
-            var full = new Button { Text = "Full uninstall...", Dock = DockStyle.Top, Height = 32 };
+            var full = new FButton { Text = "Full uninstall...", Dock = DockStyle.Top, Height = 32 };
             full.Click += (s, e) => FullUninstall();
             menuState.Dock = DockStyle.Top; menuState.Height = 60; menuState.ForeColor = UI.Muted;
 
@@ -402,7 +413,7 @@ namespace PSTools
             right.Controls.Add(menuState);
             right.Controls.Add(full); right.Controls.Add(gap(6)); right.Controls.Add(removeMenu); right.Controls.Add(gap(14));
             right.Controls.Add(themeRow); right.Controls.Add(gap(8));
-            var previewBtn = new Button { Text = "Preview the right-click menu...", Dock = DockStyle.Top, Height = 32 };
+            var previewBtn = new FButton { Text = "Preview the right-click menu...", Dock = DockStyle.Top, Height = 32 };
             previewBtn.Click += (s, e) => { using (var f = new PreviewForm(new HashSet<string>(working), new HashSet<string>(favSet))) f.ShowDialog(this); };
             right.Controls.Add(reset); right.Controls.Add(gap(6)); right.Controls.Add(pinBtn);
             right.Controls.Add(gap(6)); right.Controls.Add(previewBtn);
@@ -410,23 +421,23 @@ namespace PSTools
             rightHost.Controls.Add(new Panel { Dock = DockStyle.Bottom, Height = 10 }); rightHost.Controls.Add(apply);
             right.Controls.Add(gap(10)); right.Controls.Add(menuInfo);
 
-            tree.Dock = DockStyle.Fill; tree.CheckBoxes = true; tree.ShowLines = false; tree.FullRowSelect = true; tree.HideSelection = false; tree.ItemHeight = 26;
+            tree.Dock = DockStyle.Fill; tree.CheckBoxes = true; tree.ShowLines = false; tree.FullRowSelect = true; tree.HideSelection = false; tree.ItemHeight = 30;
             tree.AfterCheck += TreeChecked;
             tree.AfterSelect += (s, e) => TreeSelected();
-            treeFilter.Dock = DockStyle.Fill; treeFilter.Font = new Font("Segoe UI", 10f);
+            treeFilter.Dock = DockStyle.Fill;
             ResultsForm.SetCue(treeFilter, "Filter actions");
             treeFilter.TextChanged += (s, e) => FillTree();
             treeFilter.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) { treeFilter.Text = ""; e.SuppressKeyPress = true; } };
-            var expand = Btn("Expand", 76); expand.Click += (s, e) => tree.ExpandAll();
-            var collapse = Btn("Collapse", 82); collapse.Click += (s, e) => tree.CollapseAll();
-            var filterBar = new TableLayoutPanel { Dock = DockStyle.Top, Height = 46, ColumnCount = 3, Padding = new Padding(10, 8, 10, 6) };
+            var expand = Btn("Expand", 84); expand.Click += (s, e) => tree.ExpandAll();
+            var collapse = Btn("Collapse", 92); collapse.Click += (s, e) => tree.CollapseAll();
+            var filterBar = new TableLayoutPanel { Dock = DockStyle.Top, Height = 46, ColumnCount = 3, Padding = new Padding(0, 0, 0, 10) };
             filterBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             filterBar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             filterBar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             filterBar.Controls.Add(treeFilter, 0, 0); filterBar.Controls.Add(expand, 1, 0); filterBar.Controls.Add(collapse, 2, 0);
-            var treeHost = new Panel { Dock = DockStyle.Fill };
+            var treeHost = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 0, 10, 0) };
             treeHost.Controls.Add(tree); treeHost.Controls.Add(filterBar);
-            pageMenu.Controls.Add(treeHost); pageMenu.Controls.Add(new Panel { Dock = DockStyle.Right, Width = 1, BackColor = UI.Border }); pageMenu.Controls.Add(rightHost);
+            pageMenu.Controls.Add(treeHost); pageMenu.Controls.Add(rightHost);
             BuildTree();
         }
 

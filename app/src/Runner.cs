@@ -126,10 +126,10 @@ namespace PSTools
         public ProgressForm(string title, Ctx ctx)
         {
             Text = title; FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = MinimizeBox = false;
-            StartPosition = FormStartPosition.CenterScreen; ClientSize = new Size(400, 100); Font = UI.Font;
-            Padding = new Padding(14); ShowInTaskbar = true;
-            var bar = new ProgressBar { Dock = DockStyle.Top, Height = 14, Style = ProgressBarStyle.Marquee, MarqueeAnimationSpeed = 25 };
-            var cancel = new Button { Text = "Cancel", Width = 88, Height = 28, Anchor = AnchorStyles.Right | AnchorStyles.Bottom, Location = new Point(298, 62) };
+            StartPosition = FormStartPosition.CenterScreen; ClientSize = new Size(420, 112); Font = UI.Font;
+            Padding = new Padding(18, 16, 18, 14); ShowInTaskbar = true;
+            var bar = new FProgress { Dock = DockStyle.Top, Height = 10 };
+            var cancel = new FButton { Text = "Cancel", Width = 96, Height = 32, Anchor = AnchorStyles.Right | AnchorStyles.Bottom, Location = new Point(306, 66) };
             cancel.Click += (s, e) => { ctx.Cancel = true; cancel.Enabled = false; status.Text = "Cancelling..."; };
             Controls.Add(cancel); Controls.Add(bar); Controls.Add(status);
             FormClosing += (s, e) => { ctx.Cancel = true; };

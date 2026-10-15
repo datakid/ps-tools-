@@ -20,7 +20,7 @@ namespace PSTools
                                digits = new NumericUpDown { Minimum = 1, Maximum = 8, Value = 3, Width = 44 };
         readonly ListView lv = new ListView();
         readonly Label info = new Label { AutoSize = true, ForeColor = UI.Muted, Margin = new Padding(0, 8, 12, 0) };
-        readonly Button apply = new Button { Text = "Rename", Width = 110, Height = 30 };
+        readonly Button apply = new FButton { Text = "Rename", Width = 110, Height = 30 };
         List<KeyValuePair<string, string>> plan = new List<KeyValuePair<string, string>>();
 
         public RenameForm(string root)
@@ -53,7 +53,7 @@ namespace PSTools
             var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(8, 7, 8, 4), BackColor = UI.Panel };
             UI.Primary(apply);
             apply.Click += (s, e) => Apply();
-            var close = new Button { Text = "Close", Width = 80, Height = 30 }; close.Click += (s, e) => Close();
+            var close = new FButton { Text = "Close", Width = 80, Height = 30 }; close.Click += (s, e) => Close();
             bottom.Controls.Add(apply); bottom.Controls.Add(close); bottom.Controls.Add(info);
 
             Controls.Add(lv); Controls.Add(opts); Controls.Add(bottom);

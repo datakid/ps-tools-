@@ -23,6 +23,18 @@ function Scan($parent, $label) {
                 $issues.Add("$label  overflow: $($k.GetType().Name) '$($k.Text)' ($($k.Right) x $($k.Bottom)) in ($($parent.ClientSize.Width) x $($parent.ClientSize.Height))")
             }
         }
+        if ($k -is [System.Windows.Forms.Label] -and $k.Visible -and -not $k.AutoSize -and $k.Text) {
+            $flags = [System.Windows.Forms.TextFormatFlags]'WordBreak,NoPrefix'
+            $w = $k.ClientSize.Width - $k.Padding.Horizontal
+            $h = $k.ClientSize.Height - $k.Padding.Vertical
+            if ($w -ge 20) {
+                $need = [System.Windows.Forms.TextRenderer]::MeasureText($k.Text, $k.Font, (New-Object System.Drawing.Size($w, 0)), $flags)
+                if ($need.Height -gt $h + 3) {
+                    $short = if ($k.Text.Length -gt 40) { $k.Text.Substring(0, 40) } else { $k.Text }
+                    $issues.Add("$label  text clipped: '$($short -replace '\s+', ' ')' needs $($need.Height) has $h")
+                }
+            }
+        }
         if ($k.HasChildren) { Scan $k $label }
     }
 }
@@ -43,7 +55,7 @@ $mainType = $asm.GetType('PSTools.MainForm')
 $main = [Activator]::CreateInstance($mainType, @($env:USERPROFILE))
 $main.Left = 20; $main.Top = 20
 $showPage = $mainType.GetMethod('ShowPage', $inst)
-foreach ($size in @(@(900, 580), @(760, 480), @(1100, 700))) {
+foreach ($size in @(@(980, 640), @(860, 520), @(1200, 760))) {
     $showPage.Invoke($main, @($true))
     Check $main ("Actions page") $size[0] $size[1]
     $showPage.Invoke($main, @($false))

@@ -23,7 +23,7 @@ namespace PSTools
 
         Recipe Current { get { return recipeList.SelectedItems.Count == 0 ? null : (Recipe)recipeList.SelectedItems[0].Tag; } }
 
-        static Button Btn(string text, int width) { return new Button { Text = text, Width = width, Height = 30, Margin = new Padding(0, 0, 8, 6) }; }
+        static Button Btn(string text, int width) { return new FButton { Text = text, Width = width, Height = 30, Margin = new Padding(0, 0, 8, 6) }; }
 
         static string MenuKey(IEnumerable<Recipe> list)
         {
@@ -386,8 +386,8 @@ namespace PSTools
             lv.DoubleClick += (s, e) => Accept();
             lv.Resize += (s, e) => { if (lv.Columns.Count == 3) lv.Columns[0].Width = Math.Max(120, lv.ClientSize.Width - lv.Columns[1].Width - lv.Columns[2].Width); UI.HideHScroll(lv); };
 
-            var add = new Button { Text = "Add", Width = 90, Height = 30 }; UI.Primary(add); add.Click += (s, e) => Accept();
-            var cancel = new Button { Text = "Cancel", Width = 90, Height = 30 }; cancel.Click += (s, e) => { DialogResult = DialogResult.Cancel; };
+            var add = new FButton { Text = "Add", Width = 90, Height = 30 }; UI.Primary(add); add.Click += (s, e) => Accept();
+            var cancel = new FButton { Text = "Cancel", Width = 90, Height = 30 }; cancel.Click += (s, e) => { DialogResult = DialogResult.Cancel; };
             var bar = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 48, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(10, 9, 10, 0), BackColor = UI.Panel };
             bar.Controls.Add(cancel); bar.Controls.Add(add);
 
