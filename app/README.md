@@ -10,12 +10,12 @@ build.cmd          -> app\out\PSTools.exe + commands.json
 Uses `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe` (C# 5). The first build creates `app.ico`.
 
 ## Use
-- **GUI:** run `PSTools.exe`. Pick a folder (type, Browse, or drop one), pick an action, Run. Ctrl+K opens the command palette, Ctrl+F searches the list.
+- **GUI:** run `PSTools.exe`. Pick a folder (type, Browse, or drop one), pick an action, Run. The details card shows what it does and the PowerShell equivalent; Suggested here lists actions that fit the folder. Ctrl+K opens the command palette, Ctrl+F searches the list.
 - **Recipes:** chain actions into your own one-click workflows with a single Undo. Manage recipes... opens the editor. See the main README.
 - **Undo history and space map:** History... lists the last 10 operations with what undoing each does; Folder space map draws a folder as a map of colored tiles. See the main README.
 - **Look:** Windows 11 style (system light or dark, your accent color, Segoe UI Variable, Fluent icons), drawn in code with nothing extra to install or uninstall. See the main README.
-- **Menu page:** tick modules or single actions, pin favorites to the top level, press **Apply to Explorer menu**.
-- **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--uninstall`.
+- **Menu page:** pick a context (folder, inside a folder, file, drive), tick actions and pin the ones you want at the top. Changes are saved and applied to the Explorer menu automatically. See the main README.
+- **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--uninstall`, `--selftest`, `--dump-snippets`.
 
 ## Modules (tick on or off on the Menu page)
 | Module | Default | What it does |
@@ -48,7 +48,7 @@ Writes only:
 ## Project structure
 ```
 src/Program.cs       entry and CLI          src/Shell.cs        menu install/uninstall/status
-src/Model.cs         actions, modules       src/Settings.cs     enabled set, favorites, pins, theme
+src/Model.cs         actions, modules       src/Settings.cs     enabled set, pins per context, theme
 src/Actions.cs       registry of actions    src/Collector.cs    multi-select merge
 src/CopyActions.cs   Copy module            src/Structure.cs    folder structure builder
 src/CreateActions.cs Create, Fix, Links     src/Tweaks.cs       reversible Windows toggles

@@ -85,3 +85,54 @@ namespace PSTools
         }
     }
 }
+
+namespace PSTools
+{
+    class PinChoice : Form
+    {
+        public enum Result { Keep, UsePreset, Cancel }
+
+        Result answer = Result.Cancel;
+
+        PinChoice()
+        {
+            Text = "PS Tools"; Font = UI.Font; FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = false; ShowInTaskbar = false;
+            StartPosition = FormStartPosition.CenterParent;
+            AutoSize = true; AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            int w = UI.S(420);
+            var table = new TableLayoutPanel { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 1, Padding = new Padding(UI.S(24), UI.S(20), UI.S(24), UI.S(20)), Dock = DockStyle.Fill };
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, w));
+            table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            table.Controls.Add(new Label { Text = "Keep your pinned actions?", Font = UI.Head, AutoSize = true, MaximumSize = new Size(w, 0), Margin = new Padding(0, 0, 0, UI.S(8)) }, 0, 0);
+            table.Controls.Add(new Label
+            {
+                Text = "Keep pins leaves the actions you pinned at the top of the menu and adds them to the preset. Use preset pins replaces them with the preset's own pins.",
+                ForeColor = UI.Muted, AutoSize = true, MaximumSize = new Size(w, 0), Margin = new Padding(0, 0, 0, UI.S(14))
+            }, 0, 1);
+            var keep = new FButton { Text = "Keep pins", Width = UI.S(120), Height = UI.S(34), Margin = new Padding(0, 0, UI.S(10), 0) };
+            UI.Primary(keep);
+            keep.Click += (s, e) => { answer = Result.Keep; Close(); };
+            var use = new FButton { Text = "Use preset pins", Width = UI.S(140), Height = UI.S(34), Margin = new Padding(0, 0, UI.S(10), 0) };
+            use.Click += (s, e) => { answer = Result.UsePreset; Close(); };
+            var cancel = new FButton { Text = "Cancel", Width = UI.S(100), Height = UI.S(34), Margin = new Padding(0) };
+            cancel.Click += (s, e) => { answer = Result.Cancel; Close(); };
+            var row = new FlowLayoutPanel { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = false, Margin = new Padding(0) };
+            row.Controls.Add(keep); row.Controls.Add(use); row.Controls.Add(cancel);
+            table.Controls.Add(row, 0, 2);
+            Controls.Add(table);
+            AcceptButton = keep; CancelButton = cancel;
+            UI.Apply(this, false);
+        }
+
+        public static Result Ask(IWin32Window owner)
+        {
+            using (var d = new PinChoice())
+            {
+                d.ShowDialog(owner);
+                return d.answer;
+            }
+        }
+    }
+}

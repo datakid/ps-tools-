@@ -8,8 +8,8 @@ namespace PSTools
 {
     class FirstRunForm : Form
     {
-        readonly List<RadioButton> choices = new List<RadioButton>();
-        readonly CheckBox classic = new FCheck { AutoSize = false, Checked = true };
+        readonly List<FToggle> choices = new List<FToggle>();
+        readonly FToggle classic = new FCheck { AutoSize = true, Checked = true };
         bool installed;
         readonly bool again;
 
@@ -21,61 +21,65 @@ namespace PSTools
             bool win11 = Tweaks.IsWindows11;
             Text = "PS Tools"; Font = UI.Font; FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
+            AutoSize = true; AutoSizeMode = AutoSizeMode.GrowAndShrink;
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
-            int y = 20;
-            Controls.Add(new Label { Text = again ? "Set up the right-click menu" : "Add PS Tools to your right-click menu", Font = UI.Title, AutoSize = true, Location = new Point(24, y) });
-            y += 42;
+            int content = UI.S(540);
+            var table = new TableLayoutPanel { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 1, Padding = new Padding(UI.S(24), UI.S(20), UI.S(24), UI.S(20)), Dock = DockStyle.Fill };
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, content));
+
+            Action<Control, Padding> add = (c, margin) =>
+            {
+                c.Margin = margin;
+                table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                table.Controls.Add(c, 0, table.RowStyles.Count - 1);
+            };
+
+            add(new Label { Text = again ? "Set up the right-click menu" : "Add PS Tools to your right-click menu", Font = UI.Title, AutoSize = true, MaximumSize = new Size(content, 0) }, new Padding(0, 0, 0, UI.S(10)));
             string intro = again
-                ? "Choose a starting point for the right-click menu. Applying a preset replaces your current choices, including pinned actions and groups; fine-tune afterwards on the Menu page. Nothing runs in the background, and Full uninstall puts everything back."
+                ? "Choose a starting point for the right-click menu. Your pinned actions are kept if you want them to be; fine-tune afterwards on the Menu page. Nothing runs in the background, and Full uninstall puts everything back."
                 : "Pick how much goes in the menu. You can change it any time on the Menu page. Nothing runs in the background, and Full uninstall puts everything back.";
             string start = again && Array.IndexOf(Presets.Names, Settings.CurrentPreset) >= 0 ? Settings.CurrentPreset : "Everyday";
-            int introH = UI.MeasureHeight(intro, UI.Font, 520) + 6;
-            Controls.Add(new Label { Text = intro, ForeColor = UI.Muted, Location = new Point(26, y), Size = new Size(520, introH) });
-            y += introH + 16;
+            add(new Label { Text = intro, ForeColor = UI.Muted, AutoSize = true, MaximumSize = new Size(content, 0) }, new Padding(0, 0, 0, UI.S(14)));
 
             foreach (var name in Presets.Names)
             {
-                var rb = new FRadio { Text = name, Font = UI.Bold, AutoSize = true, Location = new Point(28, y), Checked = name == start, Tag = name };
+                var rb = new FRadio { Text = name, Font = UI.Bold, AutoSize = true, Checked = name == start, Tag = name };
                 choices.Add(rb);
-                Controls.Add(rb);
-                string desc = Presets.Describe(name);
-                int dh = UI.MeasureHeight(desc, UI.Font, 496) + 6;
-                Controls.Add(new Label { Text = desc, ForeColor = UI.Muted, Location = new Point(50, y + 26), Size = new Size(496, dh) });
-                y += 26 + dh + 14;
+                add(rb, new Padding(0, UI.S(2), 0, 0));
+                add(new Label { Text = Presets.Describe(name), ForeColor = UI.Muted, AutoSize = true, MaximumSize = new Size(content - UI.S(30), 0) }, new Padding(UI.S(30), 0, 0, UI.S(10)));
             }
 
             if (win11)
             {
                 classic.Checked = again ? Tweaks.Classic : true;
                 classic.Text = "Use the classic right-click menu. Windows 11 hides PS Tools behind \"Show more options\" otherwise.";
-                int ch = UI.MeasureHeight(classic.Text, UI.Font, 490) + 8;
-                classic.Location = new Point(28, y + 4);
-                classic.Size = new Size(520, Math.Max(28, ch));
-                Controls.Add(classic);
-                y += classic.Height + 12;
+                classic.MaximumSize = new Size(content, 0);
+                add(classic, new Padding(0, UI.S(4), 0, UI.S(6)));
             }
 
-            var install = new FButton { Text = again ? "Apply" : "Install", Width = 130, Height = 34, Location = new Point(28, y + 10) };
+            var install = new FButton { Text = again ? "Apply" : "Install", Width = UI.S(130), Height = UI.S(34), Margin = new Padding(0, 0, UI.S(10), 0) };
             UI.Primary(install);
             install.Click += (s, e) => DoInstall();
-            var later = new FButton { Text = again ? "Close" : "Not now", Width = 110, Height = 34, Location = new Point(168, y + 10) };
+            var later = new FButton { Text = again ? "Close" : "Not now", Width = UI.S(110), Height = UI.S(34), Margin = new Padding(0, 0, UI.S(10), 0) };
             later.Click += (s, e) => Close();
-            var preview = new FButton { Text = "Preview menu", Width = 130, Height = 34, Location = new Point(288, y + 10) };
+            var preview = new FButton { Text = "Preview menu", Width = UI.S(130), Height = UI.S(34), Margin = new Padding(0) };
             preview.Click += (s, e) => ShowPreview();
-            Controls.Add(install); Controls.Add(later); Controls.Add(preview);
+            var buttons = new FlowLayoutPanel { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = false, FlowDirection = FlowDirection.LeftToRight };
+            buttons.Controls.Add(install); buttons.Controls.Add(later); buttons.Controls.Add(preview);
+            add(buttons, new Padding(0, UI.S(10), 0, 0));
+
+            Controls.Add(table);
             AcceptButton = install; CancelButton = later;
-            ClientSize = new Size(570, y + 64);
-            UI.Apply(this);
+            UI.Apply(this, false);
             classic.ForeColor = UI.Text;
             FormClosed += (s, e) => { if (!installed && !again) { try { Settings.MarkConfigured(); } catch { } } };
         }
 
         void ShowPreview()
         {
-            var ids = Presets.Ids(Chosen());
-            var favs = new HashSet<string>(Actions.All.Where(a => a.DefaultFav && ids.Contains(a.Id)).Select(a => a.Id));
-            using (var f = new PreviewForm(ids, favs)) f.ShowDialog(this);
+            var state = SettingsData.ForPreset(Chosen(), null, false);
+            using (var f = new PreviewForm(state)) f.ShowDialog(this);
         }
 
         string Chosen()
@@ -88,7 +92,15 @@ namespace PSTools
         {
             try
             {
-                Settings.ApplyPreset(Chosen());
+                string preset = Chosen();
+                bool keep = false;
+                if (again && Settings.Configured && Settings.HasPins)
+                {
+                    var answer = PinChoice.Ask(this);
+                    if (answer == PinChoice.Result.Cancel) return;
+                    keep = answer == PinChoice.Result.Keep;
+                }
+                Settings.ApplyPreset(preset, keep);
                 Shell.Install();
                 installed = true;
                 bool restart = false;

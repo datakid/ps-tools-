@@ -12,7 +12,7 @@ namespace PSTools
     {
         readonly string root;
         readonly TextBox find = new TextBox(), repl = new TextBox(), prefix = new TextBox(), suffix = new TextBox(), only = new TextBox();
-        readonly CheckBox regex = new FCheck { Text = "Regex", AutoSize = true }, number = new FCheck { Text = "Number", AutoSize = true },
+        readonly FToggle regex = new FCheck { Text = "Regex", AutoSize = true }, number = new FCheck { Text = "Number", AutoSize = true },
                           spaces = new FCheck { Text = "Spaces to _", AutoSize = true }, tidy = new FCheck { Text = "Tidy", AutoSize = true }, keepExt = new FCheck { Text = "Keep extension", AutoSize = true, Checked = true },
                           dateP = new FCheck { Text = "Date prefix", AutoSize = true }, folders = new FCheck { Text = "Include folders", AutoSize = true };
         readonly ComboBox casing = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
@@ -37,7 +37,7 @@ namespace PSTools
             casing.Items.AddRange(new object[] { "Keep case", "lowercase", "UPPERCASE", "Title Case" }); casing.SelectedIndex = 0;
             var flags = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, WrapContents = true };
             foreach (Control c in new Control[] { regex, spaces, tidy, keepExt, dateP, folders, casing, number, new Label { Text = "from", AutoSize = true, Margin = new Padding(0, 6, 0, 0) }, start, new Label { Text = "digits", AutoSize = true, Margin = new Padding(0, 6, 0, 0) }, digits })
-            { flags.Controls.Add(c); var cb = c as CheckBox; if (cb != null) cb.CheckedChanged += (s, e) => Preview(); }
+            { flags.Controls.Add(c); var cb = c as FToggle; if (cb != null) cb.CheckedChanged += (s, e) => Preview(); }
             casing.SelectedIndexChanged += (s, e) => Preview(); start.ValueChanged += (s, e) => Preview(); digits.ValueChanged += (s, e) => Preview();
             opts.Controls.Add(new Label { Text = "Options", AutoSize = true, Margin = new Padding(0, 6, 8, 0) }, 0, 2);
             opts.Controls.Add(flags, 1, 2); opts.SetColumnSpan(flags, 3);

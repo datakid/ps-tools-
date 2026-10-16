@@ -224,7 +224,8 @@ namespace PSTools
             return new Action
             {
                 Id = "recipe-" + rec.Id, Group = "Recipes", Label = rec.Name, Hint = hint,
-                Targets = t, Multi = multi, AppliesTo = applies, Confirm = confirm,
+                Targets = t, Multi = multi, AppliesTo = applies, Confirm = confirm, Undoable = true,
+                PsNone = "A recipe chains several PS Tools actions with one confirmation and one Undo last. Each step's own PowerShell equivalent is shown on its action.",
                 Tier = confirm != null ? Tier.Confirm : Tier.Instant,
                 Run = (paths, ctx) => Run(rec, paths, ctx)
             };

@@ -18,6 +18,12 @@ namespace PSTools
         static int Main(string[] argv)
         {
             var args = argv.Where(a => a != "--quiet").ToArray();
+            if (args.Length >= 1 && (args[0] == "--selftest" || args[0] == "--dump-snippets"))
+            {
+                Quiet = true;
+                try { AttachConsole(-1); } catch { }
+                return args[0] == "--selftest" ? SelfTest.Run() : SelfTest.DumpSnippets();
+            }
             if (args.Length != argv.Length)
             {
                 Quiet = true;
@@ -53,7 +59,7 @@ namespace PSTools
                 return 0;
             }
 
-            if (Quiet) { Msg("Nothing to do. Use an action id and a path, or --install, --uninstall, --status, --repair."); return 1; }
+            if (Quiet) { Msg("Nothing to do. Use an action id and a path, or --install, --uninstall, --status, --repair, --selftest, --dump-snippets."); return 1; }
 
             if (!Settings.Configured) new FirstRunForm().ShowDialog();
             else if (Shell.HealIfMoved()) StartupNote = "The Explorer menu pointed at an old location and was re-created for this one.";

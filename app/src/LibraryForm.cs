@@ -93,7 +93,7 @@ namespace PSTools
                 yield return new Action
                 {
                     Id = "lib-" + cmd.Id, Group = "Library", Label = cmd.Title, Targets = Target.Dirs, Fast = true,
-                    Tier = cmd.Admin ? Tier.Elevated : Tier.Instant,
+                    Tier = cmd.Admin ? Tier.Elevated : Tier.Instant, Ps = cmd.Code,
                     Hint = cmd.Desc + "\n\nRuns in PowerShell in the folder you click. Read-only snippets start right away; anything that changes files shows you the exact script first.",
                     Run = (paths, ctx) =>
                     {
@@ -130,7 +130,7 @@ namespace PSTools
             Load += (s, e) => { try { split.SplitterDistance = UI.S(440); } catch { } };
             lv.Dock = DockStyle.Fill; lv.View = View.Details; lv.FullRowSelect = true; lv.HideSelection = false; lv.MultiSelect = false; lv.BorderStyle = BorderStyle.None;
             lv.Columns.Add("Command", 290); lv.Columns.Add("Risk", 80); lv.Columns.Add("", 50);
-            lv.SmallImageList = new ImageList { ImageSize = new Size(1, UI.S(26)) };
+            FList.Attach(lv, 30, null);
             lv.SelectedIndexChanged += (s, e) => Show_();
             lv.DoubleClick += (s, e) => Open();
             split.Panel1.Controls.Add(lv);
@@ -161,23 +161,29 @@ namespace PSTools
             Fill();
         }
 
-        LibCmd Current { get { return lv.SelectedItems.Count == 0 ? null : (LibCmd)lv.SelectedItems[0].Tag; } }
+        LibCmd Current { get { return lv.SelectedItems.Count == 0 ? null : lv.SelectedItems[0].Tag as LibCmd; } }
 
         void Fill()
         {
             string q = search.Text.Trim();
-            lv.BeginUpdate(); lv.Items.Clear(); lv.Groups.Clear();
-            foreach (var c in cmds)
+            var selected = Current;
+            string keep = selected == null ? null : selected.Id;
+            lv.BeginUpdate(); lv.Items.Clear();
+            var shown = cmds.Where(c => q.Length == 0 || (c.Title + " " + c.Desc + " " + c.CatLabel + " " + c.Tags + " " + c.Code).IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            string lastCat = null;
+            foreach (var c in shown.GroupBy(x => x.CatId).SelectMany(g => g))
             {
-                if (q.Length > 0 && (c.Title + " " + c.Desc + " " + c.CatLabel + " " + c.Tags + " " + c.Code).IndexOf(q, StringComparison.OrdinalIgnoreCase) < 0) continue;
-                var grp = lv.Groups[c.CatId] ?? lv.Groups.Add(c.CatId, c.CatLabel);
-                var it = new ListViewItem(new[] { (Settings.Pins.Contains(c.Id) ? "\u2605 " : "") + c.Title, c.Risk, c.Admin ? "admin" : "" }, grp) { Tag = c };
+                if (c.CatId != lastCat) { lv.Items.Add(FList.Header(c.CatLabel)); lastCat = c.CatId; }
+                var it = new ListViewItem(new[] { (Settings.Pins.Contains(c.Id) ? "\u2605 " : "") + c.Title, c.Risk, c.Admin ? "admin" : "" }) { Tag = c };
                 it.UseItemStyleForSubItems = false;
                 if (c.Risk == "destructive") it.SubItems[1].ForeColor = UI.Danger;
                 lv.Items.Add(it);
             }
             lv.EndUpdate();
-            if (lv.Items.Count > 0) lv.Items[0].Selected = true; else { code.Text = ""; desc.Text = cmds.Count == 0 ? "commands.json was not found next to PSTools.exe." : "No match."; }
+            ListViewItem pick = null;
+            if (keep != null) foreach (ListViewItem it in lv.Items) { var lc = it.Tag as LibCmd; if (lc != null && lc.Id == keep) { pick = it; break; } }
+            if (pick == null) pick = FList.FirstRow(lv);
+            if (pick != null) { pick.Selected = true; pick.EnsureVisible(); } else { code.Text = ""; desc.Text = cmds.Count == 0 ? "commands.json was not found next to PSTools.exe." : "No match."; }
         }
 
         void Show_()
@@ -202,7 +208,12 @@ namespace PSTools
             Settings.TogglePin(c.Id);
             Show_();
             Fill();
-            Program.Msg("Pinned commands appear in the Explorer menu after you press Apply on the Menu page (or run PSTools.exe --install).");
+            if (Shell.IsInstalled())
+            {
+                try { Shell.Install(); }
+                catch (Exception ex) { Program.Msg("Could not update the Explorer menu:\n" + ex.Message); }
+            }
+            else Program.Msg("Pinned commands appear in the Explorer menu once it is installed (Menu page, Install Explorer menu).");
         }
 
         void Open()

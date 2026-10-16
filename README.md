@@ -24,9 +24,10 @@ On Windows 11 the dialog also offers the classic right-click menu, because Windo
 ## Use
 - **Right-click:** the flat entries at the top are the daily ones (paste image or text as a file, download link, search, undo, zip). Everything else is grouped in submenus. Image entries appear for pictures, Extract for zip files. Rare or risky entries (force delete, take ownership, restart Explorer) show only with Shift+right-click.
 - **GUI:** the left rail switches between **Actions** and **Menu and settings** and opens **Recipes**, **Undo history**, **Space map** and the **Setup guide**. Pick a folder (type, Browse, or drop one), pick an action, Run. **Ctrl+K** opens the command palette (type to find any action, recently used ones first), **Ctrl+F** searches the list, Ctrl+1 and Ctrl+2 (or Ctrl+Tab) switch pages. The window remembers its size and position, and scales with Windows display scaling.
-- **Menu page:** choose a preset or tick single actions (filter the list, Expand and Collapse all), pin an action or a whole group to the top (select it, then the pin button, or right-click it; or use **Pin to menu** on the Actions page), check the result with **Preview the right-click menu**, then press **Apply to Explorer menu**. A pinned action shows at the top level of the menu, a pinned group puts its submenu first. Pinned items show a star. **Setup guide** (in the left rail, on the Menu page and in the palette) reopens the first-run dialog any time, preselected on your current preset; applying a preset replaces your choices, pins included.
+- **Menu page:** pick where you right-click (**Folder**, **Inside a folder**, **File**, **Drive**). The left card is the top of the menu for that context, an ordered list of up to 12 pinned actions you can move with **Up** and **Down** or remove with **Unpin**. The middle card lists every action that applies there; the checkbox shows it in the menu, the star pins it for that context (pinning also enables it), and a group header pins the whole submenu. The right card previews exactly what Explorer will show (the preview and the real menu are built from the same plan), with a **Holding Shift** switch. Every change is saved at once and the installed Explorer menu is updated about a second later; there is no Apply button. If the menu is not installed yet, **Install Explorer menu** appears. **Setup guide** reopens the first-run dialog any time. Choosing a preset asks **Keep your pinned actions?** so pins are never lost silently.
+- **Actions page:** the list starts with **Suggested here**: actions that fit the folder you picked (pictures to shrink, zip files, build folders, git repositories, project files, large folders, likely duplicates) and what is on the clipboard (image, link, text). Suggestions are scanned in the background (top level plus one level down, at most 3000 entries and 400 ms, links and junctions skipped) and only show in the window and in the Ctrl+K palette; the Explorer menu itself is static. Selecting an action shows what it does, whether it changes files, whether Undo covers it, where it appears in the right-click menu, and the **PowerShell equivalent**. **Copy command** copies it with the folder from the box filled in; **Open PowerShell with command** opens PowerShell in that folder with the command on the clipboard (paste with a right-click, nothing runs by itself). **Pin...** pins the selected action to any context it applies to.
 - **Undo:** actions that change files show a toast with an **Undo** link for 5 seconds. **Undo last PS Tools action** is also in the folder background menu, and **Undo last** and **History...** are in the window.
-- **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--repair`, `--uninstall`. Add `--quiet` to print to the console instead of showing windows; actions that need a confirmation are not run in quiet mode.
+- **CLI:** `PSTools.exe <action-id> "<path>"`, `open "<folder>"`, `--install`, `--status`, `--repair`, `--uninstall`, `--selftest` (internal checks, exit code 0 when all pass) and `--dump-snippets` (every PowerShell equivalent as JSON). Add `--quiet` to print to the console instead of showing windows; actions that need a confirmation are not run in quiet mode.
 
 ## Modules
 | Module | What it does |
@@ -60,7 +61,7 @@ A recipe is a named list of actions that run one after another on the same selec
 
 - **One OK, one Undo:** if any step asks for confirmation, you see all the steps and answer once. **Undo last** reverts the whole recipe, not just the last step.
 - **Same selection:** every step runs on the items you picked. A step does not receive files an earlier step created, but it sees the changes earlier steps made to your items (sort, then remove empty folders; clean, then zip).
-- **Right-click menu:** tick *Show in the right-click menu* and press **Apply to Explorer menu**; the recipe appears in a **Recipes** submenu. Recipes work for whatever kinds of item all their steps support.
+- **Right-click menu:** tick *Show in the right-click menu* and save; the Explorer menu is updated automatically if it is installed, and the recipe appears in a **Recipes** submenu. Recipes work for whatever kinds of item all their steps support.
 - **Which actions can be steps:** the ones that do their work without opening a window or asking a question while running. Result lists (find duplicates, folder sizes, git status), the clipboard-paste actions, the administrator actions and the System module are not offered. If several steps copy to the clipboard, the last one wins.
 - **Where they live:** `recipes.json` next to `PSTools.exe`, in the same spirit as `commands.json`. It is plain JSON you can edit or share, and Full uninstall does not delete it. If the exe is in a protected folder such as Program Files, saving fails with a message; move the exe somewhere you can write to.
 
@@ -93,7 +94,7 @@ If you move or rename the exe folder, the menu entries would point at the old pa
 ## Project structure
 ```
 app/src/Program.cs       entry and CLI          app/src/Shell.cs        menu install/repair/uninstall/status
-app/src/Model.cs         actions, modules,      app/src/Settings.cs     enabled set, favorites, pins, theme
+app/src/Model.cs         actions, modules,      app/src/Settings.cs     enabled set, pins per context, theme
                          presets                app/src/Collector.cs    multi-select merge
 app/src/Actions.cs       registry of actions    app/src/Structure.cs    folder structure builder
 app/src/CopyActions.cs   Copy module            app/src/Tweaks.cs       reversible Windows toggles
@@ -106,15 +107,18 @@ app/src/SystemActions.cs System module
 app/src/Classic.cs       Organize/Clean/...
 app/src/MainForm.cs, FirstRunForm.cs, SearchForm.cs, ResultsForm.cs, RenameForm.cs, LibraryForm.cs, StructureForm.cs, ToolForms.cs, UI.cs
 app/src/PaletteForm.cs  Ctrl+K command palette       app/src/PreviewForm.cs  right-click menu preview
+app/src/MenuPlan.cs     planned menu (shared)        app/src/Suggest.cs      suggestions for the folder
+app/src/PsCatalog.cs    PowerShell equivalents       app/src/SelfTest.cs     --selftest and --dump-snippets
 app/src/Recipes.cs      recipe data and runner       app/src/RecipesForm.cs  recipe editor and step picker
 app/src/UndoHistoryForm.cs history window         app/src/Space.cs        space map scanner and treemap
 app/src/SpaceForm.cs    space map window             app/src/MapActions.cs   history and space map actions
 app/src/Fluent.cs       Windows 11 style controls (buttons, cards, rail, list rows, glyph helper)
 app/tools/footprint-check.ps1
 app/tools/layout-check.ps1
+app/tools/snippet-check.ps1
 ```
 
 ## Extending
-- **New action:** add a `new Action { Id, Group, Label, Hint, Targets, Run }` to a module list. It appears in the GUI and on the Menu page. Set `Tier.Confirm` plus `Confirm` text for anything that changes files; set `Multi` to receive every selected item; set `Fast` for instant clipboard-style actions; set `AppliesTo` (an Explorer query such as `Modules.ZipQuery`) to show it only for matching files; set `Extended` to show it only with Shift+right-click; set `DefaultFav` to put it flat at the top of the default menu. Journal anything that creates or changes files so Undo works. To include it in a preset, add its id to the lists in `Presets` in `Model.cs`.
+- **New action:** add a `new Action { Id, Group, Label, Hint, Targets, Run }` to a module list. It appears in the GUI and on the Menu page. Set `Tier.Confirm` plus `Confirm` text for anything that changes files; set `Multi` to receive every selected item; set `Fast` for instant clipboard-style actions; set `AppliesTo` (an Explorer query such as `Modules.ZipQuery`) to show it only for matching files; set `Extended` to show it only with Shift+right-click; add its id to `DefaultPins.For` in `Model.cs` to pin it at the top of a context by default; add its PowerShell equivalent (or the reason there is none) to `PsCatalog.cs`, which `--selftest` and `app\tools\snippet-check.ps1` verify. Journal anything that creates or changes files so Undo works. To include it in a preset, add its id to the lists in `Presets` in `Model.cs`.
 - **New recipe:** use Manage recipes, or edit `recipes.json` (`{ "recipes": [ { "id", "name", "description", "menu", "steps": [ "<action-id>", ... ] } ] }`). Action ids are the `Id` values in the module lists.
 - **New snippet:** edit `commands.json` (use `{path}` for the folder), then run or pin it from the library window.

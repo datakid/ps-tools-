@@ -13,7 +13,7 @@ namespace PSTools
         readonly ListView recipeList = new ListView();
         readonly TextBox name = new TextBox();
         readonly TextBox desc = new TextBox { Multiline = true };
-        readonly CheckBox inMenu = new FCheck { Text = "Show in the right-click menu (Recipes submenu)", AutoSize = true };
+        readonly FToggle inMenu = new FCheck { Text = "Show in the right-click menu (Recipes submenu)", AutoSize = true };
         readonly ListView steps = new ListView();
         readonly Label info = new Label { Dock = DockStyle.Bottom, Height = 78, ForeColor = UI.Muted };
         readonly Button addStep = Btn("Add steps...", 120), removeStep = Btn("Remove", 120), up = Btn("Move up", 120), down = Btn("Move down", 120);
@@ -349,9 +349,12 @@ namespace PSTools
             string after = MenuKey(items);
             bool menuChanged = after != menuBefore;
             menuBefore = after;
-            string note = menuChanged && Shell.IsInstalled()
-                ? "Recipes saved. Press Apply to Explorer menu to update the right-click menu."
-                : "Recipes saved.";
+            string note = "Recipes saved.";
+            if (menuChanged && Shell.IsInstalled())
+            {
+                try { Shell.Install(); note = "Recipes saved. Explorer menu updated"; }
+                catch (Exception ex) { note = "Recipes saved, but the Explorer menu could not be updated: " + ex.Message; }
+            }
             foreach (Form f in Application.OpenForms)
             {
                 var m = f as MainForm;

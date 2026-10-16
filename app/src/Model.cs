@@ -34,9 +34,10 @@ namespace PSTools
     class Action
     {
         public string Id, Label, Group, Hint, Confirm, AppliesTo;
+        public string Ps, PsNone;
         public Tier Tier = Tier.Instant;
         public Target Targets = Target.Dirs;
-        public bool Multi, Fast, DefaultFav, Extended;
+        public bool Multi, Fast, DefaultFav, Extended, Undoable;
         public Func<bool> Available;
         public Func<string[], Ctx, Result> Run;
         public Func<string[], Form> Window;
@@ -81,6 +82,53 @@ namespace PSTools
         public static int Order(string name) { int i = All.FindIndex(m => m.Name == name); return i < 0 ? 999 : i; }
     }
 
+    static class DefaultPins
+    {
+        public static readonly Target[] Contexts = { Target.Folder, Target.Background, Target.File, Target.Drive };
+
+        public static string Key(Target t)
+        {
+            switch (t)
+            {
+                case Target.Folder: return "folder";
+                case Target.Background: return "background";
+                case Target.File: return "file";
+                case Target.Drive: return "drive";
+            }
+            return null;
+        }
+
+        public static Target FromKey(string key)
+        {
+            foreach (var t in Contexts) if (Key(t) == key) return t;
+            return Target.None;
+        }
+
+        public static string Title(Target t)
+        {
+            switch (t)
+            {
+                case Target.Folder: return "Folder";
+                case Target.Background: return "Inside a folder";
+                case Target.File: return "File";
+                case Target.Drive: return "Drive";
+            }
+            return "";
+        }
+
+        public static List<string> For(Target t)
+        {
+            switch (t)
+            {
+                case Target.Folder: return new List<string> { "copy-path-quoted", "zip-smart", "space-map", "search-here" };
+                case Target.Background: return new List<string> { "paste-image", "paste-text", "download-clip", "search-here", "open-ps", "undo-last" };
+                case Target.File: return new List<string> { "copy-path-quoted", "copy-name", "copy-sha256", "img-png", "unzip-here" };
+                case Target.Drive: return new List<string> { "space-map", "folder-sizes", "open-ps" };
+            }
+            return new List<string>();
+        }
+    }
+
     static class Presets
     {
         public const string Custom = "Custom";
@@ -100,6 +148,11 @@ namespace PSTools
             "img-png", "img-jpg", "img-resize-1600", "img-strip",
             "folder-sizes", "space-map", "duplicates", "rename", "undo-history"
         };
+
+        public static IEnumerable<string> ReferencedIds()
+        {
+            return Minimal.Concat(Everyday);
+        }
 
         public static string Describe(string name)
         {

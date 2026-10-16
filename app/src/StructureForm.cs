@@ -10,9 +10,9 @@ namespace PSTools
     {
         readonly string root;
         readonly ComboBox format = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150 };
-        readonly CheckBox files = new FCheck { Text = "Include files", AutoSize = true };
-        readonly CheckBox hidden = new FCheck { Text = "Hidden folders", AutoSize = true };
-        readonly CheckBox counts = new FCheck { Text = "File counts", AutoSize = true };
+        readonly FToggle files = new FCheck { Text = "Include files", AutoSize = true };
+        readonly FToggle hidden = new FCheck { Text = "Hidden folders", AutoSize = true };
+        readonly FToggle counts = new FCheck { Text = "File counts", AutoSize = true };
         readonly NumericUpDown depth = new NumericUpDown { Minimum = 0, Maximum = 50, Value = 0, Width = 52 };
         readonly TextBox preview = new TextBox { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Dock = DockStyle.Fill, Font = UI.Mono, Tag = "code" };
         readonly Label info = new Label { AutoSize = true, ForeColor = UI.Muted, Margin = new Padding(12, 8, 0, 0) };

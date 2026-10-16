@@ -25,6 +25,7 @@ namespace PSTools
             l.AddRange(MapActions());
             l.AddRange(RecipeActions(l));
             l.AddRange(PinnedModule());
+            PsCatalog.Apply(l);
             return l.OrderBy(a => Modules.Order(a.Group)).ToList();
         }
 

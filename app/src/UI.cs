@@ -70,7 +70,7 @@ namespace PSTools
         }
 
         public static int S(int v) { return (int)Math.Round(v * Scale); }
-        public const string Version = "2.6.0";
+        public const string Version = "3.0.0";
 
         static string Pick(params string[] names)
         {
@@ -98,6 +98,7 @@ namespace PSTools
         public static Font Font = new Font(Family, 10f);
         public static Font Small = new Font(Family, 9f);
         public static Font Bold = new Font("Segoe UI Semibold", 10f);
+        public static Font SmallBold = new Font("Segoe UI Semibold", 9f);
         public static Font Head = new Font("Segoe UI Semibold", 12f);
         public static Font Title = new Font("Segoe UI Semibold", 15f);
         public static Font Mono = new Font(Pick("Cascadia Mono", "Consolas"), 10f);
@@ -289,7 +290,9 @@ namespace PSTools
             };
         }
 
-        public static void Apply(Form f)
+        public static void Apply(Form f) { Apply(f, true); }
+
+        public static void Apply(Form f, bool scaleLayout)
         {
             f.BackColor = Back;
             f.ForeColor = Text;
@@ -306,7 +309,7 @@ namespace PSTools
             };
             Walk(f);
             object seen;
-            if (Scale > 1f && !scaledForms.TryGetValue(f, out seen))
+            if (scaleLayout && Scale > 1f && !scaledForms.TryGetValue(f, out seen))
             {
                 scaledForms.Add(f, new object());
                 f.Scale(new SizeF(Scale, Scale));

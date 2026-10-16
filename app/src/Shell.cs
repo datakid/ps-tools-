@@ -28,12 +28,6 @@ namespace PSTools
             return false;
         }
 
-        public static List<Action> MenuActions(Target t)
-        {
-            Settings.EnsureLoaded();
-            return Actions.All.Where(a => (a.Targets & t) != 0 && a.Usable && Settings.IsEnabled(a.Id)).ToList();
-        }
-
         public static string RegisteredExe()
         {
             foreach (var r in Roots)
@@ -72,13 +66,14 @@ namespace PSTools
         static void Write()
         {
             RemoveMenu();
+            Settings.EnsureLoaded();
+            var state = Settings.Snapshot();
             string exe = System.Windows.Forms.Application.ExecutablePath;
             for (int i = 0; i < Roots.Length; i++)
             {
                 var t = Kinds[i];
-                var acts = MenuActions(t);
-                bool dirs = t != Target.File;
-                if (acts.Count == 0 && !dirs) continue;
+                var plan = MenuPlan.Build(t, true, state);
+                if (plan.ActionCount == 0 && !plan.OpenEntry) continue;
                 string root = Roots[i];
                 string arg = t == Target.Background ? "%V" : "%1";
                 using (var k = Registry.CurrentUser.CreateSubKey(root))
@@ -89,26 +84,23 @@ namespace PSTools
                 }
                 string shell = root + @"\shell";
                 int n = 0;
-                if (dirs) Add(shell, n++, "Open in PS Tools", "open", exe, arg, null, false);
-                var favs = acts.Where(a => Settings.IsFav(a.Id)).ToList();
-                foreach (var a in favs) Add(shell, n++, a.Label, a.Id, exe, arg, a.AppliesTo, a.Extended);
+                if (plan.OpenEntry) Add(shell, n++, "Open in PS Tools", "open", exe, arg, null, false);
+                foreach (var a in plan.Pinned) Add(shell, n++, a.Label, a.Id, exe, arg, a.AppliesTo, a.Extended);
                 bool first = true;
-                foreach (var g in acts.Where(a => !Settings.IsFav(a.Id)).GroupBy(a => a.Group).OrderBy(g => Settings.IsGroupPinned(g.Key) ? 0 : 1).ThenBy(g => Modules.Order(g.Key)))
+                foreach (var g in plan.Groups)
                 {
-                    var items = g.ToList();
                     string mk = shell + @"\" + (n++).ToString("D2") + "m";
                     using (var k = Registry.CurrentUser.CreateSubKey(mk))
                     {
-                        k.SetValue("MUIVerb", g.Key);
+                        k.SetValue("MUIVerb", g.Name);
                         k.SetValue("SubCommands", "");
-                        if (first && (dirs || favs.Count > 0)) k.SetValue("CommandFlags", 0x20, RegistryValueKind.DWord);
-                        string common = items[0].AppliesTo;
-                        if (!string.IsNullOrEmpty(common) && items.All(a => a.AppliesTo == common)) k.SetValue("AppliesTo", common);
-                        if (items.All(a => a.Extended)) k.SetValue("Extended", "");
+                        if (first && (plan.OpenEntry || plan.Pinned.Count > 0)) k.SetValue("CommandFlags", 0x20, RegistryValueKind.DWord);
+                        if (g.CommonAppliesTo != null) k.SetValue("AppliesTo", g.CommonAppliesTo);
+                        if (g.AllExtended) k.SetValue("Extended", "");
                     }
                     first = false;
                     int j = 0;
-                    foreach (var a in items) Add(mk + @"\shell", j++, a.Label, a.Id, exe, arg, a.AppliesTo, a.Extended);
+                    foreach (var a in g.Items) Add(mk + @"\shell", j++, a.Label, a.Id, exe, arg, a.AppliesTo, a.Extended);
                 }
             }
         }

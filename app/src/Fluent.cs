@@ -73,6 +73,32 @@ namespace PSTools
             }
         }
 
+        public static void DrawCheckBox(Graphics g, RectangleF box, int state, bool hot)
+        {
+            bool on = state > 0;
+            Color target = UI.Dark ? Color.White : Color.Black;
+            Color fill = on ? UI.Blend(UI.Accent, target, hot ? 0.08f : 0f) : (hot ? UI.CtrlHover : UI.Field);
+            var old = g.SmoothingMode;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var path = Round(box, UI.S(3)))
+            {
+                using (var b = new SolidBrush(fill)) g.FillPath(b, path);
+                if (!on) using (var p = new Pen(UI.Blend(UI.Back, UI.Text, 0.55f))) g.DrawPath(p, path);
+            }
+            if (on)
+                using (var p = new Pen(UI.OnAccent, Math.Max(1.6f, UI.S(2) * 0.9f)) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
+                {
+                    if (state == 2) g.DrawLine(p, box.X + box.Width * 0.28f, box.Y + box.Height / 2f, box.X + box.Width * 0.72f, box.Y + box.Height / 2f);
+                    else g.DrawLines(p, new[]
+                    {
+                        new PointF(box.X + box.Width * 0.26f, box.Y + box.Height * 0.54f),
+                        new PointF(box.X + box.Width * 0.43f, box.Y + box.Height * 0.70f),
+                        new PointF(box.X + box.Width * 0.75f, box.Y + box.Height * 0.32f)
+                    });
+                }
+            g.SmoothingMode = old;
+        }
+
         public static GraphicsPath Round(RectangleF r, float radius)
         {
             var p = new GraphicsPath();
@@ -317,72 +343,226 @@ namespace PSTools
         }
     }
 
-    abstract class FToggleBase : CheckBox
+    class FToggle : Control
     {
-        protected bool over, down;
-        protected const int BoxSize = 18;
+        const int BoxSize = 18;
 
-        protected FToggleBase()
+        bool over, down, isRadio, threeState;
+        CheckState state = CheckState.Unchecked;
+        string groupName = "";
+
+        public event EventHandler CheckedChanged;
+
+        public FToggle()
         {
-            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.Selectable, true);
+            SetStyle(ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.Selectable | ControlStyles.ResizeRedraw, true);
+            SetStyle(ControlStyles.StandardDoubleClick, false);
+            TabStop = true;
             Font = UI.Font;
+        }
+
+        public bool IsRadio
+        {
+            get { return isRadio; }
+            set { isRadio = value; Invalidate(); }
+        }
+
+        public string GroupName
+        {
+            get { return groupName; }
+            set { groupName = value ?? ""; }
+        }
+
+        public bool ThreeState
+        {
+            get { return threeState; }
+            set { threeState = value; }
+        }
+
+        public bool Checked
+        {
+            get { return state != CheckState.Unchecked; }
+            set { CheckState = value ? CheckState.Checked : CheckState.Unchecked; }
+        }
+
+        public CheckState CheckState
+        {
+            get { return state; }
+            set
+            {
+                if (isRadio && value == CheckState.Indeterminate) value = CheckState.Checked;
+                if (state == value) return;
+                bool wasChecked = Checked;
+                state = value;
+                if (isRadio && Checked) ClearSiblings();
+                Invalidate();
+                if (wasChecked != Checked || !isRadio) RaiseChanged();
+            }
+        }
+
+        void RaiseChanged()
+        {
+            var handler = CheckedChanged;
+            if (handler != null) handler(this, EventArgs.Empty);
+        }
+
+        IEnumerable<FToggle> Siblings()
+        {
+            if (Parent == null) yield break;
+            foreach (Control c in Parent.Controls)
+            {
+                var t = c as FToggle;
+                if (t != null && t != this && t.isRadio && t.groupName == groupName) yield return t;
+            }
+        }
+
+        void ClearSiblings()
+        {
+            foreach (var t in Siblings().ToList()) if (t.state != CheckState.Unchecked) t.CheckState = CheckState.Unchecked;
+        }
+
+        protected override void OnParentChanged(EventArgs e)
+        {
+            base.OnParentChanged(e);
+            if (isRadio && Checked) ClearSiblings();
+        }
+
+        public void Toggle()
+        {
+            if (!Enabled) return;
+            if (isRadio)
+            {
+                if (!Checked) CheckState = CheckState.Checked;
+                return;
+            }
+            if (threeState) CheckState = state == CheckState.Unchecked ? CheckState.Checked : state == CheckState.Checked ? CheckState.Indeterminate : CheckState.Unchecked;
+            else CheckState = state == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked;
+        }
+
+        protected override void OnClick(EventArgs e)
+        {
+            Toggle();
+            base.OnClick(e);
+        }
+
+        protected override bool IsInputKey(Keys keyData)
+        {
+            Keys k = keyData & Keys.KeyCode;
+            if (isRadio && (k == Keys.Left || k == Keys.Right || k == Keys.Up || k == Keys.Down)) return true;
+            if (k == Keys.Enter) { var f = FindForm(); return f == null || f.AcceptButton == null; }
+            return base.IsInputKey(keyData);
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.KeyCode == Keys.Space || (e.KeyCode == Keys.Enter && IsInputKey(Keys.Enter)))
+            {
+                Toggle();
+                e.Handled = true;
+            }
+            else if (isRadio && (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right || e.KeyCode == Keys.Up || e.KeyCode == Keys.Down))
+            {
+                MoveInGroup(e.KeyCode == Keys.Left || e.KeyCode == Keys.Up ? -1 : 1);
+                e.Handled = true;
+            }
+        }
+
+        void MoveInGroup(int step)
+        {
+            if (Parent == null) return;
+            var group = new List<FToggle>();
+            foreach (Control c in Parent.Controls)
+            {
+                var t = c as FToggle;
+                if (t != null && t.isRadio && t.groupName == groupName && t.Enabled && t.Visible) group.Add(t);
+            }
+            group.Sort((x, y) => x.TabIndex != y.TabIndex ? x.TabIndex.CompareTo(y.TabIndex) : Parent.Controls.GetChildIndex(y).CompareTo(Parent.Controls.GetChildIndex(x)));
+            int i = group.IndexOf(this);
+            if (i < 0 || group.Count < 2) return;
+            var next = group[(i + step + group.Count) % group.Count];
+            next.Focus();
+            next.CheckState = CheckState.Checked;
         }
 
         protected override void OnMouseEnter(EventArgs e) { base.OnMouseEnter(e); over = true; Invalidate(); }
         protected override void OnMouseLeave(EventArgs e) { base.OnMouseLeave(e); over = false; down = false; Invalidate(); }
-        protected override void OnMouseDown(MouseEventArgs e) { base.OnMouseDown(e); down = true; Invalidate(); }
+        protected override void OnMouseDown(MouseEventArgs e) { base.OnMouseDown(e); down = true; if (CanFocus) Focus(); Invalidate(); }
         protected override void OnMouseUp(MouseEventArgs e) { base.OnMouseUp(e); down = false; Invalidate(); }
-        protected override void OnCheckedChanged(EventArgs e) { base.OnCheckedChanged(e); Invalidate(); }
         protected override void OnEnabledChanged(EventArgs e) { base.OnEnabledChanged(e); Invalidate(); }
         protected override void OnGotFocus(EventArgs e) { base.OnGotFocus(e); Invalidate(); }
         protected override void OnLostFocus(EventArgs e) { base.OnLostFocus(e); Invalidate(); }
-        protected override void OnTextChanged(EventArgs e) { base.OnTextChanged(e); Invalidate(); }
+        protected override void OnTextChanged(EventArgs e) { base.OnTextChanged(e); Invalidate(); if (AutoSize) { var p = Parent; if (p != null) p.PerformLayout(this, "Text"); } }
+        protected override void OnFontChanged(EventArgs e) { base.OnFontChanged(e); Invalidate(); }
+
+        int TextLeft { get { return UI.S(BoxSize) + UI.S(10); } }
+
+        int AvailableTextWidth(Size proposed)
+        {
+            int w = proposed.Width > 0 && proposed.Width < 10000 ? proposed.Width : 10000;
+            if (MaximumSize.Width > 0) w = Math.Min(w, MaximumSize.Width);
+            return Math.Max(20, w - TextLeft - UI.S(4));
+        }
+
+        public override Size GetPreferredSize(Size proposedSize)
+        {
+            int avail = AvailableTextWidth(proposedSize);
+            string text = Text ?? "";
+            Size one = TextRenderer.MeasureText(text, Font, new Size(10000, 10000), TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+            Size t = one.Width <= avail ? one : TextRenderer.MeasureText(text, Font, new Size(avail, 10000), TextFormatFlags.NoPrefix | TextFormatFlags.WordBreak);
+            int w = TextLeft + Math.Min(t.Width, avail) + UI.S(4);
+            return new Size(w, Math.Max(UI.S(26), t.Height + UI.S(8)));
+        }
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             e.Graphics.Clear(Parent != null ? Parent.BackColor : UI.Back);
         }
 
-        public override Size GetPreferredSize(Size proposedSize)
-        {
-            int textW = proposedSize.Width > 0 && proposedSize.Width < 10000
-                ? Math.Max(20, proposedSize.Width - UI.S(BoxSize + 12))
-                : 10000;
-            Size t = TextRenderer.MeasureText(Text ?? "", Font, new Size(textW, 10000), TextFormatFlags.NoPrefix | (textW < 10000 ? TextFormatFlags.WordBreak : TextFormatFlags.SingleLine));
-            return new Size(t.Width + UI.S(BoxSize + 14), Math.Max(UI.S(26), t.Height + UI.S(6)));
-        }
-
-        protected abstract void DrawBox(Graphics g, RectangleF box);
+        protected virtual Color Rest { get { return UI.Blend(UI.Back, UI.Text, 0.55f); } }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             var g = e.Graphics;
+            g.Clear(Parent != null ? Parent.BackColor : UI.Back);
             g.SmoothingMode = SmoothingMode.AntiAlias;
             int bs = UI.S(BoxSize);
-            var box = new RectangleF(0.5f, (Height - bs) / 2f + 0.5f, bs - 1f, bs - 1f);
-            if (Height > UI.S(40) && !AutoSize) box.Y = UI.S(3) + 0.5f;
-            DrawBox(g, box);
+            string text = Text ?? "";
+            int tx = TextLeft;
+            int avail = Math.Max(10, Width - tx);
+            Size one = TextRenderer.MeasureText(g, text, Font, new Size(10000, 10000), TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+            bool wrap = one.Width > avail;
+            float boxY;
+            Rectangle tr;
+            TextFormatFlags f;
+            if (wrap)
+            {
+                int top = UI.S(4);
+                boxY = top + (one.Height - bs) / 2f + 0.5f;
+                tr = new Rectangle(tx, top, avail, Math.Max(10, Height - top));
+                f = TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.NoPrefix | TextFormatFlags.WordBreak;
+            }
+            else
+            {
+                boxY = (Height - bs) / 2f + 0.5f;
+                tr = new Rectangle(tx, 0, avail, Height);
+                f = TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis;
+            }
+            var box = new RectangleF(0.5f, boxY, bs - 1f, bs - 1f);
+            if (isRadio) DrawRadio(g, box); else DrawCheck(g, box);
             if (Focused && ShowFocusCues)
             {
                 var fr = RectangleF.Inflate(box, 3f, 3f);
-                using (var path = Fx.Round(fr, UI.S(6))) using (var p = new Pen(UI.Text, 1.4f)) g.DrawPath(p, path);
+                if (isRadio) using (var p = new Pen(UI.Text, 1.4f)) g.DrawEllipse(p, fr);
+                else using (var path = Fx.Round(fr, UI.S(6))) using (var p = new Pen(UI.Text, 1.4f)) g.DrawPath(p, path);
             }
-            int tx = bs + UI.S(10);
-            var tr = new Rectangle(tx, 0, Math.Max(10, Width - tx), Height);
             Color fore = Enabled ? ForeColor : UI.Blend(UI.Back, UI.Text, 0.4f);
-            TextFormatFlags f = TextFormatFlags.Left | TextFormatFlags.NoPrefix | (AutoSize ? TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine : TextFormatFlags.WordBreak);
-            if (Height > UI.S(40) && !AutoSize) tr = new Rectangle(tx, UI.S(2), tr.Width, Height - UI.S(2));
-            TextRenderer.DrawText(g, Text ?? "", Font, tr, fore, f);
+            TextRenderer.DrawText(g, text, Font, tr, fore, f);
         }
 
-        protected Color Rest { get { return UI.Blend(UI.Back, UI.Text, 0.55f); } }
-    }
-
-    class FCheck : FToggleBase
-    {
-        protected override void DrawBox(Graphics g, RectangleF box)
+        void DrawCheck(Graphics g, RectangleF box)
         {
-            bool on = CheckState != CheckState.Unchecked;
+            bool on = state != CheckState.Unchecked;
             Color target = UI.Dark ? Color.White : Color.Black;
             Color fill = on
                 ? (Enabled ? UI.Blend(UI.Accent, target, down ? 0.18f : over ? 0.08f : 0f) : UI.Blend(UI.Back, UI.Text, 0.2f))
@@ -396,7 +576,7 @@ namespace PSTools
             Color mark = Enabled ? UI.OnAccent : UI.Blend(UI.Back, UI.Text, 0.55f);
             using (var p = new Pen(mark, Math.Max(1.6f, UI.S(2) * 0.9f)) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
             {
-                if (CheckState == CheckState.Indeterminate)
+                if (state == CheckState.Indeterminate)
                     g.DrawLine(p, box.X + box.Width * 0.28f, box.Y + box.Height / 2f, box.X + box.Width * 0.72f, box.Y + box.Height / 2f);
                 else
                     g.DrawLines(p, new[]
@@ -407,45 +587,9 @@ namespace PSTools
                     });
             }
         }
-    }
 
-    class FRadio : RadioButton
-    {
-        bool over, down;
-
-        public FRadio()
+        void DrawRadio(Graphics g, RectangleF box)
         {
-            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.Selectable, true);
-            Font = UI.Font;
-        }
-
-        protected override void OnMouseEnter(EventArgs e) { base.OnMouseEnter(e); over = true; Invalidate(); }
-        protected override void OnMouseLeave(EventArgs e) { base.OnMouseLeave(e); over = false; down = false; Invalidate(); }
-        protected override void OnMouseDown(MouseEventArgs e) { base.OnMouseDown(e); down = true; Invalidate(); }
-        protected override void OnMouseUp(MouseEventArgs e) { base.OnMouseUp(e); down = false; Invalidate(); }
-        protected override void OnCheckedChanged(EventArgs e) { base.OnCheckedChanged(e); Invalidate(); }
-        protected override void OnEnabledChanged(EventArgs e) { base.OnEnabledChanged(e); Invalidate(); }
-        protected override void OnGotFocus(EventArgs e) { base.OnGotFocus(e); Invalidate(); }
-        protected override void OnLostFocus(EventArgs e) { base.OnLostFocus(e); Invalidate(); }
-        protected override void OnTextChanged(EventArgs e) { base.OnTextChanged(e); Invalidate(); }
-
-        protected override void OnPaintBackground(PaintEventArgs e)
-        {
-            e.Graphics.Clear(Parent != null ? Parent.BackColor : UI.Back);
-        }
-
-        public override Size GetPreferredSize(Size proposedSize)
-        {
-            Size t = TextRenderer.MeasureText(Text ?? "", Font, new Size(10000, 10000), TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
-            return new Size(t.Width + UI.S(32), Math.Max(UI.S(26), t.Height + UI.S(6)));
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            int bs = UI.S(18);
-            var box = new RectangleF(0.5f, (Height - bs) / 2f + 0.5f, bs - 1f, bs - 1f);
             Color target = UI.Dark ? Color.White : Color.Black;
             if (Checked)
             {
@@ -458,18 +602,19 @@ namespace PSTools
             else
             {
                 using (var b = new SolidBrush(Enabled ? (down ? UI.CtrlDown : over ? UI.CtrlHover : UI.Field) : UI.Blend(UI.Back, UI.Field, 0.5f))) g.FillEllipse(b, box);
-                using (var p = new Pen(Enabled ? UI.Blend(UI.Back, UI.Text, 0.55f) : UI.Border)) g.DrawEllipse(p, box);
+                using (var p = new Pen(Enabled ? Rest : UI.Border)) g.DrawEllipse(p, box);
             }
-            if (Focused && ShowFocusCues)
-            {
-                var fr = RectangleF.Inflate(box, 3f, 3f);
-                using (var p = new Pen(UI.Text, 1.4f)) g.DrawEllipse(p, fr);
-            }
-            int tx = bs + UI.S(10);
-            Color fore = Enabled ? ForeColor : UI.Blend(UI.Back, UI.Text, 0.4f);
-            TextRenderer.DrawText(g, Text ?? "", Font, new Rectangle(tx, 0, Math.Max(10, Width - tx), Height), fore,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
         }
+    }
+
+    class FCheck : FToggle
+    {
+        public FCheck() { IsRadio = false; }
+    }
+
+    class FRadio : FToggle
+    {
+        public FRadio() { IsRadio = true; }
     }
 
     class FluentColors : ProfessionalColorTable
@@ -672,11 +817,67 @@ namespace PSTools
         }
     }
 
+    class HeaderRow
+    {
+        public string Name;
+    }
+
+    class RowDeco
+    {
+        public Func<ListViewItem, int> Check;
+        public Action<ListViewItem> OnCheck;
+        public Func<ListViewItem, int> Pin;
+        public Action<ListViewItem> OnPin;
+    }
+
     static class FList
     {
         static readonly ConditionalWeakTable<ListView, object> done = new ConditionalWeakTable<ListView, object>();
+        static readonly ConditionalWeakTable<ListView, RowDeco> decos = new ConditionalWeakTable<ListView, RowDeco>();
+
+        public static void Decorate(ListView lv, RowDeco d)
+        {
+            RowDeco old;
+            if (decos.TryGetValue(lv, out old)) decos.Remove(lv);
+            decos.Add(lv, d);
+        }
+
+        static RowDeco DecoOf(ListView lv)
+        {
+            RowDeco d;
+            return decos.TryGetValue(lv, out d) ? d : null;
+        }
+
+        static Rectangle RowRect(ListView lv, ListViewItem item)
+        {
+            Rectangle row = item.GetBounds(ItemBoundsPortion.Entire);
+            return new Rectangle(row.X, row.Y, Math.Max(row.Width, lv.ClientSize.Width), row.Height);
+        }
+
+        static RectangleF CheckRect(Rectangle row)
+        {
+            int s = UI.S(16);
+            return new RectangleF(row.X + UI.S(16), row.Y + (row.Height - s) / 2f, s, s);
+        }
+
+        static Rectangle PinRect(Rectangle row)
+        {
+            return new Rectangle(row.Right - UI.S(40), row.Y, UI.S(32), row.Height);
+        }
+
+        public static bool IsHeader(ListViewItem it) { return it != null && it.Tag is HeaderRow; }
+
+        public static ListViewItem Header(string text)
+        {
+            return new ListViewItem(text) { Tag = new HeaderRow { Name = text } };
+        }
 
         public static void Attach(ListView lv, int rowHeight, Func<ListViewItem, string> glyphOf)
+        {
+            Attach(lv, rowHeight, glyphOf, null);
+        }
+
+        public static void Attach(ListView lv, int rowHeight, Func<ListViewItem, string> glyphOf, Func<ListViewItem, string> secondOf)
         {
             object seen;
             if (done.TryGetValue(lv, out seen)) return;
@@ -684,10 +885,12 @@ namespace PSTools
             lv.OwnerDraw = true;
             lv.SmallImageList = new ImageList { ImageSize = new Size(1, UI.S(rowHeight)) };
             int hot = -1;
+            ListViewItem last = null;
+            bool fixing = false;
             lv.MouseMove += (s, e) =>
             {
                 var it = lv.GetItemAt(e.X, e.Y);
-                int i = it == null ? -1 : it.Index;
+                int i = it == null || IsHeader(it) ? -1 : it.Index;
                 if (i == hot) return;
                 int old = hot; hot = i;
                 Redraw(lv, old); Redraw(lv, i);
@@ -695,9 +898,76 @@ namespace PSTools
             lv.MouseLeave += (s, e) => { int old = hot; hot = -1; Redraw(lv, old); };
             lv.Resize += (s, e) => Stretch(lv);
             lv.HandleCreated += (s, e) => Stretch(lv);
-            lv.DrawColumnHeader += (s, e) => Header(lv, e);
+            lv.DrawColumnHeader += (s, e) => ColumnHead(lv, e);
             lv.DrawItem += (s, e) => { if (lv.View != View.Details) e.DrawDefault = true; };
-            lv.DrawSubItem += (s, e) => Cell(lv, e, hot == e.ItemIndex, glyphOf);
+            lv.DrawSubItem += (s, e) => Cell(lv, e, hot == e.ItemIndex, glyphOf, secondOf);
+            lv.MouseDown += (s, e) =>
+            {
+                var deco = DecoOf(lv);
+                if (deco == null || e.Button != MouseButtons.Left) return;
+                var it = lv.GetItemAt(Math.Min(e.X, Math.Max(0, lv.ClientSize.Width - 2)), e.Y);
+                if (it == null) return;
+                var row = RowRect(lv, it);
+                if (deco.Check != null && deco.OnCheck != null && deco.Check(it) >= 0)
+                {
+                    var cr = RectangleF.Inflate(CheckRect(row), UI.S(6), UI.S(6));
+                    if (cr.Contains(e.X, e.Y)) { deco.OnCheck(it); return; }
+                }
+                if (deco.Pin != null && deco.OnPin != null && deco.Pin(it) >= 0 && PinRect(row).Contains(e.X, e.Y)) deco.OnPin(it);
+            };
+            lv.ItemSelectionChanged += (s, e) =>
+            {
+                if (fixing) return;
+                if (!e.IsSelected) return;
+                if (!IsHeader(e.Item)) { last = e.Item; return; }
+                fixing = true;
+                try
+                {
+                    int from = e.Item.Index;
+                    int dir = last != null && last.ListView == lv && last.Index > from ? -1 : 1;
+                    e.Item.Selected = false;
+                    var target = NextRow(lv, from, dir) ?? NextRow(lv, from, -dir);
+                    if (target != null) { target.Selected = true; target.Focused = true; target.EnsureVisible(); last = target; }
+                }
+                finally { fixing = false; }
+            };
+            lv.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode != Keys.Up && e.KeyCode != Keys.Down) return;
+                if (lv.Items.Count == 0) return;
+                int cur = lv.SelectedIndices.Count == 0 ? -1 : lv.SelectedIndices[0];
+                int dir = e.KeyCode == Keys.Down ? 1 : -1;
+                var target = NextRow(lv, cur < 0 ? (dir > 0 ? -1 : lv.Items.Count) : cur, dir);
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                if (target == null) return;
+                fixing = true;
+                try
+                {
+                    foreach (ListViewItem x in lv.SelectedItems) x.Selected = false;
+                    target.Selected = true; target.Focused = true; target.EnsureVisible(); last = target;
+                }
+                finally { fixing = false; }
+            };
+        }
+
+        static void DrawStar(Graphics g, Rectangle box, bool on, bool header, int top)
+        {
+            string star = on ? "\u2605" : "\u2606";
+            Color c = on ? UI.Accent : UI.Muted;
+            TextRenderer.DrawText(g, star, UI.Font, new Rectangle(box.X, top - UI.S(3), box.Width, UI.S(24)), c, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+        }
+
+        public static ListViewItem NextRow(ListView lv, int from, int dir)
+        {
+            for (int i = from + dir; i >= 0 && i < lv.Items.Count; i += dir)
+                if (!IsHeader(lv.Items[i])) return lv.Items[i];
+            return null;
+        }
+
+        public static ListViewItem FirstRow(ListView lv)
+        {
+            return NextRow(lv, -1, 1);
         }
 
         static void Stretch(ListView lv)
@@ -716,7 +986,7 @@ namespace PSTools
             if (i >= 0 && i < lv.Items.Count) lv.RedrawItems(i, i, false);
         }
 
-        static void Header(ListView lv, DrawListViewColumnHeaderEventArgs e)
+        static void ColumnHead(ListView lv, DrawListViewColumnHeaderEventArgs e)
         {
             var g = e.Graphics;
             using (var b = new SolidBrush(lv.BackColor)) g.FillRectangle(b, e.Bounds);
@@ -725,13 +995,35 @@ namespace PSTools
             TextRenderer.DrawText(g, e.Header.Text, UI.Small, tr, UI.Muted, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
         }
 
-        static void Cell(ListView lv, DrawListViewSubItemEventArgs e, bool hot, Func<ListViewItem, string> glyphOf)
+        static void Cell(ListView lv, DrawListViewSubItemEventArgs e, bool hot, Func<ListViewItem, string> glyphOf, Func<ListViewItem, string> secondOf)
         {
             var g = e.Graphics;
             var item = e.Item;
             bool sel = item.Selected;
             Rectangle row = item.GetBounds(ItemBoundsPortion.Entire);
             int rowW = Math.Max(row.Width, lv.ClientSize.Width);
+            if (IsHeader(item))
+            {
+                if (e.ColumnIndex == 0)
+                {
+                    using (var b = new SolidBrush(lv.BackColor)) g.FillRectangle(b, row.X, row.Y, rowW, row.Height);
+                    using (var p = new Pen(UI.Border)) g.DrawLine(p, row.X + UI.S(8), row.Bottom - 1, row.X + rowW - UI.S(8), row.Bottom - 1);
+                    int hl = UI.S(16);
+                    var hd = DecoOf(lv);
+                    Rectangle rr = new Rectangle(row.X, row.Y, rowW, row.Height);
+                    if (hd != null && hd.Check != null && hd.Check(item) >= 0)
+                    {
+                        var cb = CheckRect(rr);
+                        cb.Y = rr.Bottom - UI.S(6) - cb.Height;
+                        Fx.DrawCheckBox(g, cb, hd.Check(item), false);
+                        hl = UI.S(42);
+                    }
+                    if (hd != null && hd.Pin != null && hd.Pin(item) >= 0) DrawStar(g, PinRect(rr), hd.Pin(item) > 0, true, rr.Bottom - UI.S(6) - UI.S(16));
+                    var hr = new Rectangle(e.Bounds.X + hl, row.Y, Math.Max(4, e.Bounds.Width - hl - UI.S(44)), row.Height - UI.S(2));
+                    TextRenderer.DrawText(g, item.Text, UI.SmallBold, hr, UI.Muted, TextFormatFlags.Left | TextFormatFlags.Bottom | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+                }
+                return;
+            }
             if (e.ColumnIndex == 0)
             {
                 using (var b = new SolidBrush(lv.BackColor)) g.FillRectangle(b, row.X, row.Y, rowW, row.Height);
@@ -749,6 +1041,20 @@ namespace PSTools
                 }
             }
             int left = e.ColumnIndex == 0 ? UI.S(16) : UI.S(8);
+            int rightPad = UI.S(6);
+            var deco = e.ColumnIndex == 0 ? DecoOf(lv) : null;
+            if (deco != null)
+            {
+                var rr = new Rectangle(row.X, row.Y, rowW, row.Height);
+                int cs = deco.Check == null ? -1 : deco.Check(item);
+                if (cs >= 0) { Fx.DrawCheckBox(g, CheckRect(rr), cs, false); left = UI.S(42); }
+                int ps = deco.Pin == null ? -1 : deco.Pin(item);
+                if (ps >= 0)
+                {
+                    rightPad = UI.S(44);
+                    if (ps > 0 || sel || hot) DrawStar(g, PinRect(rr), ps > 0, false, rr.Y + (rr.Height - UI.S(16)) / 2);
+                }
+            }
             if (e.ColumnIndex == 0 && glyphOf != null)
             {
                 string gl = glyphOf(item);
@@ -760,7 +1066,17 @@ namespace PSTools
             }
             Color fore = item.UseItemStyleForSubItems ? item.ForeColor : e.SubItem.ForeColor;
             if (fore.IsEmpty || fore == SystemColors.WindowText) fore = UI.Text;
-            var tr = new Rectangle(e.Bounds.X + left, e.Bounds.Y, Math.Max(4, e.Bounds.Width - left - UI.S(6)), e.Bounds.Height);
+            var tr = new Rectangle(e.Bounds.X + left, e.Bounds.Y, Math.Max(4, e.Bounds.Width - left - rightPad), e.Bounds.Height);
+            string second = e.ColumnIndex == 0 && secondOf != null ? secondOf(item) : null;
+            if (!string.IsNullOrEmpty(second))
+            {
+                int half = e.Bounds.Height / 2;
+                var top = new Rectangle(tr.X, tr.Y + UI.S(1), tr.Width, half);
+                var bottom = new Rectangle(tr.X, tr.Y + half - UI.S(1), tr.Width, e.Bounds.Height - half);
+                TextRenderer.DrawText(g, e.SubItem.Text, item.Font, top, fore, TextFormatFlags.Left | TextFormatFlags.Bottom | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+                TextRenderer.DrawText(g, second, UI.Small, bottom, UI.Muted, TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+                return;
+            }
             TextRenderer.DrawText(g, e.SubItem.Text, item.Font, tr, fore, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
         }
     }

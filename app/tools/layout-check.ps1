@@ -71,6 +71,10 @@ Check $preview 'Menu preview' 0 0
 $first = [Activator]::CreateInstance($asm.GetType('PSTools.FirstRunForm'))
 Check $first 'First run' 0 0
 
+$library = [Activator]::CreateInstance($asm.GetType('PSTools.LibraryForm'), @($env:TEMP))
+Check $library 'Command library' 0 0
+Check $library 'Command library (minimum)' 760 480
+
 $recipes = [Activator]::CreateInstance($asm.GetType('PSTools.RecipesForm'))
 Check $recipes 'Recipe editor' 0 0
 Check $recipes 'Recipe editor (minimum)' 820 520
@@ -86,7 +90,7 @@ $space = [Activator]::CreateInstance($asm.GetType('PSTools.SpaceForm'), @($env:T
 Check $space 'Space map' 0 0
 Check $space 'Space map (minimum)' 640 420
 
-foreach ($f in @($space, $history, $picker, $recipes, $first, $preview, $main)) { $f.Dispose() }
+foreach ($f in @($space, $history, $picker, $recipes, $library, $first, $preview, $main)) { $f.Dispose() }
 
 if ($issues.Count -gt 0) {
     Write-Host ''

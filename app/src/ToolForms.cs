@@ -158,13 +158,13 @@ namespace PSTools
 
     class UpdateForm : Form
     {
-        readonly CheckBox winget = new FCheck { Text = "winget apps (includes Microsoft Store apps winget can see)", AutoSize = true, Checked = true };
-        readonly CheckBox unknown = new FCheck { Text = "Also update apps whose installed version winget cannot read", AutoSize = true };
-        readonly CheckBox silent = new FCheck { Text = "Silent installers (no installer windows)", AutoSize = true, Checked = true };
-        readonly CheckBox scoop = new FCheck { Text = "scoop", AutoSize = true };
-        readonly CheckBox npm = new FCheck { Text = "npm global packages", AutoSize = true };
-        readonly CheckBox wsl = new FCheck { Text = "WSL kernel (wsl --update)", AutoSize = true };
-        readonly CheckBox mods = new FCheck { Text = "PowerShell modules from the gallery", AutoSize = true };
+        readonly FToggle winget = new FCheck { Text = "winget apps (includes Microsoft Store apps winget can see)", AutoSize = true, Checked = true };
+        readonly FToggle unknown = new FCheck { Text = "Also update apps whose installed version winget cannot read", AutoSize = true };
+        readonly FToggle silent = new FCheck { Text = "Silent installers (no installer windows)", AutoSize = true, Checked = true };
+        readonly FToggle scoop = new FCheck { Text = "scoop", AutoSize = true };
+        readonly FToggle npm = new FCheck { Text = "npm global packages", AutoSize = true };
+        readonly FToggle wsl = new FCheck { Text = "WSL kernel (wsl --update)", AutoSize = true };
+        readonly FToggle mods = new FCheck { Text = "PowerShell modules from the gallery", AutoSize = true };
 
         public UpdateForm()
         {
@@ -176,7 +176,7 @@ namespace PSTools
             var sub = new Label { Text = "Runs in a PowerShell window so you see every step and can stop with Ctrl+C. Only tools found on this PC are enabled.", Left = 22, Top = 52, Width = 510, Height = 36, ForeColor = UI.Muted };
             sub.Height = Math.Max(36, Math.Min(44, UI.MeasureHeight(sub.Text, UI.Font, sub.Width) + 4));
             var box = new FlowLayoutPanel { Left = 22, Top = 96, Width = 520, Height = 220, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true };
-            foreach (var c in new CheckBox[] { winget, unknown, silent, scoop, npm, wsl, mods }) { c.Margin = new Padding(0, 4, 0, 4); box.Controls.Add(c); }
+            foreach (var c in new FToggle[] { winget, unknown, silent, scoop, npm, wsl, mods }) { c.Margin = new Padding(0, 4, 0, 4); box.Controls.Add(c); }
             unknown.Margin = new Padding(22, 4, 0, 4); silent.Margin = new Padding(22, 4, 0, 4);
 
             bool hasWinget = Fs.Which("winget") != null;
