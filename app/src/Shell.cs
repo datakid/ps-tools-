@@ -93,7 +93,7 @@ namespace PSTools
                 var favs = acts.Where(a => Settings.IsFav(a.Id)).ToList();
                 foreach (var a in favs) Add(shell, n++, a.Label, a.Id, exe, arg, a.AppliesTo, a.Extended);
                 bool first = true;
-                foreach (var g in acts.Where(a => !Settings.IsFav(a.Id)).GroupBy(a => a.Group).OrderBy(g => Modules.Order(g.Key)))
+                foreach (var g in acts.Where(a => !Settings.IsFav(a.Id)).GroupBy(a => a.Group).OrderBy(g => Settings.IsGroupPinned(g.Key) ? 0 : 1).ThenBy(g => Modules.Order(g.Key)))
                 {
                     var items = g.ToList();
                     string mk = shell + @"\" + (n++).ToString("D2") + "m";

@@ -12,9 +12,9 @@ namespace PSTools
     {
         readonly string root;
         readonly TextBox find = new TextBox(), repl = new TextBox(), prefix = new TextBox(), suffix = new TextBox(), only = new TextBox();
-        readonly CheckBox regex = new CheckBox { Text = "Regex", AutoSize = true }, number = new CheckBox { Text = "Number", AutoSize = true },
-                          spaces = new CheckBox { Text = "Spaces to _", AutoSize = true }, tidy = new CheckBox { Text = "Tidy", AutoSize = true }, keepExt = new CheckBox { Text = "Keep extension", AutoSize = true, Checked = true },
-                          dateP = new CheckBox { Text = "Date prefix", AutoSize = true }, folders = new CheckBox { Text = "Include folders", AutoSize = true };
+        readonly CheckBox regex = new FCheck { Text = "Regex", AutoSize = true }, number = new FCheck { Text = "Number", AutoSize = true },
+                          spaces = new FCheck { Text = "Spaces to _", AutoSize = true }, tidy = new FCheck { Text = "Tidy", AutoSize = true }, keepExt = new FCheck { Text = "Keep extension", AutoSize = true, Checked = true },
+                          dateP = new FCheck { Text = "Date prefix", AutoSize = true }, folders = new FCheck { Text = "Include folders", AutoSize = true };
         readonly ComboBox casing = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
         readonly NumericUpDown start = new NumericUpDown { Minimum = 0, Maximum = 999999, Value = 1, Width = 64 },
                                digits = new NumericUpDown { Minimum = 1, Maximum = 8, Value = 3, Width = 44 };

@@ -158,13 +158,13 @@ namespace PSTools
 
     class UpdateForm : Form
     {
-        readonly CheckBox winget = new CheckBox { Text = "winget apps (includes Microsoft Store apps winget can see)", AutoSize = true, Checked = true };
-        readonly CheckBox unknown = new CheckBox { Text = "Also update apps whose installed version winget cannot read", AutoSize = true };
-        readonly CheckBox silent = new CheckBox { Text = "Silent installers (no installer windows)", AutoSize = true, Checked = true };
-        readonly CheckBox scoop = new CheckBox { Text = "scoop", AutoSize = true };
-        readonly CheckBox npm = new CheckBox { Text = "npm global packages", AutoSize = true };
-        readonly CheckBox wsl = new CheckBox { Text = "WSL kernel (wsl --update)", AutoSize = true };
-        readonly CheckBox mods = new CheckBox { Text = "PowerShell modules from the gallery", AutoSize = true };
+        readonly CheckBox winget = new FCheck { Text = "winget apps (includes Microsoft Store apps winget can see)", AutoSize = true, Checked = true };
+        readonly CheckBox unknown = new FCheck { Text = "Also update apps whose installed version winget cannot read", AutoSize = true };
+        readonly CheckBox silent = new FCheck { Text = "Silent installers (no installer windows)", AutoSize = true, Checked = true };
+        readonly CheckBox scoop = new FCheck { Text = "scoop", AutoSize = true };
+        readonly CheckBox npm = new FCheck { Text = "npm global packages", AutoSize = true };
+        readonly CheckBox wsl = new FCheck { Text = "WSL kernel (wsl --update)", AutoSize = true };
+        readonly CheckBox mods = new FCheck { Text = "PowerShell modules from the gallery", AutoSize = true };
 
         public UpdateForm()
         {

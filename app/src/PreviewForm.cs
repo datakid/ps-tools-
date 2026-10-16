@@ -12,13 +12,17 @@ namespace PSTools
         readonly HashSet<string> favs;
         readonly TreeView tree = new TreeView();
         readonly ComboBox where = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 170 };
-        readonly CheckBox shift = new CheckBox { Text = "Holding Shift", AutoSize = true, Margin = new Padding(16, 5, 0, 0) };
+        readonly CheckBox shift = new FCheck { Text = "Holding Shift", AutoSize = true, Margin = new Padding(16, 5, 0, 0) };
         readonly Label count = new Label { Dock = DockStyle.Bottom, Height = 54, Padding = new Padding(14, 8, 14, 0), ForeColor = UI.Muted };
         static readonly Target[] kinds = { Target.Folder, Target.Background, Target.Drive, Target.File };
 
-        public PreviewForm(HashSet<string> enabledIds, HashSet<string> favIds)
+        readonly HashSet<string> groups;
+
+        public PreviewForm(HashSet<string> enabledIds, HashSet<string> favIds) : this(enabledIds, favIds, new HashSet<string>()) { }
+
+        public PreviewForm(HashSet<string> enabledIds, HashSet<string> favIds, HashSet<string> pinnedGroups)
         {
-            enabled = enabledIds; favs = favIds;
+            enabled = enabledIds; favs = favIds; groups = pinnedGroups;
             Text = "Right-click menu preview"; Font = UI.Font; ClientSize = new Size(480, 560); MinimumSize = new Size(380, 360);
             StartPosition = FormStartPosition.CenterParent; ShowInTaskbar = false;
 
@@ -68,10 +72,10 @@ namespace PSTools
                 root.Nodes.Add(new TreeNode("\u2605 " + a.Label.TrimEnd('.') + Qualifier(a)));
                 top++; total++;
             }
-            foreach (var g in acts.Where(a => !favs.Contains(a.Id)).GroupBy(a => a.Group).OrderBy(g => Modules.Order(g.Key)))
+            foreach (var g in acts.Where(a => !favs.Contains(a.Id)).GroupBy(a => a.Group).OrderBy(g => groups.Contains(g.Key) ? 0 : 1).ThenBy(g => Modules.Order(g.Key)))
             {
                 var items = g.ToList();
-                var mn = new TreeNode(g.Key + "  (" + items.Count + ")") { NodeFont = UI.Bold };
+                var mn = new TreeNode((groups.Contains(g.Key) ? "\u2605 " : "") + g.Key + "  (" + items.Count + ")") { NodeFont = UI.Bold };
                 foreach (var a in items) mn.Nodes.Add(new TreeNode(a.Label.TrimEnd('.') + Qualifier(a) + (a.Tier == Tier.Elevated ? "   (admin)" : "")));
                 root.Nodes.Add(mn);
                 top++; total += items.Count;

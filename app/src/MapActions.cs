@@ -16,6 +16,13 @@ namespace PSTools
 
             yield return new Action
             {
+                Id = "setup-guide", Group = "System", Label = "Setup guide...", Targets = Target.None,
+                Hint = "Choose how much goes in the Explorer right-click menu and install it. Open it any time to start again from a preset.",
+                Window = paths => new FirstRunForm(true)
+            };
+
+            yield return new Action
+            {
                 Id = "undo-history", Group = "Create", Label = "Undo history...", Targets = Target.Background,
                 Hint = "Shows the last operations PS Tools made, what undoing each one will do, and lets you undo several in order. Recipes count as one operation.",
                 Window = paths => new UndoHistoryForm()

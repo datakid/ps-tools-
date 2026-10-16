@@ -25,6 +25,9 @@ namespace PSTools
         readonly ComboBox theme = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 120 };
         readonly ComboBox preset = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150 };
         readonly HashSet<string> favSet = new HashSet<string>();
+        readonly HashSet<string> groupPinSet = new HashSet<string>();
+        readonly FButton pinBtn = new FButton { Text = "Pin to top of menu", Dock = DockStyle.Top, Height = 32, Glyph = Fx.Pin };
+        readonly FButton pinAction = new FButton { Text = "Pin", Width = 100, Height = 36, Glyph = Fx.Pin, Margin = new Padding(0, 0, 0, 0) };
         readonly TextBox treeFilter = new TextBox();
         HashSet<string> working = new HashSet<string>();
         readonly Timer statusTimer = new Timer { Interval = 7000 };
@@ -45,6 +48,8 @@ namespace PSTools
             rail.Items.Add(new NavRail.Item { Text = "Recipes", Glyph = Fx.List });
             rail.Items.Add(new NavRail.Item { Text = "Undo history", Glyph = Fx.History });
             rail.Items.Add(new NavRail.Item { Text = "Space map", Glyph = Fx.Folder });
+            rail.Items.Add(new NavRail.Item { Divider = true });
+            rail.Items.Add(new NavRail.Item { Text = "Setup guide", Glyph = Fx.Help });
             rail.ItemClicked += i =>
             {
                 if (i == 0) ShowPage(true);
@@ -56,6 +61,7 @@ namespace PSTools
                     if (Directory.Exists(Path0)) new SpaceForm(Path0).Show(this);
                     else SetStatus("Folder not found: " + Path0);
                 }
+                else if (i == 7) new FirstRunForm(true).Show(this);
             };
 
             var top = new TableLayoutPanel { Dock = DockStyle.Top, Height = 62, ColumnCount = 3, Padding = new Padding(0, 14, 0, 8) };
@@ -220,8 +226,11 @@ namespace PSTools
             actionsScroll.Resize += (s, e) => FitActions();
             UI.WheelScroll(actionsScroll);
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 56, Padding = new Padding(0, 10, 0, 0) };
-            run.Text = "Run"; run.Glyph = Fx.Play; run.Width = 140; run.Height = 36; UI.Primary(run); run.Click += (s, e) => RunSelected();
+            run.Text = "Run"; run.Glyph = Fx.Play; run.Width = 112; run.Height = 36; run.Margin = new Padding(0, 0, 8, 0); UI.Primary(run); run.Click += (s, e) => RunSelected();
             buttons.Controls.Add(run);
+            pinAction.Click += (s, e) => PinFromList();
+            tips.SetToolTip(pinAction, "Pin this action to the top level of the right-click menu, or unpin it");
+            buttons.Controls.Add(pinAction);
             tip.Text = "Tip: drop a folder on this window. Right-click menu entries are chosen on the Menu page.\nWindows 11: the classic menu is under \"Show more options\" (Shift+F10).";
             right.Controls.Add(actionsScroll); right.Controls.Add(buttons); right.Controls.Add(tip); right.Controls.Add(title);
 
@@ -280,6 +289,7 @@ namespace PSTools
             string safety = a.Tier == Tier.Elevated ? "Needs administrator rights. Shows exactly what it will run first." : a.Confirm != null ? "Asks for confirmation before changing anything." : "Does not change your files.";
             meta.Text = safety + "\n" + Where(a);
             run.Text = a.Window != null ? "Open" : "Run";
+            UpdatePinAction(a);
             FitActions();
             actionsScroll.AutoScrollPosition = new Point(0, 0);
         }
@@ -339,6 +349,13 @@ namespace PSTools
             RefreshState();
         }
 
+        public void AfterSetup()
+        {
+            BuildTree();
+            RefreshMenuState();
+            SetStatus("Explorer menu set up. Fine-tune it on the Menu page.");
+        }
+
         public void AfterUndo(string message)
         {
             SetStatus(message);
@@ -370,12 +387,13 @@ namespace PSTools
             UI.WheelScroll(right);
             rightHost.Controls.Add(right);
             menuInfo.Dock = DockStyle.Top; menuInfo.Height = 120; menuInfo.ForeColor = UI.Muted;
-            menuInfo.Text = "Pick a preset or tick what you want in the Explorer right-click menu. Ticking a module ticks all its actions. Pin an action to put it at the top of the menu. Nothing changes in Explorer until you press Apply.";
+            menuInfo.Text = "Pick a preset or tick what you want in the Explorer right-click menu. Ticking a module ticks all its actions. Pin an action, or a whole group, to put it at the top of the menu. Nothing changes in Explorer until you press Apply.";
 
             var apply = new FButton { Text = "Apply to Explorer menu", Dock = DockStyle.Bottom, Height = 36 };
             UI.Primary(apply); apply.Click += (s, e) => ApplyMenu();
-            var pinBtn = new FButton { Text = "Pin or unpin selected", Dock = DockStyle.Top, Height = 32 };
             pinBtn.Click += (s, e) => PinSelected();
+            var guide = new FButton { Text = "Setup guide...", Dock = DockStyle.Top, Height = 32, Glyph = Fx.Help };
+            guide.Click += (s, e) => new FirstRunForm(true).Show(this);
             var reset = new FButton { Text = "Reset to defaults", Dock = DockStyle.Top, Height = 32 };
             reset.Click += (s, e) => { Settings.ResetDefaults(); BuildTree(); RefreshPreset(); SetStatus("Menu selection reset. Press Apply to update Explorer."); };
 
@@ -413,8 +431,9 @@ namespace PSTools
             right.Controls.Add(menuState);
             right.Controls.Add(full); right.Controls.Add(gap(6)); right.Controls.Add(removeMenu); right.Controls.Add(gap(14));
             right.Controls.Add(themeRow); right.Controls.Add(gap(8));
+            right.Controls.Add(guide); right.Controls.Add(gap(6));
             var previewBtn = new FButton { Text = "Preview the right-click menu...", Dock = DockStyle.Top, Height = 32 };
-            previewBtn.Click += (s, e) => { using (var f = new PreviewForm(new HashSet<string>(working), new HashSet<string>(favSet))) f.ShowDialog(this); };
+            previewBtn.Click += (s, e) => { using (var f = new PreviewForm(new HashSet<string>(working), new HashSet<string>(favSet), new HashSet<string>(groupPinSet))) f.ShowDialog(this); };
             right.Controls.Add(reset); right.Controls.Add(gap(6)); right.Controls.Add(pinBtn);
             right.Controls.Add(gap(6)); right.Controls.Add(previewBtn);
             right.Controls.Add(gap(8)); right.Controls.Add(presetRow);
@@ -424,6 +443,19 @@ namespace PSTools
             tree.Dock = DockStyle.Fill; tree.CheckBoxes = true; tree.ShowLines = false; tree.FullRowSelect = true; tree.HideSelection = false; tree.ItemHeight = 30;
             tree.AfterCheck += TreeChecked;
             tree.AfterSelect += (s, e) => TreeSelected();
+            tree.NodeMouseClick += (s, e) =>
+            {
+                if (e.Button != MouseButtons.Right) return;
+                tree.SelectedNode = e.Node;
+                var menu = new ContextMenuStrip();
+                Fx.ThemeMenu(menu);
+                var pin = menu.Items.Add(pinBtn.Text);
+                pin.Click += (s2, e2) => PinSelected();
+                menu.Items.Add(new ToolStripSeparator());
+                var preview = menu.Items.Add("Preview the right-click menu...");
+                preview.Click += (s2, e2) => { using (var f = new PreviewForm(new HashSet<string>(working), new HashSet<string>(favSet), new HashSet<string>(groupPinSet))) f.ShowDialog(this); };
+                menu.Show(tree, e.Location);
+            };
             treeFilter.Dock = DockStyle.Fill;
             ResultsForm.SetCue(treeFilter, "Filter actions");
             treeFilter.TextChanged += (s, e) => FillTree();
@@ -456,6 +488,8 @@ namespace PSTools
             Settings.EnsureLoaded();
             favSet.Clear();
             foreach (var a in Actions.All) if (Settings.IsFav(a.Id)) favSet.Add(a.Id);
+            groupPinSet.Clear();
+            foreach (string g in Settings.GroupPins) groupPinSet.Add(g);
             working = new HashSet<string>();
             foreach (var m in Modules.All)
             {
@@ -476,7 +510,7 @@ namespace PSTools
                 if (m.Name == "Library" || m.Name == "Recipes") continue;
                 var acts = TreeActions(m).Where(a => Matches(a, q)).ToList();
                 if (acts.Count == 0) continue;
-                var mn = new TreeNode(m.Name) { Tag = m, NodeFont = UI.Bold };
+                var mn = new TreeNode(ModuleText(m.Name)) { Tag = m, NodeFont = UI.Bold };
                 foreach (var a in acts) mn.Nodes.Add(new TreeNode(NodeText(a)) { Tag = a, Checked = working.Contains(a.Id) });
                 mn.Checked = mn.Nodes.Cast<TreeNode>().All(n => n.Checked);
                 tree.Nodes.Add(mn);
@@ -484,7 +518,7 @@ namespace PSTools
             tree.EndUpdate();
             building = false;
             if (q.Length > 0) tree.ExpandAll(); else foreach (TreeNode n in tree.Nodes) n.Collapse();
-            if (tree.Nodes.Count == 0) menuInfo.Text = "No action matches \"" + q + "\".";
+            if (tree.Nodes.Count == 0) { menuInfo.Text = "No action matches \"" + q + "\"."; UpdatePinButton(); }
             else TreeSelected();
             FitMenu();
         }
@@ -515,27 +549,96 @@ namespace PSTools
         void TreeSelected()
         {
             var n = tree.SelectedNode;
-            if (n == null) { return; }
+            if (n == null) { UpdatePinButton(); return; }
             var a = n.Tag as Action;
             var m = n.Tag as Module;
             if (a != null) menuInfo.Text = a.Hint + "\n\n" + Where(a);
-            else if (m != null) menuInfo.Text = m.Name + ": " + m.Blurb;
+            else if (m != null) menuInfo.Text = m.Name + ": " + m.Blurb + "\n\nPin the group to put its submenu first in the right-click menu.";
+            UpdatePinButton();
             FitMenu();
+        }
+
+        string ModuleText(string name)
+        {
+            return (groupPinSet.Contains(name) ? "\u2605 " : "") + name;
+        }
+
+        void UpdatePinButton()
+        {
+            var n = tree.SelectedNode;
+            var a = n == null ? null : n.Tag as Action;
+            var m = n == null ? null : n.Tag as Module;
+            pinBtn.Enabled = a != null || m != null;
+            if (n == null) pinBtn.Text = "Select an item to pin";
+            else if (m != null) pinBtn.Text = groupPinSet.Contains(m.Name) ? "Unpin group" : "Pin group to top";
+            else pinBtn.Text = a != null && favSet.Contains(a.Id) ? "Unpin from top" : "Pin to top of menu";
+        }
+
+        static bool Pinnable(Action a)
+        {
+            return a != null && a.Targets != Target.None && a.Usable && a.Group != "Library" && a.Group != "Recipes";
+        }
+
+        void UpdatePinAction(Action a)
+        {
+            pinAction.Enabled = Pinnable(a);
+            pinAction.Text = a != null && favSet.Contains(a.Id) ? "Unpin" : "Pin";
+        }
+
+        TreeNode NodeFor(Action a)
+        {
+            foreach (TreeNode m in tree.Nodes) foreach (TreeNode n in m.Nodes) if (n.Tag == a || (n.Tag as Action) != null && ((Action)n.Tag).Id == a.Id) return n;
+            return null;
+        }
+
+        void PinFromList()
+        {
+            var a = Selected;
+            if (!Pinnable(a)) return;
+            bool now = !favSet.Remove(a.Id);
+            if (now) { favSet.Add(a.Id); working.Add(a.Id); }
+            var n = NodeFor(a);
+            if (n != null)
+            {
+                building = true;
+                n.Checked = working.Contains(a.Id);
+                n.Text = NodeText(a);
+                if (n.Parent != null) n.Parent.Checked = n.Parent.Nodes.Cast<TreeNode>().All(x => x.Checked);
+                building = false;
+            }
+            UpdatePinAction(a);
+            UpdatePinButton();
+            SetStatus((now ? "Pinned" : "Unpinned") + " \"" + a.Label.TrimEnd('.') + "\". Open Menu and settings and press Apply to update Explorer.");
         }
 
         void PinSelected()
         {
             var n = tree.SelectedNode;
-            var a = n == null ? null : n.Tag as Action;
-            if (a == null) { SetStatus("Select an action first."); return; }
-            if (!favSet.Remove(a.Id)) { favSet.Add(a.Id); n.Checked = true; }
-            n.Text = NodeText(a);
+            if (n == null) { SetStatus("Select an action or a group in the list first."); return; }
+            var m = n.Tag as Module;
+            var a = n.Tag as Action;
+            if (m != null)
+            {
+                bool pinGroup = !groupPinSet.Remove(m.Name);
+                if (pinGroup) groupPinSet.Add(m.Name);
+                n.Text = ModuleText(m.Name);
+                SetStatus((pinGroup ? "Group \"" + m.Name + "\" pinned: its submenu comes first." : "Group \"" + m.Name + "\" unpinned.") + " Press Apply to update Explorer.");
+            }
+            else if (a != null)
+            {
+                bool pin = !favSet.Remove(a.Id);
+                if (pin) { favSet.Add(a.Id); n.Checked = true; }
+                n.Text = NodeText(a);
+                SetStatus((pin ? "Pinned" : "Unpinned") + " \"" + a.Label.TrimEnd('.') + "\". Press Apply to update Explorer.");
+            }
+            UpdatePinButton();
         }
 
         void ApplyMenu()
         {
             var enabled = new List<string>(working);
             Settings.Set(enabled, favSet);
+            Settings.SetGroupPins(groupPinSet);
             RefreshPreset();
             try
             {

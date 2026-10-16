@@ -13,7 +13,7 @@ namespace PSTools
         readonly ListView recipeList = new ListView();
         readonly TextBox name = new TextBox();
         readonly TextBox desc = new TextBox { Multiline = true };
-        readonly CheckBox inMenu = new CheckBox { Text = "Show in the right-click menu (Recipes submenu)", AutoSize = true };
+        readonly CheckBox inMenu = new FCheck { Text = "Show in the right-click menu (Recipes submenu)", AutoSize = true };
         readonly ListView steps = new ListView();
         readonly Label info = new Label { Dock = DockStyle.Bottom, Height = 78, ForeColor = UI.Muted };
         readonly Button addStep = Btn("Add steps...", 120), removeStep = Btn("Remove", 120), up = Btn("Move up", 120), down = Btn("Move down", 120);

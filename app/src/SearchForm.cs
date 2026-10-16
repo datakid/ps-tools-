@@ -23,7 +23,7 @@ namespace PSTools
 
         readonly string root;
         readonly TextBox query = new TextBox();
-        readonly CheckBox inside = new CheckBox { Text = "Also search inside text files", AutoSize = true, Checked = true };
+        readonly CheckBox inside = new FCheck { Text = "Also search inside text files", AutoSize = true, Checked = true };
         readonly ListView list = new ListView();
         readonly Label state = new Label { AutoSize = true, ForeColor = UI.Muted };
         readonly System.Windows.Forms.Timer pump = new System.Windows.Forms.Timer { Interval = 120 };

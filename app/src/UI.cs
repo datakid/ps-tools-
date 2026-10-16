@@ -70,7 +70,7 @@ namespace PSTools
         }
 
         public static int S(int v) { return (int)Math.Round(v * Scale); }
-        public const string Version = "2.5.0";
+        public const string Version = "2.6.0";
 
         static string Pick(params string[] names)
         {
@@ -340,6 +340,7 @@ namespace PSTools
             {
                 tb.BackColor = Field; tb.ForeColor = Text;
                 tb.BorderStyle = BorderStyle.None;
+                if (tb.Multiline) Native(tb);
                 Fx.Wrap(tb, true);
                 return;
             }
@@ -361,9 +362,9 @@ namespace PSTools
                 return;
             }
             var cb = c as ComboBox;
-            if (cb != null) { cb.BackColor = Field; cb.ForeColor = Text; cb.FlatStyle = FlatStyle.Flat; return; }
+            if (cb != null) { cb.BackColor = Field; cb.ForeColor = Text; cb.FlatStyle = FlatStyle.Standard; ThemeCombo(cb); return; }
             var nu = c as NumericUpDown;
-            if (nu != null) { nu.BackColor = Field; nu.ForeColor = Text; return; }
+            if (nu != null) { nu.BackColor = Field; nu.ForeColor = Text; Native(nu); return; }
             var b = c as Button;
             if (b != null)
             {
@@ -383,6 +384,38 @@ namespace PSTools
             if (pn != null && pn.AutoScroll) { Native(pn); return; }
             var sc = c as SplitContainer;
             if (sc != null) { sc.BackColor = Back; sc.Panel1.BackColor = Back; sc.Panel2.BackColor = Back; }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct ComboRect { public int Left, Top, Right, Bottom; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct ComboInfo
+        {
+            public int Size;
+            public ComboRect Item, Button;
+            public int State;
+            public IntPtr Combo, Edit, List;
+        }
+
+        [DllImport("user32.dll")]
+        static extern bool GetComboBoxInfo(IntPtr hwnd, ref ComboInfo info);
+
+        static void ThemeCombo(ComboBox cb)
+        {
+            if (!Dark) return;
+            EventHandler apply = (s, e) =>
+            {
+                try
+                {
+                    SetWindowTheme(cb.Handle, "DarkMode_CFD", null);
+                    var info = new ComboInfo();
+                    info.Size = Marshal.SizeOf(typeof(ComboInfo));
+                    if (GetComboBoxInfo(cb.Handle, ref info) && info.List != IntPtr.Zero) SetWindowTheme(info.List, "DarkMode_Explorer", null);
+                }
+                catch { }
+            };
+            if (cb.IsHandleCreated) apply(cb, EventArgs.Empty); else cb.HandleCreated += apply;
         }
 
         static void Smooth(Control c, int msg, int flags)

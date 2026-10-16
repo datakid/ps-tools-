@@ -15,7 +15,7 @@ namespace PSTools
         public const string FolderOpen = "\uE838", Folder = "\uE8B7", Play = "\uE768", Settings = "\uE713", Search = "\uE721", Undo = "\uE7A7",
             History = "\uE81C", Copy = "\uE8C8", Add = "\uE710", Delete = "\uE74D", Image = "\uE91B", Package = "\uE7B8", Share = "\uE72D",
             Link = "\uE71B", Code = "\uE943", List = "\uE8FD", Edit = "\uE70F", OpenWindow = "\uE8A7", Accept = "\uE8FB", Up = "\uE74A",
-            Refresh = "\uE72C", Warning = "\uE7BA", Pin = "\uE718", Save = "\uE74E", Download = "\uE896", Cancel = "\uE711";
+            Refresh = "\uE72C", Warning = "\uE7BA", Pin = "\uE718", Save = "\uE74E", Download = "\uE896", Cancel = "\uE711", Help = "\uE897";
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode)]
         static extern uint GetGlyphIndicesW(IntPtr hdc, string text, int count, ushort[] indices, uint flags);
@@ -84,6 +84,14 @@ namespace PSTools
             p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
             p.CloseFigure();
             return p;
+        }
+
+        public static void ThemeMenu(ContextMenuStrip m)
+        {
+            m.Renderer = new FluentMenuRenderer();
+            m.BackColor = UI.Card;
+            m.ForeColor = UI.Text;
+            m.Font = UI.Font;
         }
 
         public static Control Host(Control c)
@@ -306,6 +314,190 @@ namespace PSTools
         {
             if (disposing) anim.Dispose();
             base.Dispose(disposing);
+        }
+    }
+
+    abstract class FToggleBase : CheckBox
+    {
+        protected bool over, down;
+        protected const int BoxSize = 18;
+
+        protected FToggleBase()
+        {
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.Selectable, true);
+            Font = UI.Font;
+        }
+
+        protected override void OnMouseEnter(EventArgs e) { base.OnMouseEnter(e); over = true; Invalidate(); }
+        protected override void OnMouseLeave(EventArgs e) { base.OnMouseLeave(e); over = false; down = false; Invalidate(); }
+        protected override void OnMouseDown(MouseEventArgs e) { base.OnMouseDown(e); down = true; Invalidate(); }
+        protected override void OnMouseUp(MouseEventArgs e) { base.OnMouseUp(e); down = false; Invalidate(); }
+        protected override void OnCheckedChanged(EventArgs e) { base.OnCheckedChanged(e); Invalidate(); }
+        protected override void OnEnabledChanged(EventArgs e) { base.OnEnabledChanged(e); Invalidate(); }
+        protected override void OnGotFocus(EventArgs e) { base.OnGotFocus(e); Invalidate(); }
+        protected override void OnLostFocus(EventArgs e) { base.OnLostFocus(e); Invalidate(); }
+        protected override void OnTextChanged(EventArgs e) { base.OnTextChanged(e); Invalidate(); }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            e.Graphics.Clear(Parent != null ? Parent.BackColor : UI.Back);
+        }
+
+        public override Size GetPreferredSize(Size proposedSize)
+        {
+            int textW = proposedSize.Width > 0 && proposedSize.Width < 10000
+                ? Math.Max(20, proposedSize.Width - UI.S(BoxSize + 12))
+                : 10000;
+            Size t = TextRenderer.MeasureText(Text ?? "", Font, new Size(textW, 10000), TextFormatFlags.NoPrefix | (textW < 10000 ? TextFormatFlags.WordBreak : TextFormatFlags.SingleLine));
+            return new Size(t.Width + UI.S(BoxSize + 14), Math.Max(UI.S(26), t.Height + UI.S(6)));
+        }
+
+        protected abstract void DrawBox(Graphics g, RectangleF box);
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int bs = UI.S(BoxSize);
+            var box = new RectangleF(0.5f, (Height - bs) / 2f + 0.5f, bs - 1f, bs - 1f);
+            if (Height > UI.S(40) && !AutoSize) box.Y = UI.S(3) + 0.5f;
+            DrawBox(g, box);
+            if (Focused && ShowFocusCues)
+            {
+                var fr = RectangleF.Inflate(box, 3f, 3f);
+                using (var path = Fx.Round(fr, UI.S(6))) using (var p = new Pen(UI.Text, 1.4f)) g.DrawPath(p, path);
+            }
+            int tx = bs + UI.S(10);
+            var tr = new Rectangle(tx, 0, Math.Max(10, Width - tx), Height);
+            Color fore = Enabled ? ForeColor : UI.Blend(UI.Back, UI.Text, 0.4f);
+            TextFormatFlags f = TextFormatFlags.Left | TextFormatFlags.NoPrefix | (AutoSize ? TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine : TextFormatFlags.WordBreak);
+            if (Height > UI.S(40) && !AutoSize) tr = new Rectangle(tx, UI.S(2), tr.Width, Height - UI.S(2));
+            TextRenderer.DrawText(g, Text ?? "", Font, tr, fore, f);
+        }
+
+        protected Color Rest { get { return UI.Blend(UI.Back, UI.Text, 0.55f); } }
+    }
+
+    class FCheck : FToggleBase
+    {
+        protected override void DrawBox(Graphics g, RectangleF box)
+        {
+            bool on = CheckState != CheckState.Unchecked;
+            Color target = UI.Dark ? Color.White : Color.Black;
+            Color fill = on
+                ? (Enabled ? UI.Blend(UI.Accent, target, down ? 0.18f : over ? 0.08f : 0f) : UI.Blend(UI.Back, UI.Text, 0.2f))
+                : (Enabled ? (down ? UI.CtrlDown : over ? UI.CtrlHover : UI.Field) : UI.Blend(UI.Back, UI.Field, 0.5f));
+            using (var path = Fx.Round(box, UI.S(4)))
+            {
+                using (var b = new SolidBrush(fill)) g.FillPath(b, path);
+                if (!on) using (var p = new Pen(Enabled ? Rest : UI.Border)) g.DrawPath(p, path);
+            }
+            if (!on) return;
+            Color mark = Enabled ? UI.OnAccent : UI.Blend(UI.Back, UI.Text, 0.55f);
+            using (var p = new Pen(mark, Math.Max(1.6f, UI.S(2) * 0.9f)) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
+            {
+                if (CheckState == CheckState.Indeterminate)
+                    g.DrawLine(p, box.X + box.Width * 0.28f, box.Y + box.Height / 2f, box.X + box.Width * 0.72f, box.Y + box.Height / 2f);
+                else
+                    g.DrawLines(p, new[]
+                    {
+                        new PointF(box.X + box.Width * 0.26f, box.Y + box.Height * 0.54f),
+                        new PointF(box.X + box.Width * 0.43f, box.Y + box.Height * 0.70f),
+                        new PointF(box.X + box.Width * 0.75f, box.Y + box.Height * 0.32f)
+                    });
+            }
+        }
+    }
+
+    class FRadio : RadioButton
+    {
+        bool over, down;
+
+        public FRadio()
+        {
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.UserPaint | ControlStyles.Selectable, true);
+            Font = UI.Font;
+        }
+
+        protected override void OnMouseEnter(EventArgs e) { base.OnMouseEnter(e); over = true; Invalidate(); }
+        protected override void OnMouseLeave(EventArgs e) { base.OnMouseLeave(e); over = false; down = false; Invalidate(); }
+        protected override void OnMouseDown(MouseEventArgs e) { base.OnMouseDown(e); down = true; Invalidate(); }
+        protected override void OnMouseUp(MouseEventArgs e) { base.OnMouseUp(e); down = false; Invalidate(); }
+        protected override void OnCheckedChanged(EventArgs e) { base.OnCheckedChanged(e); Invalidate(); }
+        protected override void OnEnabledChanged(EventArgs e) { base.OnEnabledChanged(e); Invalidate(); }
+        protected override void OnGotFocus(EventArgs e) { base.OnGotFocus(e); Invalidate(); }
+        protected override void OnLostFocus(EventArgs e) { base.OnLostFocus(e); Invalidate(); }
+        protected override void OnTextChanged(EventArgs e) { base.OnTextChanged(e); Invalidate(); }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            e.Graphics.Clear(Parent != null ? Parent.BackColor : UI.Back);
+        }
+
+        public override Size GetPreferredSize(Size proposedSize)
+        {
+            Size t = TextRenderer.MeasureText(Text ?? "", Font, new Size(10000, 10000), TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+            return new Size(t.Width + UI.S(32), Math.Max(UI.S(26), t.Height + UI.S(6)));
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int bs = UI.S(18);
+            var box = new RectangleF(0.5f, (Height - bs) / 2f + 0.5f, bs - 1f, bs - 1f);
+            Color target = UI.Dark ? Color.White : Color.Black;
+            if (Checked)
+            {
+                Color fill = Enabled ? UI.Blend(UI.Accent, target, down ? 0.18f : over ? 0.08f : 0f) : UI.Blend(UI.Back, UI.Text, 0.2f);
+                using (var b = new SolidBrush(fill)) g.FillEllipse(b, box);
+                float d = box.Width * (down ? 0.34f : over ? 0.46f : 0.40f);
+                using (var b = new SolidBrush(Enabled ? UI.OnAccent : UI.Blend(UI.Back, UI.Text, 0.55f)))
+                    g.FillEllipse(b, box.X + (box.Width - d) / 2f, box.Y + (box.Height - d) / 2f, d, d);
+            }
+            else
+            {
+                using (var b = new SolidBrush(Enabled ? (down ? UI.CtrlDown : over ? UI.CtrlHover : UI.Field) : UI.Blend(UI.Back, UI.Field, 0.5f))) g.FillEllipse(b, box);
+                using (var p = new Pen(Enabled ? UI.Blend(UI.Back, UI.Text, 0.55f) : UI.Border)) g.DrawEllipse(p, box);
+            }
+            if (Focused && ShowFocusCues)
+            {
+                var fr = RectangleF.Inflate(box, 3f, 3f);
+                using (var p = new Pen(UI.Text, 1.4f)) g.DrawEllipse(p, fr);
+            }
+            int tx = bs + UI.S(10);
+            Color fore = Enabled ? ForeColor : UI.Blend(UI.Back, UI.Text, 0.4f);
+            TextRenderer.DrawText(g, Text ?? "", Font, new Rectangle(tx, 0, Math.Max(10, Width - tx), Height), fore,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+        }
+    }
+
+    class FluentColors : ProfessionalColorTable
+    {
+        public FluentColors() { UseSystemColors = false; }
+        public override Color ToolStripDropDownBackground { get { return UI.Card; } }
+        public override Color ImageMarginGradientBegin { get { return UI.Card; } }
+        public override Color ImageMarginGradientMiddle { get { return UI.Card; } }
+        public override Color ImageMarginGradientEnd { get { return UI.Card; } }
+        public override Color MenuBorder { get { return UI.Border; } }
+        public override Color MenuItemBorder { get { return UI.ListHover; } }
+        public override Color MenuItemSelected { get { return UI.ListHover; } }
+        public override Color MenuItemSelectedGradientBegin { get { return UI.ListHover; } }
+        public override Color MenuItemSelectedGradientEnd { get { return UI.ListHover; } }
+        public override Color MenuItemPressedGradientBegin { get { return UI.ListSelected; } }
+        public override Color MenuItemPressedGradientEnd { get { return UI.ListSelected; } }
+        public override Color SeparatorDark { get { return UI.Border; } }
+        public override Color SeparatorLight { get { return UI.Card; } }
+    }
+
+    class FluentMenuRenderer : ToolStripProfessionalRenderer
+    {
+        public FluentMenuRenderer() : base(new FluentColors()) { RoundedEdges = false; }
+
+        protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+        {
+            e.TextColor = e.Item.Enabled ? UI.Text : UI.Blend(UI.Card, UI.Text, 0.45f);
+            base.OnRenderItemText(e);
         }
     }
 

@@ -73,19 +73,19 @@ namespace PSTools
         public static void Msg(string text)
         {
             if (Quiet) { Console.WriteLine(text); return; }
-            MessageBox.Show(text, "PS Tools", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            FDialog.Show(text, "PS Tools", FDialog.Kind.Info, false);
         }
 
         public static void Fail(string text)
         {
             if (Quiet) { Console.WriteLine(text); return; }
-            MessageBox.Show(text, "PS Tools - error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            FDialog.Show(text, "PS Tools - error", FDialog.Kind.Error, false);
         }
 
         public static bool Ask(string text)
         {
             if (Quiet) { Console.WriteLine(text + "\n(confirmation needed, so nothing was run in --quiet mode)"); return false; }
-            return MessageBox.Show(text, "PS Tools", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK;
+            return FDialog.Show(text, "PS Tools", FDialog.Kind.Question, true);
         }
 
         public static string ExeDir { get { return Path.GetDirectoryName(Application.ExecutablePath); } }

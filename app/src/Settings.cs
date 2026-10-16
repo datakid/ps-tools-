@@ -17,6 +17,7 @@ namespace PSTools
         static bool loaded;
         static bool configured;
         static string win;
+        static HashSet<string> groupPins = new HashSet<string>();
         static List<string> recent = new List<string>();
 
         static void Load()
@@ -37,6 +38,7 @@ namespace PSTools
                         if (k == "theme") Theme = v;
                         else if (k == "enabled") { en.Add(v); any = true; }
                         else if (k == "fav") fv.Add(v);
+                        else if (k == "pingroup") groupPins.Add(v);
                         else if (k == "pin") { pins.Add(v); any = true; }
                         else if (k == "configured") any = true;
                         else if (k == "win") win = v;
@@ -62,6 +64,7 @@ namespace PSTools
             EnsureLoaded();
             enabled = Presets.Ids(name);
             favs = new HashSet<string>(Actions.All.Where(a => a.DefaultFav && enabled.Contains(a.Id)).Select(a => a.Id));
+            groupPins = new HashSet<string>();
             loaded = true;
             configured = true;
             Save();
@@ -98,6 +101,17 @@ namespace PSTools
         }
         public static bool IsFav(string id) { EnsureLoaded(); return favs.Contains(id); }
 
+        public static bool IsGroupPinned(string group) { Load(); return groupPins.Contains(group); }
+
+        public static HashSet<string> GroupPins { get { Load(); return groupPins; } }
+
+        public static void SetGroupPins(IEnumerable<string> groups)
+        {
+            EnsureLoaded();
+            groupPins = new HashSet<string>(groups);
+            Save();
+        }
+
         public static void Set(IEnumerable<string> enabledIds, IEnumerable<string> favIds)
         {
             enabled = new HashSet<string>(enabledIds);
@@ -109,6 +123,7 @@ namespace PSTools
         public static void ResetDefaults()
         {
             loaded = true;
+            groupPins = new HashSet<string>();
             Defaults();
             Save();
         }
@@ -124,6 +139,7 @@ namespace PSTools
             sb.AppendLine("theme=" + Theme);
             foreach (var e in enabled.OrderBy(x => x)) sb.AppendLine("enabled=" + e);
             foreach (var f in favs.OrderBy(x => x)) sb.AppendLine("fav=" + f);
+            foreach (var g in groupPins.OrderBy(x => x)) sb.AppendLine("pingroup=" + g);
             foreach (var p in pins.OrderBy(x => x)) sb.AppendLine("pin=" + p);
             if (win != null) sb.AppendLine("win=" + win);
             foreach (var r in recent) sb.AppendLine("recent=" + r);

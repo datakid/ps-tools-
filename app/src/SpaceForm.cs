@@ -392,6 +392,7 @@ namespace PSTools
         void ShowMenu(SpaceNode n, Point at)
         {
             var m = new ContextMenuStrip();
+            Fx.ThemeMenu(m);
             var open = m.Items.Add(n.IsDir && !n.IsGroup ? "Open this folder in the map" : "Open");
             open.Enabled = !n.IsGroup && (!n.IsDir || n.Kids.Count > 0);
             open.Click += (s, e) => { if (n.IsDir) Navigate(n); else OpenItem(n); };

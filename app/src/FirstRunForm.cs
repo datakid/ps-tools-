@@ -9,27 +9,34 @@ namespace PSTools
     class FirstRunForm : Form
     {
         readonly List<RadioButton> choices = new List<RadioButton>();
-        readonly CheckBox classic = new CheckBox { AutoSize = false, Checked = true };
+        readonly CheckBox classic = new FCheck { AutoSize = false, Checked = true };
         bool installed;
+        readonly bool again;
 
-        public FirstRunForm()
+        public FirstRunForm() : this(false) { }
+
+        public FirstRunForm(bool reopened)
         {
+            again = reopened;
             bool win11 = Tweaks.IsWindows11;
             Text = "PS Tools"; Font = UI.Font; FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
             int y = 20;
-            Controls.Add(new Label { Text = "Add PS Tools to your right-click menu", Font = UI.Title, AutoSize = true, Location = new Point(24, y) });
+            Controls.Add(new Label { Text = again ? "Set up the right-click menu" : "Add PS Tools to your right-click menu", Font = UI.Title, AutoSize = true, Location = new Point(24, y) });
             y += 42;
-            string intro = "Pick how much goes in the menu. You can change it any time on the Menu page. Nothing runs in the background, and Full uninstall puts everything back.";
+            string intro = again
+                ? "Choose a starting point for the right-click menu. Applying a preset replaces your current choices, including pinned actions and groups; fine-tune afterwards on the Menu page. Nothing runs in the background, and Full uninstall puts everything back."
+                : "Pick how much goes in the menu. You can change it any time on the Menu page. Nothing runs in the background, and Full uninstall puts everything back.";
+            string start = again && Array.IndexOf(Presets.Names, Settings.CurrentPreset) >= 0 ? Settings.CurrentPreset : "Everyday";
             int introH = UI.MeasureHeight(intro, UI.Font, 520) + 6;
             Controls.Add(new Label { Text = intro, ForeColor = UI.Muted, Location = new Point(26, y), Size = new Size(520, introH) });
             y += introH + 16;
 
             foreach (var name in Presets.Names)
             {
-                var rb = new RadioButton { Text = name, Font = UI.Bold, AutoSize = true, Location = new Point(28, y), Checked = name == "Everyday", Tag = name };
+                var rb = new FRadio { Text = name, Font = UI.Bold, AutoSize = true, Location = new Point(28, y), Checked = name == start, Tag = name };
                 choices.Add(rb);
                 Controls.Add(rb);
                 string desc = Presets.Describe(name);
@@ -40,6 +47,7 @@ namespace PSTools
 
             if (win11)
             {
+                classic.Checked = again ? Tweaks.Classic : true;
                 classic.Text = "Use the classic right-click menu. Windows 11 hides PS Tools behind \"Show more options\" otherwise.";
                 int ch = UI.MeasureHeight(classic.Text, UI.Font, 490) + 8;
                 classic.Location = new Point(28, y + 4);
@@ -48,10 +56,10 @@ namespace PSTools
                 y += classic.Height + 12;
             }
 
-            var install = new FButton { Text = "Install", Width = 130, Height = 34, Location = new Point(28, y + 10) };
+            var install = new FButton { Text = again ? "Apply" : "Install", Width = 130, Height = 34, Location = new Point(28, y + 10) };
             UI.Primary(install);
             install.Click += (s, e) => DoInstall();
-            var later = new FButton { Text = "Not now", Width = 110, Height = 34, Location = new Point(168, y + 10) };
+            var later = new FButton { Text = again ? "Close" : "Not now", Width = 110, Height = 34, Location = new Point(168, y + 10) };
             later.Click += (s, e) => Close();
             var preview = new FButton { Text = "Preview menu", Width = 130, Height = 34, Location = new Point(288, y + 10) };
             preview.Click += (s, e) => ShowPreview();
@@ -60,7 +68,7 @@ namespace PSTools
             ClientSize = new Size(570, y + 64);
             UI.Apply(this);
             classic.ForeColor = UI.Text;
-            FormClosed += (s, e) => { if (!installed) { try { Settings.MarkConfigured(); } catch { } } };
+            FormClosed += (s, e) => { if (!installed && !again) { try { Settings.MarkConfigured(); } catch { } } };
         }
 
         void ShowPreview()
@@ -87,6 +95,12 @@ namespace PSTools
                 if (classic.Parent != null && classic.Checked && !Tweaks.Classic) { Tweaks.ToggleClassic(); restart = true; }
                 if (restart && Program.Ask("The classic menu needs Explorer to restart.\n\nRestart Explorer now? Open File Explorer windows will close."))
                     Actions.RestartExplorerNow();
+                if (again)
+                    foreach (Form f in Application.OpenForms)
+                    {
+                        var m = f as MainForm;
+                        if (m != null) m.AfterSetup();
+                    }
                 Close();
             }
             catch (Exception ex) { Program.Fail("Could not install the menu:\n" + ex.Message); }
