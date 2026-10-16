@@ -239,6 +239,95 @@ namespace PSTools
         }
     }
 
+    class BPanel : Panel
+    {
+        public BPanel()
+        {
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw, true);
+            DoubleBuffered = true;
+        }
+    }
+
+    class BTable : TableLayoutPanel
+    {
+        public BTable()
+        {
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw, true);
+            DoubleBuffered = true;
+        }
+    }
+
+    class BFlow : FlowLayoutPanel
+    {
+        public BFlow()
+        {
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw, true);
+            DoubleBuffered = true;
+        }
+    }
+
+    class FDrop : FButton
+    {
+        public readonly List<string> Items = new List<string>();
+        int index = -1;
+
+        public event EventHandler SelectedIndexChanged;
+
+        public int SelectedIndex
+        {
+            get { return index; }
+            set { index = value >= 0 && value < Items.Count ? value : -1; Invalidate(); }
+        }
+
+        public string SelectedItem
+        {
+            get { return index < 0 ? null : Items[index]; }
+            set { SelectedIndex = value == null ? -1 : Items.IndexOf(value); }
+        }
+
+        protected override void OnClick(EventArgs e)
+        {
+            base.OnClick(e);
+            var menu = new ContextMenuStrip();
+            Fx.ThemeMenu(menu);
+            for (int i = 0; i < Items.Count; i++)
+            {
+                int at = i;
+                var item = new ToolStripMenuItem(Items[i]) { Checked = i == index };
+                item.Click += (s, a) =>
+                {
+                    if (at == index) return;
+                    index = at;
+                    Invalidate();
+                    var h = SelectedIndexChanged;
+                    if (h != null) h(this, EventArgs.Empty);
+                };
+                menu.Items.Add(item);
+            }
+            menu.Show(this, new Point(0, Height));
+        }
+
+        public override Size GetPreferredSize(Size proposedSize)
+        {
+            int w = 0;
+            foreach (var t in Items) w = Math.Max(w, TextRenderer.MeasureText(t, Font, new Size(10000, 100), TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine).Width);
+            return new Size(w + UI.S(52), Math.Max(Height, UI.S(32)));
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            var g = e.Graphics;
+            Color fore = Enabled ? UI.Text : UI.Muted;
+            var tr = new Rectangle(UI.S(12), 0, Math.Max(10, Width - UI.S(40)), Height);
+            TextRenderer.DrawText(g, SelectedItem ?? "", Font, tr, fore, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            float cx = Width - UI.S(18), cy = Height / 2f, w = UI.S(4);
+            using (var p = new Pen(fore, 1.5f))
+                g.DrawLines(p, new[] { new PointF(cx - w, cy - w / 2f), new PointF(cx, cy + w / 2f), new PointF(cx + w, cy - w / 2f) });
+        }
+    }
+
     class FButton : Button
     {
         public enum Look { Standard, Accent, Subtle }
@@ -828,6 +917,8 @@ namespace PSTools
         public Action<ListViewItem> OnCheck;
         public Func<ListViewItem, int> Pin;
         public Action<ListViewItem> OnPin;
+        public Func<ListViewItem, int> Fold;
+        public Action<ListViewItem> OnFold;
     }
 
     static class FList
@@ -913,7 +1004,8 @@ namespace PSTools
                     var cr = RectangleF.Inflate(CheckRect(row), UI.S(6), UI.S(6));
                     if (cr.Contains(e.X, e.Y)) { deco.OnCheck(it); return; }
                 }
-                if (deco.Pin != null && deco.OnPin != null && deco.Pin(it) >= 0 && PinRect(row).Contains(e.X, e.Y)) deco.OnPin(it);
+                if (deco.Pin != null && deco.OnPin != null && deco.Pin(it) >= 0 && PinRect(row).Contains(e.X, e.Y)) { deco.OnPin(it); return; }
+                if (IsHeader(it) && deco.Fold != null && deco.OnFold != null && deco.Fold(it) >= 0) deco.OnFold(it);
             };
             lv.ItemSelectionChanged += (s, e) =>
             {
@@ -949,6 +1041,19 @@ namespace PSTools
                 }
                 finally { fixing = false; }
             };
+        }
+
+        static void DrawChevron(Graphics g, int x, int cy, bool collapsed)
+        {
+            var old = g.SmoothingMode;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            float w = UI.S(3);
+            using (var p = new Pen(UI.Muted, 1.5f))
+            {
+                if (collapsed) g.DrawLines(p, new[] { new PointF(x - w / 2f, cy - w), new PointF(x + w / 2f, cy), new PointF(x - w / 2f, cy + w) });
+                else g.DrawLines(p, new[] { new PointF(x - w, cy - w / 2f), new PointF(x, cy + w / 2f), new PointF(x + w, cy - w / 2f) });
+            }
+            g.SmoothingMode = old;
         }
 
         static void DrawStar(Graphics g, Rectangle box, bool on, bool header, int top)
@@ -1011,14 +1116,20 @@ namespace PSTools
                     int hl = UI.S(16);
                     var hd = DecoOf(lv);
                     Rectangle rr = new Rectangle(row.X, row.Y, rowW, row.Height);
+                    int centerY = rr.Bottom - UI.S(3) - UI.SmallBold.Height / 2;
+                    if (hd != null && hd.Fold != null && hd.Fold(item) >= 0)
+                    {
+                        DrawChevron(g, rr.X + UI.S(10), centerY, hd.Fold(item) > 0);
+                        hl = UI.S(24);
+                    }
                     if (hd != null && hd.Check != null && hd.Check(item) >= 0)
                     {
                         var cb = CheckRect(rr);
-                        cb.Y = rr.Bottom - UI.S(6) - cb.Height;
+                        cb.Y = centerY - cb.Height / 2f;
                         Fx.DrawCheckBox(g, cb, hd.Check(item), false);
                         hl = UI.S(42);
                     }
-                    if (hd != null && hd.Pin != null && hd.Pin(item) >= 0) DrawStar(g, PinRect(rr), hd.Pin(item) > 0, true, rr.Bottom - UI.S(6) - UI.S(16));
+                    if (hd != null && hd.Pin != null && hd.Pin(item) >= 0) DrawStar(g, PinRect(rr), hd.Pin(item) > 0, true, centerY - UI.S(9));
                     var hr = new Rectangle(e.Bounds.X + hl, row.Y, Math.Max(4, e.Bounds.Width - hl - UI.S(44)), row.Height - UI.S(2));
                     TextRenderer.DrawText(g, item.Text, UI.SmallBold, hr, UI.Muted, TextFormatFlags.Left | TextFormatFlags.Bottom | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
                 }

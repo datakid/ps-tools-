@@ -294,6 +294,7 @@ namespace PSTools
 
         public static void Apply(Form f, bool scaleLayout)
         {
+            Buffer(f);
             f.BackColor = Back;
             f.ForeColor = Text;
             f.HandleCreated += (s, e) =>
@@ -336,8 +337,16 @@ namespace PSTools
             }
         }
 
+        static readonly System.Reflection.PropertyInfo bufferProp = typeof(Control).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+        public static void Buffer(Control c)
+        {
+            try { if (bufferProp != null && !(bool)bufferProp.GetValue(c, null)) bufferProp.SetValue(c, true, null); } catch { }
+        }
+
         public static void Style(Control c)
         {
+            if (c is Panel || c is TableLayoutPanel || c is FlowLayoutPanel || c is ListView || c is TreeView || c is SplitContainer || c is TabControl || c is Label || c is GroupBox) Buffer(c);
             var tb = c as TextBox;
             if (tb != null)
             {
