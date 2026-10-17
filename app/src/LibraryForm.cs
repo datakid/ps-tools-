@@ -125,12 +125,16 @@ namespace PSTools
             var top = new Panel { Dock = DockStyle.Top, Height = 44, Padding = new Padding(10, 9, 10, 4), BackColor = UI.Panel };
             search.Dock = DockStyle.Fill; ResultsForm.SetCue(search, "Search commands, tags, categories...");
             search.TextChanged += (s, e) => Fill(); top.Controls.Add(search);
+            var edit = new FButton { Text = "Edit commands.json", Width = 150, Height = 30, Dock = DockStyle.Right };
+            edit.Click += (s, e) => { try { Process.Start("notepad.exe", "\"" + LibraryData.JsonPath + "\""); } catch { } };
+            top.Controls.Add(new Panel { Dock = DockStyle.Right, Width = 8 }); top.Controls.Add(edit);
 
             var split = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel1 };
             Load += (s, e) => { try { split.SplitterDistance = UI.S(440); } catch { } };
             lv.Dock = DockStyle.Fill; lv.View = View.Details; lv.FullRowSelect = true; lv.HideSelection = false; lv.MultiSelect = false; lv.BorderStyle = BorderStyle.None;
             lv.Columns.Add("Command", 290); lv.Columns.Add("Risk", 80); lv.Columns.Add("", 50);
             FList.Attach(lv, 30, null);
+            lv.Resize += (s, e) => { if (lv.Columns.Count == 3) { lv.Columns[1].Width = UI.S(80); lv.Columns[2].Width = UI.S(50); lv.Columns[0].Width = Math.Max(UI.S(120), lv.ClientSize.Width - lv.Columns[1].Width - lv.Columns[2].Width); UI.HideHScroll(lv); } };
             lv.SelectedIndexChanged += (s, e) => Show_();
             lv.DoubleClick += (s, e) => Open();
             split.Panel1.Controls.Add(lv);
@@ -140,16 +144,14 @@ namespace PSTools
             right.Resize += (s, e) => desc.Height = UI.TextHeight(desc, 48);
             code.Dock = DockStyle.Fill; code.Multiline = true; code.ScrollBars = ScrollBars.Both; code.WordWrap = false; code.Tag = "code";
             code.Font = UI.Mono; code.BackColor = Color.FromArgb(30, 30, 30); code.ForeColor = Color.FromArgb(225, 225, 225);
-            var btns = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, Padding = new Padding(0, 8, 0, 0) };
+            var btns = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, Padding = new Padding(0, 8, 0, 0), WrapContents = false };
             var copy = new FButton { Text = "Copy", Width = 90, Height = 30 }; copy.Click += (s, e) => { if (code.Text.Length > 0) Clip.Set(LibraryData.Fill(code.Text, folder)); };
             var runHere = new FButton { Text = "Run here", Width = 100, Height = 30 };
             UI.Primary(runHere); runHere.Click += (s, e) => RunHere();
             var shell = new FButton { Text = "Open PowerShell here", Width = 170, Height = 30 };
             shell.Click += (s, e) => Open();
-            var edit = new FButton { Text = "Edit commands.json", Width = 150, Height = 30 };
-            edit.Click += (s, e) => { try { Process.Start("notepad.exe", "\"" + LibraryData.JsonPath + "\""); } catch { } };
             pin.Click += (s, e) => TogglePin();
-            btns.Controls.Add(runHere); btns.Controls.Add(shell); btns.Controls.Add(copy); btns.Controls.Add(pin); btns.Controls.Add(edit);
+            btns.Controls.Add(runHere); btns.Controls.Add(shell); btns.Controls.Add(copy); btns.Controls.Add(pin);
             var hint = new Label { Dock = DockStyle.Bottom, Height = 36, ForeColor = UI.Muted, Text = "{path} in the code becomes the folder shown in the title. Edit the code before running. Run here shows changing commands for review first. Open PowerShell here runs nothing: the command is on your clipboard." };
             hint.Resize += (s2, e2) => hint.Height = UI.TextHeight(hint, 36);
             right.Controls.Add(code); right.Controls.Add(desc); right.Controls.Add(hint); right.Controls.Add(btns);

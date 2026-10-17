@@ -18,24 +18,25 @@ namespace PSTools
         readonly TextBox folder = new TextBox();
         readonly TextBox search = new TextBox();
         readonly ListView list = new ListView();
-        readonly Label title = new Label(), hint = new Label(), meta = new Label();
-        readonly Label whatCaption = new Label { Text = "What it does", AutoSize = false, Dock = DockStyle.Top, Height = 22, ForeColor = UI.Muted, Font = UI.SmallBold };
-        readonly Label psCaption = new Label { Text = "PowerShell equivalent", AutoSize = false, Dock = DockStyle.Top, Height = 26, ForeColor = UI.Muted, Font = UI.SmallBold };
-        readonly Label psNote = new Label { Dock = DockStyle.Top, Height = 24, ForeColor = UI.Muted, Font = UI.Small, Text = "{path} is replaced by the folder in the box above when you copy. Nothing here runs the command." };
-        readonly TextBox psBox = new TextBox { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Dock = DockStyle.Top, Height = 170, Font = UI.Mono };
-        readonly FButton psCopy = new FButton { Text = "Copy command", Width = 140, Height = 32, Margin = new Padding(0, 0, 8, 0) };
-        readonly FButton psOpen = new FButton { Text = "Open PowerShell with command", Width = 250, Height = 32, Margin = new Padding(0) };
+        readonly Label title = new Label(), subtitle = new Label(), hint = new Label();
+        readonly Label[] factKey = new Label[4], factVal = new Label[4];
+        readonly Label psCaption = new Label { Text = "PowerShell", AutoSize = true, ForeColor = UI.Muted, Font = UI.SmallBold, Margin = new Padding(0, 10, 0, 0) };
+        readonly Label psNote = new Label { AutoSize = true, ForeColor = UI.Muted, Font = UI.Small, Margin = new Padding(0, 8, 0, 0), Text = "{path} is replaced by the folder in the box above when you copy. Nothing here runs the command." };
+        readonly TextBox psBox = new TextBox { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Dock = DockStyle.Fill, Font = UI.Mono };
+        readonly FButton psCopy = new FButton { Text = "Copy command", AutoSize = true, Height = 32, Margin = new Padding(0, 0, 8, 0) };
+        readonly FButton psOpen = new FButton { Text = "Open in PowerShell", AutoSize = true, Height = 32, Margin = new Padding(0) };
         readonly FButton run = new FButton(), undo = new FButton();
         readonly NavRail rail = new NavRail();
-        readonly Label tip = new Label { Dock = DockStyle.Bottom, Height = 56, ForeColor = UI.Muted, Font = UI.Small };
         readonly ToolTip tips = new ToolTip();
         readonly Label status = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true };
         readonly Panel pageActions = new BPanel { Dock = DockStyle.Fill };
         readonly Panel pageMenu = new BPanel { Dock = DockStyle.Fill, Visible = false };
-        readonly Label menuState = new Label();
+        readonly Label menuState = new Label(), dataLine = new Label();
+        readonly FButton removeBtn = new FButton { Text = "Remove Explorer menu" };
+        readonly FButton uninstallBtn = new FButton { Text = "Full uninstall..." };
         readonly FDrop theme = new FDrop();
         readonly FDrop preset = new FDrop();
-        readonly FButton pinAction = new FButton { Text = "Pin...", Width = 120, Height = 36, Glyph = Fx.Pin, Margin = new Padding(0, 0, 0, 0) };
+        readonly FButton pinAction = new FButton { Text = "Pin to menu...", AutoSize = true, Height = 36, Glyph = Fx.Pin, Margin = new Padding(0, 0, 0, 0) };
         readonly Timer statusTimer = new Timer { Interval = 7000 };
         readonly Timer applyTimer = new Timer { Interval = 700 };
         readonly Timer scanTimer = new Timer { Interval = 300 };
@@ -45,10 +46,13 @@ namespace PSTools
         readonly ListView pinList = new ListView();
         readonly ListView allList = new ListView();
         readonly TextBox allFilter = new TextBox();
-        readonly TreeView previewTree = new TreeView();
+        readonly ListView previewList = new ListView();
+        readonly HashSet<string> previewOpen = new HashSet<string>();
+        readonly List<MethodInvoker> metrics = new List<MethodInvoker>();
         readonly FToggle previewShift = new FCheck { Text = "Holding Shift", AutoSize = true };
-        readonly FButton installBtn = new FButton { Text = "Install Explorer menu", Width = 190, Height = 32, Margin = new Padding(8, 0, 0, 0), Visible = false };
-        Panel actionsScroll;
+        readonly FButton installBtn = new FButton { Text = "Install Explorer menu", Visible = false };
+        BTable detail;
+        BTable facts;
         bool building;
         Target ctx = Target.Folder;
         List<Suggestion> suggestions = new List<Suggestion>();
@@ -57,7 +61,7 @@ namespace PSTools
 
         public MainForm(string startPath)
         {
-            Text = "PS Tools"; Font = UI.Font; ClientSize = new Size(980, 700); MinimumSize = new Size(940, 600); DoubleBuffered = true;
+            Text = "PS Tools"; Font = UI.Font; ClientSize = new Size(1040, 720); MinimumSize = new Size(900, 540); DoubleBuffered = true;
             StartPosition = FormStartPosition.CenterScreen; AllowDrop = true; KeyPreview = true;
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
             statusTimer.Tick += (s, e) => { statusTimer.Stop(); status.Text = ""; };
@@ -99,6 +103,12 @@ namespace PSTools
             var open = Btn("Open", 92); open.Glyph = Fx.OpenWindow; open.Click += (s, e) => { if (Directory.Exists(Path0)) System.Diagnostics.Process.Start("explorer.exe", "\"" + Path0 + "\""); };
             top.Controls.Add(folder, 0, 0); top.Controls.Add(browse, 1, 0); top.Controls.Add(open, 2, 0);
 
+            metrics.Add(() =>
+            {
+                top.Height = UI.S(62); top.Padding = new Padding(0, UI.S(14), 0, UI.S(8));
+                foreach (var tb in new[] { browse, open }) { tb.Height = UI.S(32); tb.Margin = new Padding(UI.S(8), 0, 0, 0); }
+                browse.Width = UI.S(110); open.Width = UI.S(92);
+            });
             BuildActionsPage();
             BuildMenuPage();
 
@@ -107,7 +117,9 @@ namespace PSTools
             var bottom = new BPanel { Dock = DockStyle.Bottom, Height = 46, Padding = new Padding(2, 10, 0, 0) };
             bottom.Controls.Add(status); bottom.Controls.Add(undo);
 
-            var content = new BPanel { Dock = DockStyle.Fill, Padding = new Padding(4, 0, 18, 12) };
+            metrics.Add(() => { bottom.Height = UI.S(46); bottom.Padding = new Padding(UI.S(2), UI.S(10), 0, 0); undo.Width = UI.S(128); undo.Height = UI.S(32); });
+            var content = new BPanel { Dock = DockStyle.Fill };
+            metrics.Add(() => content.Padding = new Padding(UI.S(4), 0, UI.S(18), UI.S(12)));
             content.Controls.Add(pageActions); content.Controls.Add(pageMenu); content.Controls.Add(bottom); content.Controls.Add(top);
             Controls.Add(content); Controls.Add(rail);
             rail.Selected = 0;
@@ -126,15 +138,26 @@ namespace PSTools
                 else if (e.Control && e.KeyCode == Keys.D2) { ShowPage(false); e.SuppressKeyPress = true; }
                 else if (e.Control && e.KeyCode == Keys.Tab) { ShowPage(!pageActions.Visible); e.SuppressKeyPress = true; }
             };
-            Shown += (s, e) => { previewTree.ItemHeight = UI.S(26); search.Focus(); FitActions(); FitList(list); FitList(pinList); FitList(allList); StartScan(); };
+            Shown += (s, e) => { ApplyMetrics(); search.Focus(); StartScan(); };
             FormClosing += (s, e) => { SaveWindow(); if (applyTimer.Enabled) { applyTimer.Stop(); ApplyNow(); } };
 
             UI.Apply(this);
+            ApplyMetrics();
             RestoreWindow();
             Fill();
             RefreshState();
             RefreshMenu();
             if (Program.StartupNote != null) SetStatus(Program.StartupNote);
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                var p = base.CreateParams;
+                p.ExStyle |= 0x02000000;
+                return p;
+            }
         }
 
         void RestoreWindow()
@@ -161,12 +184,12 @@ namespace PSTools
 
         void FitActions()
         {
-            if (actionsScroll == null) return;
-            hint.Height = UI.TextHeight(hint, 24);
-            meta.Height = UI.TextHeight(meta, 24);
-            psNote.Height = UI.TextHeight(psNote, 24);
-            tip.Height = UI.TextHeight(tip, 40);
-            UI.FitScroll(actionsScroll);
+            if (detail == null) return;
+            int inner = Math.Max(120, detail.ClientSize.Width - detail.Padding.Horizontal);
+            hint.MaximumSize = new Size(inner, 0);
+            psNote.MaximumSize = new Size(inner, 0);
+            int key = UI.S(110);
+            foreach (var v in factVal) v.MaximumSize = new Size(Math.Max(60, inner - key), 0);
         }
 
         static void FitList(ListView lv)
@@ -242,28 +265,83 @@ namespace PSTools
             list.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) RunSelected(); };
             list.Resize += (s, e) => FitList(list);
             left.Controls.Add(list); left.Controls.Add(searchWrap);
+            metrics.Add(() =>
+            {
+                left.Width = UI.S(340); left.Padding = new Padding(0, 0, UI.S(10), 0);
+                searchWrap.Height = UI.S(46); searchWrap.Padding = new Padding(0, 0, 0, UI.S(10));
+            });
 
-            var right = new FCard { Dock = DockStyle.Fill, Padding = new Padding(28, 24, 24, 16) };
-            actionsScroll = new BPanel { Dock = DockStyle.Fill, AutoScroll = true };
-            title.Dock = DockStyle.Top; title.Height = 44; title.Font = UI.Title; title.AutoEllipsis = true;
-            hint.Dock = DockStyle.Top; hint.Height = 60; hint.ForeColor = UI.Muted;
-            meta.Dock = DockStyle.Top; meta.Height = 66; meta.ForeColor = UI.Muted; meta.Font = UI.Small;
-            var psButtons = new BFlow { Dock = DockStyle.Top, Height = 44, Padding = new Padding(0, 8, 0, 0), WrapContents = false };
+            var right = new FCard { Dock = DockStyle.Fill, Padding = new Padding(26, 22, 22, 18) };
+            detail = new BTable { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 8 };
+            detail.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            for (int i = 0; i < 8; i++) detail.RowStyles.Add(i == 5 ? new RowStyle(SizeType.Percent, 100) : new RowStyle(SizeType.AutoSize));
+
+            title.AutoSize = false; title.Dock = DockStyle.Fill; title.Font = UI.Title; title.AutoEllipsis = true; title.Height = UI.Title.Height + 8; title.Margin = new Padding(0);
+            subtitle.AutoSize = false; subtitle.Dock = DockStyle.Fill; subtitle.Font = UI.Small; subtitle.ForeColor = UI.Muted; subtitle.AutoEllipsis = true; subtitle.Height = UI.Small.Height + 6; subtitle.Margin = new Padding(0);
+            hint.AutoSize = true; hint.Font = UI.Font; hint.Margin = new Padding(0, 12, 0, 12);
+
+            facts = new BTable { Dock = DockStyle.Fill, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 2, RowCount = 4, Margin = new Padding(0) };
+            facts.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
+            facts.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            for (int i = 0; i < 4; i++)
+            {
+                facts.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                factKey[i] = new Label { AutoSize = true, Font = UI.Small, ForeColor = UI.Muted, Margin = new Padding(0, 2, 0, 2) };
+                factVal[i] = new Label { AutoSize = true, Font = UI.Small, ForeColor = UI.Text, Margin = new Padding(0, 2, 0, 2) };
+                facts.Controls.Add(factKey[i], 0, i);
+                facts.Controls.Add(factVal[i], 1, i);
+            }
+
+            var psHeader = new BTable { Dock = DockStyle.Fill, Height = 46, ColumnCount = 2, RowCount = 1, Margin = new Padding(0, 6, 0, 0), Padding = new Padding(0, 0, 0, 6) };
+            psHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            psHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            psHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            psCaption.Dock = DockStyle.Fill; psCaption.AutoSize = false; psCaption.TextAlign = ContentAlignment.MiddleLeft; psCaption.Margin = new Padding(0);
+            var psButtons = new BFlow { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = false, Margin = new Padding(0), Anchor = AnchorStyles.Right };
             psButtons.Controls.Add(psCopy); psButtons.Controls.Add(psOpen);
+            psHeader.Controls.Add(psCaption, 0, 0); psHeader.Controls.Add(psButtons, 1, 0);
             psCopy.Click += (s, e) => CopyCommand();
             psOpen.Click += (s, e) => OpenWithCommand();
-            actionsScroll.Controls.Add(psButtons); actionsScroll.Controls.Add(psBox); actionsScroll.Controls.Add(psNote); actionsScroll.Controls.Add(psCaption);
-            actionsScroll.Controls.Add(meta); actionsScroll.Controls.Add(hint); actionsScroll.Controls.Add(whatCaption);
-            actionsScroll.Resize += (s, e) => FitActions();
-            UI.WheelScroll(actionsScroll);
-            var buttons = new BFlow { Dock = DockStyle.Bottom, Height = 56, Padding = new Padding(0, 10, 0, 0) };
-            run.Text = "Run"; run.Glyph = Fx.Play; run.Width = 112; run.Height = 36; run.Margin = new Padding(0, 0, 8, 0); UI.Primary(run); run.Click += (s, e) => RunSelected();
+            tips.SetToolTip(psCopy, "Copies the command with the folder from the box above filled in");
+            tips.SetToolTip(psOpen, "Opens PowerShell in the folder with the command on the clipboard. Paste it with a right-click; nothing runs by itself.");
+            psBox.Margin = new Padding(0);
+
+            var buttons = new BFlow { Dock = DockStyle.Fill, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = false, Margin = new Padding(0, 14, 0, 0) };
+            run.Text = "Run"; run.Glyph = Fx.Play; run.Width = 120; run.Height = 36; run.Margin = new Padding(0, 0, 8, 0); UI.Primary(run); run.Click += (s, e) => RunSelected();
             buttons.Controls.Add(run);
+            pinAction.Margin = new Padding(0);
             pinAction.Click += (s, e) => ShowPinMenu();
             tips.SetToolTip(pinAction, "Choose where to pin this action at the top level of the right-click menu");
             buttons.Controls.Add(pinAction);
-            tip.Text = "Tip: drop a folder on this window. Right-click menu entries are chosen on the Menu page.\nWindows 11: the classic menu is under \"Show more options\" (Shift+F10).";
-            right.Controls.Add(actionsScroll); right.Controls.Add(buttons); right.Controls.Add(tip); right.Controls.Add(title);
+
+            detail.Controls.Add(title, 0, 0);
+            detail.Controls.Add(subtitle, 0, 1);
+            detail.Controls.Add(hint, 0, 2);
+            detail.Controls.Add(facts, 0, 3);
+            detail.Controls.Add(psHeader, 0, 4);
+            detail.Controls.Add(psBox, 0, 5);
+            detail.Controls.Add(psNote, 0, 6);
+            detail.Controls.Add(buttons, 0, 7);
+            detail.Resize += (s, e) => FitActions();
+            right.Controls.Add(detail);
+            metrics.Add(() =>
+            {
+                right.Padding = new Padding(UI.S(26), UI.S(22), UI.S(22), UI.S(18));
+                hint.Margin = new Padding(0, UI.S(12), 0, UI.S(12));
+                facts.ColumnStyles[0].Width = UI.S(120);
+                foreach (var l in factKey) l.Margin = new Padding(0, UI.S(2), 0, UI.S(2));
+                foreach (var l in factVal) l.Margin = new Padding(0, UI.S(2), 0, UI.S(2));
+                psHeader.Height = UI.S(48); psHeader.Margin = new Padding(0, UI.S(6), 0, 0); psHeader.Padding = new Padding(0, 0, 0, UI.S(8));
+                psCopy.AutoSize = false; psOpen.AutoSize = false;
+                psCopy.Height = psOpen.Height = UI.S(34);
+                psCopy.Width = Math.Max(UI.S(120), psCopy.GetPreferredSize(Size.Empty).Width);
+                psOpen.Width = Math.Max(UI.S(150), psOpen.GetPreferredSize(Size.Empty).Width);
+                psCopy.Margin = new Padding(0, 0, UI.S(8), 0);
+                psNote.Margin = new Padding(0, UI.S(8), 0, 0);
+                buttons.Margin = new Padding(0, UI.S(14), 0, 0);
+                run.Width = UI.S(120); run.Height = UI.S(38); run.Margin = new Padding(0, 0, UI.S(8), 0);
+                pinAction.AutoSize = false; pinAction.Height = UI.S(38); pinAction.Width = Math.Max(UI.S(160), pinAction.GetPreferredSize(Size.Empty).Width + UI.S(8));
+            });
 
             pageActions.Controls.Add(right); pageActions.Controls.Add(left);
         }
@@ -298,7 +376,7 @@ namespace PSTools
                 pick.Selected = true;
                 pick.EnsureVisible();
             }
-            else { title.Text = ""; hint.Text = "No match."; meta.Text = ""; ClearCommand(); FitActions(); }
+            else { title.Text = ""; subtitle.Text = ""; hint.Text = "No match."; SetFacts(null, null, null, null); ClearCommand(); FitActions(); }
         }
 
         internal static bool Matches(Action a, string q)
@@ -310,13 +388,26 @@ namespace PSTools
 
         static string Where(Action a)
         {
-            if (a.Targets == Target.None) return "Runs from this window only.";
+            if (a.Targets == Target.None) return "Runs from this window only";
             var w = new List<string>();
             if ((a.Targets & Target.Folder) != 0) w.Add("folders");
             if ((a.Targets & Target.Background) != 0) w.Add("folder background");
             if ((a.Targets & Target.Drive) != 0) w.Add("drives");
             if ((a.Targets & Target.File) != 0) w.Add("files");
-            return "Right-click: " + string.Join(", ", w.ToArray()) + (a.Multi ? " (multi-select)" : "") + ".";
+            return string.Join(", ", w.ToArray()) + (a.Multi ? " (multi-select)" : "");
+        }
+
+        void SetFacts(string changes, string undoText, string where, string safety)
+        {
+            string[] keys = { "Changes files", "Undo", "Right-click", "Safety" };
+            string[] vals = { changes, undoText, where, safety };
+            for (int i = 0; i < 4; i++)
+            {
+                bool on = !string.IsNullOrEmpty(vals[i]);
+                factKey[i].Text = on ? keys[i] : "";
+                factVal[i].Text = on ? vals[i] : "";
+                factKey[i].Visible = factVal[i].Visible = on;
+            }
         }
 
         static readonly string[] ListsThenDeletes = { "duplicates", "clean-build", "largest", "recent", "long-paths" };
@@ -331,19 +422,16 @@ namespace PSTools
         {
             var a = Selected; if (a == null) return;
             title.Text = a.Label.TrimEnd('.');
+            subtitle.Text = a.Group + (a.Tier == Tier.Elevated ? "  \u00B7  Administrator" : "");
             hint.Text = a.Hint;
-            var lines = new List<string>();
-            lines.Add("Changes files: " + ChangesText(a));
-            lines.Add("Undo: " + (a.Undoable ? "Yes (Undo last)" : "No"));
-            lines.Add(Where(a));
-            if (a.Tier == Tier.Elevated) lines.Add("Needs administrator rights. Shows exactly what it will run first.");
-            else if (a.Confirm != null) lines.Add("Asks for confirmation before changing anything.");
-            meta.Text = string.Join("\n", lines.ToArray());
+            string safety = null;
+            if (a.Tier == Tier.Elevated) safety = "Needs administrator rights. Shows exactly what it will run first.";
+            else if (a.Confirm != null) safety = "Asks for confirmation before changing anything.";
+            SetFacts(ChangesText(a), a.Undoable ? "Yes, with Undo last" : "No", Where(a), safety);
             run.Text = a.Window != null ? "Open" : "Run";
             ShowCommand(a);
             UpdatePinAction(a);
             FitActions();
-            actionsScroll.AutoScrollPosition = new Point(0, 0);
         }
 
         void ShowCommand(Action a)
@@ -513,7 +601,7 @@ namespace PSTools
         void UpdatePinAction(Action a)
         {
             pinAction.Enabled = Pinnable(a);
-            pinAction.Text = a != null && Settings.IsPinnedAnywhere(a.Id) ? "Pinned..." : "Pin...";
+            pinAction.Text = a != null && Settings.IsPinnedAnywhere(a.Id) ? "Pinned to menu..." : "Pin to menu...";
         }
 
         void ShowPinMenu()
@@ -596,57 +684,108 @@ namespace PSTools
             RefreshMenuState();
         }
 
+        static void DockLeft(Control host, params Control[] visualOrder)
+        {
+            for (int i = visualOrder.Length - 1; i >= 0; i--)
+            {
+                visualOrder[i].Dock = DockStyle.Left;
+                host.Controls.Add(visualOrder[i]);
+            }
+        }
+
+        static void DockRight(Control host, params Control[] visualOrder)
+        {
+            foreach (var c in visualOrder)
+            {
+                c.Dock = DockStyle.Right;
+                host.Controls.Add(c);
+            }
+        }
+
+        BPanel Gap(int logical)
+        {
+            var g = new BPanel { Dock = DockStyle.Left };
+            metrics.Add(() => g.Width = UI.S(logical));
+            return g;
+        }
+
+        Label Caption(string text)
+        {
+            var l = new Label { Text = text, AutoSize = false, Dock = DockStyle.Left, TextAlign = ContentAlignment.MiddleLeft, Font = UI.Font };
+            metrics.Add(() => l.Width = TextRenderer.MeasureText(text, l.Font, new Size(2000, 100), TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine).Width + UI.S(6));
+            return l;
+        }
+
+        void Pad(Control c, int l, int t, int r, int b)
+        {
+            metrics.Add(() => c.Padding = new Padding(UI.S(l), UI.S(t), UI.S(r), UI.S(b)));
+        }
+
+        void Tall(Control c, int logical)
+        {
+            metrics.Add(() => c.Height = UI.S(logical));
+        }
+
+        void Wide(FButton b, int minLogical)
+        {
+            metrics.Add(() => b.Width = Math.Max(UI.S(minLogical), b.GetPreferredSize(Size.Empty).Width));
+        }
+
+        void ApplyMetrics()
+        {
+            foreach (var m in metrics) m();
+            FitList(list); FitList(pinList); FitList(allList); FitList(previewList);
+            FitActions();
+        }
+
         void BuildMenuPage()
         {
-            var root = new BTable { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3 };
-            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
-            root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 140));
-
-            var selector = new BFlow { Dock = DockStyle.Fill, Padding = new Padding(0, 8, 0, 4), WrapContents = false };
-            for (int i = 0; i < DefaultPins.Contexts.Length; i++)
-            {
-                var t = DefaultPins.Contexts[i];
-                var b = new FButton { Text = DefaultPins.Title(t), Width = 140, Height = 34, Margin = new Padding(0, 0, 8, 0) };
-                b.Click += (s, e) => SetContext(t);
-                contextButtons[i] = b;
-                selector.Controls.Add(b);
-            }
-
             var cards = new BTable { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1 };
-            cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 29));
-            cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 37));
-            cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34));
+            cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 31));
+            cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 36));
+            cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
             cards.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-            var pinsCard = new FCard { Dock = DockStyle.Fill, Padding = new Padding(14, 12, 10, 10), Margin = new Padding(0, 0, 10, 0) };
+            var pinsCard = new FCard { Dock = DockStyle.Fill, Margin = new Padding(0, 0, 10, 0) };
+            Pad(pinsCard, 16, 14, 12, 12);
+            metrics.Add(() => pinsCard.Margin = new Padding(0, 0, UI.S(10), 0));
             pinList.Dock = DockStyle.Fill; pinList.View = View.Details; pinList.HeaderStyle = ColumnHeaderStyle.None; pinList.FullRowSelect = true;
             pinList.MultiSelect = false; pinList.HideSelection = false; pinList.BorderStyle = BorderStyle.None; pinList.Font = UI.Font;
             pinList.Columns.Add("", 200);
             pinList.Resize += (s, e) => FitList(pinList);
             pinList.KeyDown += (s, e) => { if (e.KeyCode == Keys.Delete) { UnpinSelected(); e.Handled = true; } };
             pinList.SelectedIndexChanged += (s, e) => UpdatePinButtons();
-            pinsTitle.Dock = DockStyle.Top; pinsTitle.Height = 26; pinsTitle.Font = UI.Bold; pinsTitle.Text = "Top of the menu";
-            pinsNote.Dock = DockStyle.Top; pinsNote.Height = 38; pinsNote.Font = UI.Small; pinsNote.ForeColor = UI.Muted;
-            var pinButtons = new BTable { Dock = DockStyle.Bottom, Height = 84, ColumnCount = 3, RowCount = 2, Padding = new Padding(0, 8, 0, 0) };
-            for (int i = 0; i < 3; i++) pinButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.34f));
-            pinButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
-            pinButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
-            var add = new FButton { Text = "Add...", Glyph = Fx.Add, Dock = DockStyle.Fill, Margin = new Padding(0, 0, 0, 8), Kind = FButton.Look.Accent };
-            var up = new FButton { Text = "Up", Dock = DockStyle.Fill, Margin = new Padding(0, 0, 4, 0) };
-            var down = new FButton { Text = "Down", Dock = DockStyle.Fill, Margin = new Padding(2, 0, 2, 0) };
-            var unpin = new FButton { Text = "Unpin", Dock = DockStyle.Fill, Margin = new Padding(4, 0, 0, 0) };
+            pinsTitle.Dock = DockStyle.Top; pinsTitle.Font = UI.Bold; pinsTitle.Text = "Top of the menu"; pinsTitle.TextAlign = ContentAlignment.MiddleLeft;
+            pinsNote.Dock = DockStyle.Top; pinsNote.Font = UI.Small; pinsNote.ForeColor = UI.Muted; pinsNote.AutoEllipsis = true;
+            Tall(pinsTitle, 26); Tall(pinsNote, 26);
+            var addRow = new BPanel { Dock = DockStyle.Bottom };
+            Tall(addRow, 48); Pad(addRow, 0, 8, 0, 8);
+            var add = new FButton { Text = "Add...", Glyph = Fx.Add, Dock = DockStyle.Fill, Kind = FButton.Look.Accent };
             add.Click += (s, e) => ShowAddMenu(add);
+            addRow.Controls.Add(add);
+            var moveRow = new BTable { Dock = DockStyle.Bottom, ColumnCount = 3, RowCount = 1 };
+            for (int i = 0; i < 3; i++) moveRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.34f));
+            moveRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            Tall(moveRow, 38);
+            var up = new FButton { Text = "Up", Dock = DockStyle.Fill, Margin = new Padding(0) };
+            var down = new FButton { Text = "Down", Dock = DockStyle.Fill, Margin = new Padding(0) };
+            var unpin = new FButton { Text = "Unpin", Dock = DockStyle.Fill, Margin = new Padding(0) };
+            metrics.Add(() =>
+            {
+                up.Margin = new Padding(0, 0, UI.S(3), 0);
+                down.Margin = new Padding(UI.S(3), 0, UI.S(3), 0);
+                unpin.Margin = new Padding(UI.S(3), 0, 0, 0);
+            });
             up.Click += (s, e) => MoveSelected(-1);
             down.Click += (s, e) => MoveSelected(1);
             unpin.Click += (s, e) => UnpinSelected();
-            pinButtons.Controls.Add(add, 0, 0); pinButtons.SetColumnSpan(add, 3);
-            pinButtons.Controls.Add(up, 0, 1); pinButtons.Controls.Add(down, 1, 1); pinButtons.Controls.Add(unpin, 2, 1);
+            moveRow.Controls.Add(up, 0, 0); moveRow.Controls.Add(down, 1, 0); moveRow.Controls.Add(unpin, 2, 0);
             pinButtonsHost = new[] { up, down, unpin };
-            pinsCard.Controls.Add(pinList); pinsCard.Controls.Add(pinButtons); pinsCard.Controls.Add(pinsNote); pinsCard.Controls.Add(pinsTitle);
+            pinsCard.Controls.Add(pinList); pinsCard.Controls.Add(addRow); pinsCard.Controls.Add(moveRow); pinsCard.Controls.Add(pinsNote); pinsCard.Controls.Add(pinsTitle);
 
-            var allCard = new FCard { Dock = DockStyle.Fill, Padding = new Padding(14, 12, 10, 10), Margin = new Padding(0, 0, 10, 0) };
+            var allCard = new FCard { Dock = DockStyle.Fill };
+            Pad(allCard, 16, 14, 12, 12);
+            metrics.Add(() => allCard.Margin = new Padding(0, 0, UI.S(10), 0));
             allList.Dock = DockStyle.Fill; allList.View = View.Details; allList.HeaderStyle = ColumnHeaderStyle.None; allList.FullRowSelect = true;
             allList.MultiSelect = false; allList.HideSelection = false; allList.BorderStyle = BorderStyle.None; allList.Font = UI.Font;
             allList.Columns.Add("", 300);
@@ -681,63 +820,95 @@ namespace PSTools
                 it.Selected = true;
                 ShowAllMenu((Action)it.Tag, e.Location);
             };
-            var allTitle = new Label { Text = "All actions", Dock = DockStyle.Top, Height = 26, Font = UI.Bold };
-            var allNote = new Label { Text = "Tick to show in the menu, star to pin to the top. Double-click pins too.", Dock = DockStyle.Top, Height = 38, Font = UI.Small, ForeColor = UI.Muted };
+            var allTitle = new Label { Text = "All actions", Dock = DockStyle.Top, Font = UI.Bold, TextAlign = ContentAlignment.MiddleLeft };
+            var allNote = new Label { Text = "Tick to show it, star to pin it.", Dock = DockStyle.Top, Font = UI.Small, ForeColor = UI.Muted, AutoEllipsis = true };
+            Tall(allTitle, 26); Tall(allNote, 26);
             ResultsForm.SetCue(allFilter, "Filter actions");
             allFilter.Dock = DockStyle.Fill;
             allFilter.TextChanged += (s, e) => FillAll();
             allFilter.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) { allFilter.Text = ""; e.SuppressKeyPress = true; } };
-            var filterWrap = new BPanel { Dock = DockStyle.Top, Height = 46, Padding = new Padding(0, 0, 0, 10) };
+            var filterWrap = new BPanel { Dock = DockStyle.Top };
+            Tall(filterWrap, 48); Pad(filterWrap, 0, 4, 0, 8);
             filterWrap.Controls.Add(allFilter);
             allCard.Controls.Add(allList); allCard.Controls.Add(filterWrap); allCard.Controls.Add(allNote); allCard.Controls.Add(allTitle);
 
-            var previewCard = new FCard { Dock = DockStyle.Fill, Padding = new Padding(14, 12, 10, 10), Margin = new Padding(0) };
-            var previewTitle = new Label { Text = "What you will see", Dock = DockStyle.Top, Height = 26, Font = UI.Bold };
+            var previewCard = new FCard { Dock = DockStyle.Fill, Margin = new Padding(0) };
+            Pad(previewCard, 16, 14, 12, 12);
+            var previewTitle = new Label { Text = "What you will see", Dock = DockStyle.Top, Font = UI.Bold, TextAlign = ContentAlignment.MiddleLeft };
+            Tall(previewTitle, 26);
             previewShift.Dock = DockStyle.Top; previewShift.Font = UI.Font;
+            Tall(previewShift, 34);
             previewShift.CheckedChanged += (s, e) => FillPreview();
-            previewTree.Dock = DockStyle.Fill; previewTree.ShowLines = false; previewTree.FullRowSelect = true; previewTree.HideSelection = true; previewTree.ShowRootLines = true; previewTree.ItemHeight = 26; previewTree.Font = UI.Font;
-            previewTree.Resize += (s, e) => UI.HideHScroll(previewTree);
-            previewNote.Dock = DockStyle.Bottom; previewNote.Height = 40; previewNote.Font = UI.Small; previewNote.ForeColor = UI.Muted;
-            previewCard.Controls.Add(previewTree); previewCard.Controls.Add(previewNote); previewCard.Controls.Add(previewShift); previewCard.Controls.Add(previewTitle);
+            previewList.Dock = DockStyle.Fill; previewList.View = View.Details; previewList.HeaderStyle = ColumnHeaderStyle.None; previewList.FullRowSelect = true;
+            previewList.MultiSelect = false; previewList.HideSelection = true; previewList.BorderStyle = BorderStyle.None; previewList.Font = UI.Font;
+            previewList.Columns.Add("", 300);
+            previewList.Tag = "static";
+            FList.Attach(previewList, 30, null);
+            FList.Decorate(previewList, new RowDeco { Fold = PreviewFoldState, OnFold = PreviewToggleFold });
+            previewList.Resize += (s, e) => FitList(previewList);
+            previewNote.Dock = DockStyle.Bottom; previewNote.Font = UI.Small; previewNote.ForeColor = UI.Muted;
+            Tall(previewNote, 44);
+            previewCard.Controls.Add(previewList); previewCard.Controls.Add(previewNote); previewCard.Controls.Add(previewShift); previewCard.Controls.Add(previewTitle);
 
             cards.Controls.Add(pinsCard, 0, 0); cards.Controls.Add(allCard, 1, 0); cards.Controls.Add(previewCard, 2, 0);
 
-            var below = new BTable { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3, Padding = new Padding(0, 6, 0, 0) };
-            below.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            below.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
-            below.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
-            below.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            var row = new BFlow { Dock = DockStyle.Fill, WrapContents = false };
-            row.Controls.Add(new Label { Text = "Preset", AutoSize = true, Margin = new Padding(0, 8, 8, 0) });
+            var selector = new BFlow { Dock = DockStyle.Top, WrapContents = false };
+            Tall(selector, 54); Pad(selector, 0, 8, 0, 8);
+            for (int i = 0; i < DefaultPins.Contexts.Length; i++)
+            {
+                var t = DefaultPins.Contexts[i];
+                var b = new FButton { Text = DefaultPins.Title(t) };
+                b.Click += (s, e) => SetContext(t);
+                contextButtons[i] = b;
+                selector.Controls.Add(b);
+                var bt = b;
+                metrics.Add(() => { bt.Width = UI.S(140); bt.Height = UI.S(38); bt.Margin = new Padding(0, 0, UI.S(8), 0); });
+            }
+
+            var footer = new BPanel { Dock = DockStyle.Bottom };
+            Tall(footer, 124);
+
+            var prefs = new BPanel { Dock = DockStyle.Top };
+            Tall(prefs, 46); Pad(prefs, 0, 6, 0, 4);
+            var themeNote = new Label { Text = "Applies next start", Dock = DockStyle.Fill, Font = UI.Small, ForeColor = UI.Muted, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true };
             preset.Items.AddRange(Presets.Names);
             preset.Items.Add(Presets.Custom);
-            preset.Width = 150; preset.Height = 32; preset.Margin = new Padding(0, 2, 20, 0);
             preset.SelectedIndexChanged += (s, e) => PresetChosen();
-            row.Controls.Add(preset);
-            row.Controls.Add(new Label { Text = "Theme", AutoSize = true, Margin = new Padding(0, 8, 8, 0) });
             theme.Items.AddRange(new[] { "auto", "light", "dark" });
             Settings.EnsureLoaded();
             theme.SelectedItem = Settings.Theme;
             if (theme.SelectedIndex < 0) theme.SelectedIndex = 0;
-            theme.Width = 110; theme.Height = 32; theme.Margin = new Padding(0, 2, 12, 0);
-            theme.SelectedIndexChanged += (s, e) => { Settings.SetTheme(theme.SelectedItem); SetStatus("Theme saved."); };
-            row.Controls.Add(theme);
-            row.Controls.Add(new Label { Text = "Applies the next time PS Tools starts", AutoSize = true, Font = UI.Small, ForeColor = UI.Muted, Margin = new Padding(0, 10, 0, 0) });
-            var row2 = new BFlow { Dock = DockStyle.Fill, WrapContents = false };
-            var guide = new FButton { Text = "Setup guide...", Width = 140, Height = 32, Margin = new Padding(0, 0, 8, 0) };
+            theme.SelectedIndexChanged += (s, e) => { Settings.SetTheme(theme.SelectedItem); SetStatus("Theme saved. It applies the next time PS Tools starts."); };
+            var guide = new FButton { Text = "Setup guide..." };
             guide.Click += (s, e) => new FirstRunForm(true).Show(this);
-            var removeMenu = new FButton { Text = "Remove Explorer menu", Width = 200, Height = 32, Margin = new Padding(0, 0, 8, 0) };
-            removeMenu.Click += (s, e) => { applyTimer.Stop(); Shell.RemoveMenu(); RefreshMenuState(); SetStatus("Explorer menu removed."); };
-            var full = new FButton { Text = "Full uninstall...", Width = 150, Height = 32, Margin = new Padding(0, 0, 8, 0) };
-            full.Click += (s, e) => FullUninstall();
-            installBtn.Margin = new Padding(0, 0, 8, 0); installBtn.Kind = FButton.Look.Accent;
-            installBtn.Click += (s, e) => InstallNow();
-            row2.Controls.Add(guide); row2.Controls.Add(removeMenu); row2.Controls.Add(full); row2.Controls.Add(installBtn);
-            menuState.Dock = DockStyle.Fill; menuState.Font = UI.Small; menuState.ForeColor = UI.Muted; menuState.Padding = new Padding(0, 2, 0, 0);
-            below.Controls.Add(row, 0, 0); below.Controls.Add(row2, 0, 1); below.Controls.Add(menuState, 0, 2);
+            Wide(guide, 140);
+            metrics.Add(() => { preset.Width = UI.S(150); theme.Width = UI.S(110); });
+            prefs.Controls.Add(themeNote);
+            DockRight(prefs, guide);
+            DockLeft(prefs, Caption("Preset"), Gap(8), preset, Gap(24), Caption("Theme"), Gap(8), theme, Gap(16));
 
-            root.Controls.Add(selector, 0, 0); root.Controls.Add(cards, 0, 1); root.Controls.Add(below, 0, 2);
-            pageMenu.Controls.Add(root);
+            var state = new BPanel { Dock = DockStyle.Top };
+            Tall(state, 44); Pad(state, 0, 4, 0, 4);
+            menuState.Dock = DockStyle.Fill; menuState.AutoSize = false; menuState.TextAlign = ContentAlignment.MiddleLeft; menuState.AutoEllipsis = true; menuState.Font = UI.Font;
+            installBtn.Kind = FButton.Look.Accent; installBtn.AutoSize = false;
+            installBtn.Click += (s, e) => InstallNow();
+            removeBtn.AutoSize = false; uninstallBtn.AutoSize = false;
+            removeBtn.Click += (s, e) => { applyTimer.Stop(); Shell.RemoveMenu(); RefreshMenuState(); SetStatus("Explorer menu removed."); };
+            uninstallBtn.Click += (s, e) => FullUninstall();
+            tips.SetToolTip(removeBtn, "Removes the right-click entries only. Your settings stay.");
+            tips.SetToolTip(uninstallBtn, "Removes the menu, settings, undo data and temporary files, and restores any Windows settings PS Tools changed");
+            Wide(installBtn, 170); Wide(removeBtn, 170); Wide(uninstallBtn, 150);
+            state.Controls.Add(menuState);
+            var g1 = Gap(8); var g2 = Gap(8);
+            DockRight(state, installBtn, g1, removeBtn, g2, uninstallBtn);
+            foreach (var g in new[] { g1, g2 }) g.Dock = DockStyle.Right;
+
+            dataLine.Dock = DockStyle.Fill; dataLine.AutoEllipsis = true; dataLine.Font = UI.Small; dataLine.ForeColor = UI.Muted; dataLine.TextAlign = ContentAlignment.TopLeft;
+            Pad(dataLine, 0, 4, 0, 0);
+
+            footer.Controls.Add(dataLine); footer.Controls.Add(state); footer.Controls.Add(prefs);
+
+            pageMenu.Controls.Add(cards); pageMenu.Controls.Add(footer); pageMenu.Controls.Add(selector);
         }
 
         FButton[] pinButtonsHost;
@@ -756,7 +927,7 @@ namespace PSTools
                 contextButtons[i].Kind = DefaultPins.Contexts[i] == ctx ? FButton.Look.Accent : FButton.Look.Standard;
                 contextButtons[i].Invalidate();
             }
-            pinsNote.Text = DefaultPins.Title(ctx) + ": up to " + Settings.MaxPins + " pins, in this order.";
+            pinsNote.Text = "Up to " + Settings.MaxPins + " pins, in this order";
             RefreshPins();
             FillAll();
             FillPreview();
@@ -983,7 +1154,34 @@ namespace PSTools
 
         void FillPreview()
         {
-            previewNote.Text = PreviewForm.Render(previewTree, MenuPlan.Build(ctx, previewShift.Checked));
+            var plan = MenuPlan.Build(ctx, previewShift.Checked);
+            previewList.BeginUpdate();
+            previewList.Items.Clear();
+            if (plan.OpenEntry) previewList.Items.Add(new ListViewItem("Open in PS Tools"));
+            foreach (var a in plan.Pinned) previewList.Items.Add(new ListViewItem("\u2605  " + a.Label.TrimEnd('.') + PreviewForm.Qualifier(a)));
+            foreach (var g in plan.Groups)
+            {
+                previewList.Items.Add(new ListViewItem((g.Pinned ? "\u2605  " : "") + g.Name + "   " + g.Items.Count) { Tag = new HeaderRow { Name = g.Name } });
+                if (!previewOpen.Contains(g.Name)) continue;
+                foreach (var a in g.Items) previewList.Items.Add(new ListViewItem(a.Label.TrimEnd('.') + PreviewForm.Qualifier(a) + (a.Tier == Tier.Elevated ? "   (admin)" : "")));
+            }
+            previewList.EndUpdate();
+            FitList(previewList);
+            previewNote.Text = PreviewForm.Note(plan);
+        }
+
+        int PreviewFoldState(ListViewItem it)
+        {
+            var h = it.Tag as HeaderRow;
+            return h == null ? -1 : previewOpen.Contains(h.Name) ? 0 : 1;
+        }
+
+        void PreviewToggleFold(ListViewItem it)
+        {
+            var h = it.Tag as HeaderRow;
+            if (h == null) return;
+            if (!previewOpen.Remove(h.Name)) previewOpen.Add(h.Name);
+            BeginInvoke((MethodInvoker)FillPreview);
         }
 
         void RefreshPreset()
@@ -1037,10 +1235,9 @@ namespace PSTools
             string pending = Tweaks.Pending();
             bool installed = Shell.IsInstalled();
             installBtn.Visible = !installed;
-            menuState.Text = (installed ? "Explorer menu: installed. Changes are saved and applied right away." : "Explorer menu: not installed.")
-                + "\nData folder: " + Journal.Dir
-                + (pending.Length > 0 ? "\nWindows settings changed: " + pending : "");
-            menuState.AutoEllipsis = true;
+            removeBtn.Visible = installed;
+            menuState.Text = installed ? "Explorer menu installed. Changes apply right away." : "Explorer menu is not installed.";
+            dataLine.Text = "Data folder: " + Journal.Dir + (pending.Length > 0 ? "     Windows settings changed: " + pending : "");
         }
     }
 }

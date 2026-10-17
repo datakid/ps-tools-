@@ -92,6 +92,11 @@ namespace PSTools
                 if (n.Tag is string && open.Contains((string)n.Tag)) n.Expand();
             tree.EndUpdate();
             UI.HideHScroll(tree);
+            return Note(plan);
+        }
+
+        public static string Note(MenuPlan plan)
+        {
             int total = plan.ActionCount;
             string note = total == 0 ? "Nothing is enabled for this kind of item, so PS Tools would not appear." : total + " actions, " + plan.TopLevelCount + " entries at the top level of the PS Tools menu.";
             if (Tweaks.IsWindows11 && !Tweaks.Classic) note += "\nWindows 11 shows this under Show more options until the classic menu is on.";

@@ -97,10 +97,11 @@ namespace PSTools
 
         public static Font Font = new Font(Family, 10f);
         public static Font Small = new Font(Family, 9f);
-        public static Font Bold = new Font("Segoe UI Semibold", 10f);
-        public static Font SmallBold = new Font("Segoe UI Semibold", 9f);
-        public static Font Head = new Font("Segoe UI Semibold", 12f);
-        public static Font Title = new Font("Segoe UI Semibold", 15f);
+        public static readonly string SemiFamily = Pick("Segoe UI Variable Text Semibold", "Segoe UI Semibold");
+        public static Font Bold = new Font(SemiFamily, 10f);
+        public static Font SmallBold = new Font(SemiFamily, 9f);
+        public static Font Head = new Font(SemiFamily, 12f);
+        public static Font Title = new Font(SemiFamily, 15f);
         public static Font Mono = new Font(Pick("Cascadia Mono", "Consolas"), 10f);
         public static Font Icons(float size) { return new Font(IconFamily ?? "Segoe UI", size); }
 

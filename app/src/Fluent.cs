@@ -1105,6 +1105,7 @@ namespace PSTools
             var g = e.Graphics;
             var item = e.Item;
             bool sel = item.Selected;
+            if (lv.Tag as string == "static") { sel = false; hot = false; }
             Rectangle row = item.GetBounds(ItemBoundsPortion.Entire);
             int rowW = Math.Max(row.Width, lv.ClientSize.Width);
             if (IsHeader(item))
@@ -1130,8 +1131,9 @@ namespace PSTools
                         hl = UI.S(42);
                     }
                     if (hd != null && hd.Pin != null && hd.Pin(item) >= 0) DrawStar(g, PinRect(rr), hd.Pin(item) > 0, true, centerY - UI.S(9));
-                    var hr = new Rectangle(e.Bounds.X + hl, row.Y, Math.Max(4, e.Bounds.Width - hl - UI.S(44)), row.Height - UI.S(2));
-                    TextRenderer.DrawText(g, item.Text, UI.SmallBold, hr, UI.Muted, TextFormatFlags.Left | TextFormatFlags.Bottom | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+                    int th = UI.SmallBold.Height + UI.S(2);
+                    var hr = new Rectangle(e.Bounds.X + hl, centerY - th / 2, Math.Max(4, e.Bounds.Width - hl - UI.S(44)), th);
+                    TextRenderer.DrawText(g, item.Text, UI.SmallBold, hr, UI.Muted, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
                 }
                 return;
             }
