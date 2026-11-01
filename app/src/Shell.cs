@@ -119,7 +119,34 @@ namespace PSTools
 
         public static void RemoveMenu()
         {
-            foreach (var r in Roots) Registry.CurrentUser.DeleteSubKeyTree(r, false);
+            foreach (var r in Roots)
+            {
+                Registry.CurrentUser.DeleteSubKeyTree(r, false);
+                PruneEmptyParents(r);
+            }
+        }
+
+        static void PruneEmptyParents(string path)
+        {
+            const string stop = @"Software\Classes";
+            string p = path;
+            while (true)
+            {
+                int cut = p.LastIndexOf('\\');
+                if (cut < 0) return;
+                p = p.Substring(0, cut);
+                if (p.Length <= stop.Length) return;
+                try
+                {
+                    using (var k = Registry.CurrentUser.OpenSubKey(p))
+                    {
+                        if (k == null) continue;
+                        if (k.SubKeyCount != 0 || k.ValueCount != 0) return;
+                    }
+                    Registry.CurrentUser.DeleteSubKey(p, false);
+                }
+                catch { return; }
+            }
         }
 
         public static string UninstallAll()

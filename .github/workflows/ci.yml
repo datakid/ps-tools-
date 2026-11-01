@@ -32,8 +32,8 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: powershell
         run: |
-          app\tests\fixtures\make-fixtures.ps1 -Out "$env:RUNNER_TEMP\fx" *>&1 | Tee-Object -FilePath app\out\logs\fixtures.txt
-          if (-not $?) { exit 1 }
+          app\tests\ci\run-logged.ps1 -Script app\tests\fixtures\make-fixtures.ps1 -Params @{ Out = "$env:RUNNER_TEMP\fx" } -Log app\out\logs\fixtures.txt
+          exit $LASTEXITCODE
       - name: Generate goldens (artifact only, for review)
         if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
         shell: pwsh
@@ -50,32 +50,32 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: pwsh
         run: |
-          app\tools\snippet-check.ps1 *>&1 | Tee-Object -FilePath app\out\logs\snippet-check.txt
+          app\tests\ci\run-logged.ps1 -Script app\tools\snippet-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\snippet-check.txt
           exit $LASTEXITCODE
       - name: Layout lint
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: powershell
         run: |
-          app\tools\layout-check.ps1 *>&1 | Tee-Object -FilePath app\out\logs\layout-check.txt
+          app\tests\ci\run-logged.ps1 -Script app\tools\layout-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\layout-check.txt
           exit $LASTEXITCODE
       - name: Screenshots
         id: shots
         if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
         shell: powershell
         run: |
-          app\tests\ui\capture.ps1 -Exe app\out\PSTools.exe -Out app\out\shots -Fixtures "$env:RUNNER_TEMP\fx" *>&1 | Tee-Object -FilePath app\out\logs\capture.txt
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\capture.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Out = 'app\out\shots'; Fixtures = "$env:RUNNER_TEMP\fx" } -Log app\out\logs\capture.txt
           exit $LASTEXITCODE
       - name: Visual diff and pixel lint
         if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
         shell: powershell
         run: |
-          app\tests\ui\compare.ps1 -Shots app\out\shots -Baseline app\tests\ui\baseline -Out app\out\ui-report -LintWarnOnly *>&1 | Tee-Object -FilePath app\out\logs\compare.txt
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\compare.ps1 -Params @{ Shots = 'app\out\shots'; Baseline = 'app\tests\ui\baseline'; Out = 'app\out\ui-report'; LintWarnOnly = $true } -Log app\out\logs\compare.txt
           exit $LASTEXITCODE
       - name: Footprint check
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: pwsh
         run: |
-          app\tools\footprint-check.ps1 -Exe app\out\PSTools.exe *>&1 | Tee-Object -FilePath app\out\logs\footprint.txt
+          app\tests\ci\run-logged.ps1 -Script app\tools\footprint-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\footprint.txt
           exit $LASTEXITCODE
       - uses: actions/upload-artifact@v4
         if: always()
