@@ -1,0 +1,15 @@
+PASS  copy-name.file                        83 ms
+PASS  copy-name.multi                       12 ms
+PASS  copy-path-quoted.dir                  10 ms
+FAIL  copy-path-fwd.awkward                  7 ms
+      PathTooLongException: The specified path, file name, or both are too long. The fully qualified file name must be less than 260 characters, and the directory name must be less than 248 characters.
+PASS  copy-parent.file                      12 ms
+PASS  copy-sha256.file                      18 ms
+PASS  copy-contents.file                    11 ms
+PASS  copy-names.dir                        10 ms
+PASS  copy-tree.dir                         16 ms
+PASS  copy-dirs-rel.dir                     11 ms
+PASS  copy-size.dir                         14 ms
+PASS  folder-sizes.dir                      60 ms
+PASS  new-folder-clip.undo                  22 ms
+12 passed, 1 failed, 0 skipped (goldens rewritten)

@@ -1,0 +1,4 @@
+ok    main-actions.dark.1.5.png  1024x720  printwindow  91 controls
+ok    main-menu.dark.1.5.png  1024x720  printwindow  91 controls
+ok    dialog-info.dark.1.5.png  726x365  printwindow  3 controls
+3 screenshots, 0 failed, theme=dark, scale=1.5, font=Segoe UI Variable Text

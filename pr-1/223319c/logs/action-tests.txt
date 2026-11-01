@@ -1,0 +1,27 @@
+FAIL  copy-name.file                        53 ms
+      golden missing: copy-name.file.txt
+FAIL  copy-name.multi                       10 ms
+      golden missing: copy-name.multi.txt
+FAIL  copy-path-quoted.dir                  12 ms
+      golden missing: copy-path-quoted.dir.txt
+FAIL  copy-path-fwd.awkward                  7 ms
+      PathTooLongException: The specified path, file name, or both are too long. The fully qualified file name must be less than 260 characters, and the directory name must be less than 248 characters.
+FAIL  copy-parent.file                      11 ms
+      golden missing: copy-parent.file.txt
+FAIL  copy-sha256.file                      14 ms
+      golden missing: copy-sha256.file.txt
+FAIL  copy-contents.file                    10 ms
+      golden missing: copy-contents.file.txt
+FAIL  copy-names.dir                        10 ms
+      golden missing: copy-names.dir.txt
+FAIL  copy-tree.dir                         16 ms
+      golden missing: copy-tree.dir.txt
+FAIL  copy-dirs-rel.dir                     11 ms
+      golden missing: copy-dirs-rel.dir.txt
+FAIL  copy-size.dir                         15 ms
+      golden missing: copy-size.dir.txt
+FAIL  folder-sizes.dir                      25 ms
+      golden missing: folder-sizes.dir.txt
+FAIL  new-folder-clip.undo                  21 ms
+      golden missing: new-folder-clip.undo.txt
+0 passed, 13 failed, 0 skipped

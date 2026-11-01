@@ -1,0 +1,4 @@
+[clipboard]
+<FX>\tree-basic\docs
+[toast]
+Copied: <FX>\t...
