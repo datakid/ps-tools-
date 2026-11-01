@@ -1,0 +1,21 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build-test:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build with .NET Framework csc
+        shell: cmd
+        run: cd app && build.cmd
+      - name: Self-test
+        shell: pwsh
+        run: |
+          $p = Start-Process app\out\PSTools.exe -ArgumentList '--selftest','--quiet' -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { exit 1 }
