@@ -99,16 +99,24 @@ if ($git) {
     Write-Text (Join-Path $repo 'README.md') "# repo`n"
     Write-Text (Join-Path $repo 'debug.log') "ignored`n"
     Write-Text (Join-Path $repo 'node_modules\dep\index.js') "ignored`n"
+    function Invoke-Git([string[]]$GitArgs) {
+        $previous = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try { & git -c core.autocrlf=false @GitArgs 2>&1 | Out-Null }
+        finally { $ErrorActionPreference = $previous }
+        if ($LASTEXITCODE -ne 0) { throw ('git ' + ($GitArgs -join ' ') + ' failed with ' + $LASTEXITCODE) }
+    }
     Push-Location $repo
     try {
-        & git init -q -b main 2>&1 | Out-Null
-        & git config user.name 'Fixture' 2>&1 | Out-Null
-        & git config user.email 'fixture@example.com' 2>&1 | Out-Null
-        & git add -A 2>&1 | Out-Null
+        Invoke-Git @('init', '-q', '-b', 'main')
+        Invoke-Git @('config', 'user.name', 'Fixture')
+        Invoke-Git @('config', 'user.email', 'fixture@example.com')
+        Invoke-Git @('config', 'core.autocrlf', 'false')
+        Invoke-Git @('add', '-A')
         $env:GIT_AUTHOR_DATE = '2026-01-15T10:30:00'
         $env:GIT_COMMITTER_DATE = '2026-01-15T10:30:00'
-        & git commit -q -m 'Initial commit' 2>&1 | Out-Null
-        & git remote add origin https://github.com/example/repo.git 2>&1 | Out-Null
+        Invoke-Git @('commit', '-q', '-m', 'Initial commit')
+        Invoke-Git @('remote', 'add', 'origin', 'https://github.com/example/repo.git')
     }
     finally {
         Pop-Location
