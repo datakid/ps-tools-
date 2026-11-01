@@ -1,0 +1,9 @@
+EXCEPTION: git.exe : warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+At D:\a\ps-tools-\ps-tools-\app\tests\fixtures\make-fixtures.ps1:107 char:9
++         & git add -A 2>&1 | Out-Null
++         ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+exit code 1

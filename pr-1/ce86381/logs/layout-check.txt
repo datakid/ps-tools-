@@ -1,0 +1,22 @@
+
+
+Actions page                        980 x 640  ok
+
+Menu page                           980 x 640  ISSUES
+
+Actions page                        860 x 520  ISSUES
+
+Menu page                           860 x 520  ISSUES
+
+Actions page                       1200 x 760  ok
+
+Menu page                          1200 x 760  ISSUES
+EXCEPTION: Exception calling "CreateInstance" with "2" argument(s): "Constructor on type 'PSTools.PreviewForm' not found."
+At D:\a\ps-tools-\ps-tools-\app\tools\layout-check.ps1:68 char:1
++ $preview = [Activator]::CreateInstance($asm.GetType('PSTools.PreviewF ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException
+    + FullyQualifiedErrorId : MissingMethodException
+ 
+
+exit code 1
