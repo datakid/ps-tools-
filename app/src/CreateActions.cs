@@ -57,7 +57,7 @@ namespace PSTools
                 Hint = "Saves the text on the clipboard as clip-<date>.txt (.json or .html when it clearly is one).",
                 Run = (paths, c) =>
                 {
-                    string t = Clipboard.ContainsText() ? Clipboard.GetText() : "";
+                    string t = Clip.Text();
                     if (t.Trim().Length == 0) return new Result { Summary = "The clipboard does not contain text." };
                     string s = t.TrimStart();
                     string ext = ".txt";
@@ -78,7 +78,7 @@ namespace PSTools
                 Hint = "Creates a folder named after the first line of the clipboard text (invalid characters become _).",
                 Run = (paths, c) =>
                 {
-                    string t = Clipboard.ContainsText() ? Clipboard.GetText() : "";
+                    string t = Clip.Text();
                     string first = t.Replace("\r", "").Split('\n').FirstOrDefault(l => l.Trim().Length > 0) ?? "";
                     string name = Fs.Sanitize(first);
                     if (name.Length == 0) return new Result { Summary = "The clipboard has no usable text for a folder name." };
