@@ -34,3 +34,20 @@ Measured facts and deviations from the plan, with evidence. Newest phase last.
 
 ### Not done in Phase 0 (by design, belongs to later phases)
 UI Automation scenarios, menu snapshot, cheat sheet checks, startup timing probe, and the glyph (tofu) check, which needs the new icon set.
+
+## Phase 1
+
+- **Settings format:** v3 settings are line-based `settings.txt`, not `settings.json` as V4_PLAN §4.2 and §9 assume. `CatalogOverrides.Parse` takes the plan's JSON shape (`hidden`, `overrides`) as input; where it is stored is decided with the schema-4 migration in Phase 2.
+- **v4 ids:** where POWER_ACTIONS names an id for the same behaviour it is used (`copy.tree.ascii`, `copy.path.quoted`, `new.folder-from-clip`, `search.large`, `inspect.sizes`, `git.status.repos`, ...); otherwise the id follows the same naming scheme. The whole table is `V3Map.cs`; selftest fails if any id in `tests/v3-ids.txt` has no row or resolves to a `legacy.*` fallback.
+- **Library vs built-ins:** 8 library ids equal v3 built-in ids (`flatten-copy`, `folder-sizes`, `long-paths`, ...). They live in their own namespace (`lib.<id>`, alias `lib-<id>`), so there is no clash.
+- **Title limits:** the plan's 32-character limit holds for built-in and shipped entries. 21 of the 108 library titles are 33-47 characters, so library, recipe and user entries get a 64-character limit. Shipped content stays strict.
+- **Admin with risk safe:** allowed (`mft-info` in the library is a read-only admin command). Admin always confirms, so the combination is not contradictory.
+- **App-only v3 actions** (`Targets = None`, e.g. `dism-cleanup`, `setup-guide`): `when` is `background` and `AppOnly` is set, so Phase 2's MenuTree can keep them out of the popup.
+- **Risk, output and multi for built-ins** are derived: Elevated means admin; Confirm or Undoable means `modifies`; `force-delete`, `delete-empty`, `clean-build`, `take-ownership` and `reset-network` are `destructive`; grid/clipboard/window outputs come from a small table. They are approximations until each action is re-homed in Phase 4.
+- **Placeholders:**
+  - PowerShell treats the curly quotes U+2018, U+2019, U+201A and U+201B as single quotes, so a path like `it's.txt` (typographic apostrophe) would end the literal early. They are doubled exactly like `'`. This is covered by the quoting matrix.
+  - The v3 `'{path}'` form keeps the template's own quotes and only escapes the inside. The first implementation swallowed the quotes; the selftest caught it before CI.
+  - `{ext}` includes the dot so `{stem}{ext}` equals `{name}`.
+  - cmd values with a trailing backslash get it doubled so `"C:\"` cannot escape the closing quote.
+- **Declarative actions cannot run yet.** The two shipped entries in `actions.json` (`system.ip-local`, `git.copy.branch`) load and validate, and the CLI says plainly that script actions arrive with the Executor in Phase 3.
+- **Local gate:** C# 5 is also checked locally with Mono `mcs -langversion:5` before each push; CI with the real compiler remains the authority.

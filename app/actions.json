@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "id": "system.ip-local",
+      "title": "Local IP addresses",
+      "menu": "System",
+      "when": ["background", "folder", "drive"],
+      "shell": "powershell",
+      "command": "(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notmatch '^(127\\.|169\\.254\\.)' } | Sort-Object InterfaceIndex).IPAddress",
+      "output": "clipboard",
+      "risk": "safe",
+      "keywords": ["ip", "network", "address", "lan"],
+      "description": "Copies this PC's IPv4 addresses, one per line, to the clipboard."
+    },
+    {
+      "id": "git.copy.branch",
+      "title": "Branch name",
+      "menu": "Git",
+      "when": ["folder", "background", "file"],
+      "requires": ["git"],
+      "shell": "powershell",
+      "command": "git -C {dir} rev-parse --abbrev-ref HEAD",
+      "output": "clipboard",
+      "risk": "safe",
+      "multi": "single",
+      "keywords": ["branch", "git", "head"],
+      "description": "Copies the current git branch of this folder to the clipboard."
+    }
+  ]
+}

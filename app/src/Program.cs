@@ -71,8 +71,10 @@ namespace PSTools
             {
                 string path = Clean(args[1]);
                 if (args[0] == "open") { Application.Run(new MainForm(path)); return 0; }
-                Action a = Actions.Find(args[0]);
-                if (a == null) { Msg("Unknown action: " + args[0]); return 1; }
+                var spec = ActionCatalog.Current.Find(args[0]);
+                if (spec == null) { Msg("Unknown action: " + args[0]); return 1; }
+                Action a = spec.Legacy;
+                if (a == null) { Msg(spec.Title + " is a script action. Script actions run from the Run console and the Power menu in a later build."); return 1; }
                 string[] paths = a.Multi ? Collector.Gather(a.Id, path) : new[] { path };
                 if (paths == null) return 0;
                 Runner.Execute(a, paths, null);

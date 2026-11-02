@@ -7,7 +7,7 @@ using System.Web.Script.Serialization;
 
 namespace PSTools
 {
-    static class SelfTest
+    static partial class SelfTest
     {
         static int passes, failures, warnings;
 
@@ -46,6 +46,13 @@ namespace PSTools
             CheckMigration(all);
             CheckPinOperations();
             CheckMenuPlans();
+            CheckCatalog();
+            CheckV3Aliases();
+            CheckPlaceholders();
+            CheckHeaders();
+            CheckUserFolder();
+            CheckOverrides();
+            CheckCatalogSpeed();
             Console.WriteLine();
             Console.WriteLine(passes + " passed, " + failures + " failed, " + warnings + " warnings in " + clock.ElapsedMilliseconds + " ms");
             return failures == 0 ? 0 : 1;
