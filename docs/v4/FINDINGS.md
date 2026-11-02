@@ -10,6 +10,7 @@ Measured facts and deviations from the plan, with evidence. Newest phase last.
 - Font on the runner is `Segoe UI Variable Text`, so metrics match Windows 11.
 - Windows PowerShell 5.1 is used for fixtures, capture, compare and layout lint (same CLR as the app, `Add-Type` compiles the lint with the C# 5 compiler). pwsh is used for the rest.
 - A full run (build, tests, 38 screenshots, lint) takes about 4 minutes.
+- Determinism: two separate CI runs of the same code produced 38 of 38 pixel-identical screenshots (diff tolerance 16 per channel, 0.5% changed-pixel budget, measured result 0 changed pixels). The committed `baseline-v3` is therefore a valid regression reference.
 
 ### Logs and artifacts are not readable by the implementer
 `GET /actions/jobs/{id}/logs` and artifact downloads redirect to `*.blob.core.windows.net`, which is outside the implementer sandbox's network allow-list. Consequences and workaround:
