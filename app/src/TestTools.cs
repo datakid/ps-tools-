@@ -42,7 +42,7 @@ namespace PSTools
             var sb = new StringBuilder();
             Section(sb, "clipboard", Clips);
             Section(sb, "table", Tables);
-            Section(sb, "toast", Toasts);
+            Section(sb, "toast", Toasts.Select(t => t.EndsWith("...") ? "<truncated>" : t).ToList());
             Section(sb, "dialog", Dialogs);
             return sb.ToString();
         }
