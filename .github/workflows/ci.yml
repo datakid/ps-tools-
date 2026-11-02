@@ -70,7 +70,7 @@ jobs:
         if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
         shell: powershell
         run: |
-          app\tests\ci\run-logged.ps1 -Script app\tests\ui\compare.ps1 -Params @{ Shots = 'app\out\shots'; Baseline = 'app\tests\ui\baseline'; Out = 'app\out\ui-report'; LintWarnOnly = $true } -Log app\out\logs\compare.txt
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\compare.ps1 -Params @{ Shots = 'app\out\shots'; Baseline = 'app\tests\ui\baseline-v3'; Out = 'app\out\ui-report'; LintWarnOnly = $true } -Log app\out\logs\compare.txt
           exit $LASTEXITCODE
       - name: Footprint check
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
