@@ -41,6 +41,7 @@ namespace PSTools
         List<MenuNode> root = new List<MenuNode>();
         bool showDetails;
         bool finished;
+        bool crumbsOn, emptyOn;
 
         public System.Action ToRun;
 
@@ -185,13 +186,15 @@ namespace PSTools
                     else rows.Add(ActionRow(n, favs, false));
                 }
             }
-            crumbs.Visible = stack.Count > 0 && text.Length == 0;
+            crumbsOn = stack.Count > 0 && text.Length == 0;
+            crumbs.Visible = crumbsOn;
             crumbs.Trail = stack.Count == 0 ? "" : "Menu \u203A " + string.Join(" \u203A ", stack.Select(s => s.Title).ToArray());
             crumbs.Invalidate();
             list.SetRows(rows, select);
             empty.Query = text;
-            empty.Visible = text.Length > 0 && rows.Count == 0;
-            list.Visible = !empty.Visible;
+            emptyOn = text.Length > 0 && rows.Count == 0;
+            empty.Visible = emptyOn;
+            list.Visible = !emptyOn;
             Relayout();
             UpdateDetails();
             footer.Folder = SelectedFolder();
@@ -212,9 +215,9 @@ namespace PSTools
             int width = UI.S(420);
             int detailsWidth = showDetails ? UI.S(280) : 0;
             int headerH = UI.S(44), searchH = UI.S(48), footerH = UI.S(32);
-            int crumbH = crumbs.Visible ? UI.S(28) : 0;
+            int crumbH = crumbsOn ? UI.S(28) : 0;
             int minList = Tok.RowHeight * 4, maxList = Tok.RowHeight * 12;
-            int content = empty.Visible ? minList : list.ContentHeight;
+            int content = emptyOn ? minList : list.ContentHeight;
             int listH = Math.Max(minList, Math.Min(maxList, content));
             int total = headerH + searchH + crumbH + listH + footerH;
             ClientSize = new Size(width + detailsWidth, total + 2);

@@ -105,12 +105,24 @@ namespace PSTools
             Invalidate();
         }
 
-        protected override void OnLayout(LayoutEventArgs e)
+        void PlaceInput()
         {
-            base.OnLayout(e);
             int left = Tok.S3 + UI.S(20);
             int h = Input.PreferredHeight;
             Input.SetBounds(left, (Height - h) / 2, Math.Max(10, Width - left - Tok.S3), h);
+        }
+
+        protected override void OnLayout(LayoutEventArgs e)
+        {
+            base.OnLayout(e);
+            PlaceInput();
+        }
+
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+            PlaceInput();
+            Invalidate();
         }
 
         protected override void OnPaint(PaintEventArgs e)

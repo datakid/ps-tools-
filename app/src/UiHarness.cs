@@ -112,7 +112,7 @@ namespace PSTools
             l.Add(new Scenario { Name = "popup-root", Build = () => Popup(new PowerMenuOptions()) });
             l.Add(new Scenario { Name = "popup-drill", Build = () => Popup(new PowerMenuOptions { Drill = new[] { "Copy", "Paths" } }) });
             l.Add(new Scenario { Name = "popup-search", Build = () => Popup(new PowerMenuOptions { InitialSearch = "ta" }) });
-            l.Add(new Scenario { Name = "popup-details", Build = () => Popup(new PowerMenuOptions { Details = true, Drill = new[] { "Copy" } }) });
+            l.Add(new Scenario { Name = "popup-details", Build = () => Popup(new PowerMenuOptions { Details = true, Drill = new[] { "Copy", "Paths" } }) });
             l.Add(new Scenario { Name = "popup-empty", Build = () => Popup(new PowerMenuOptions { InitialSearch = "zzqx" }) });
             l.Add(new Scenario { Name = "popup-many", Build = () => Popup(new PowerMenuOptions { InitialSearch = "e" }) });
             l.Add(new Scenario { Name = "dialog-info", Build = () => Show(Create<FDialog>("Explorer menu installed.\n\nWindows 11: right-click > Show more options.", "PS Tools", FDialog.Kind.Info, false)) });

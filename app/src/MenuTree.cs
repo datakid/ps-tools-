@@ -367,7 +367,9 @@ namespace PSTools
                 if (best < 0) return -1;
                 total += best;
             }
-            return total / tokens.Length;
+            double score = total / tokens.Length;
+            if (s.Source == SpecSource.Library) score -= 25;
+            return score;
         }
 
         public static string Dump(List<MenuNode> tree)
