@@ -109,6 +109,12 @@ namespace PSTools
                     return p;
                 }
             });
+            l.Add(new Scenario { Name = "popup-root", Build = () => Popup(new PowerMenuOptions()) });
+            l.Add(new Scenario { Name = "popup-drill", Build = () => Popup(new PowerMenuOptions { Drill = new[] { "Copy", "Paths" } }) });
+            l.Add(new Scenario { Name = "popup-search", Build = () => Popup(new PowerMenuOptions { InitialSearch = "ta" }) });
+            l.Add(new Scenario { Name = "popup-details", Build = () => Popup(new PowerMenuOptions { Details = true, Drill = new[] { "Copy" } }) });
+            l.Add(new Scenario { Name = "popup-empty", Build = () => Popup(new PowerMenuOptions { InitialSearch = "zzqx" }) });
+            l.Add(new Scenario { Name = "popup-many", Build = () => Popup(new PowerMenuOptions { InitialSearch = "e" }) });
             l.Add(new Scenario { Name = "dialog-info", Build = () => Show(Create<FDialog>("Explorer menu installed.\n\nWindows 11: right-click > Show more options.", "PS Tools", FDialog.Kind.Info, false)) });
             l.Add(new Scenario { Name = "dialog-question", Build = () => Show(Create<FDialog>("Delete everything under\nC:\\Users\\demo\\proj ?\n\nThis cannot be undone.", "PS Tools", FDialog.Kind.Question, true)) });
             l.Add(new Scenario { Name = "dialog-error", Build = () => Show(Create<FDialog>("Not found:\nC:\\Users\\demo\\missing", "PS Tools - error", FDialog.Kind.Error, false)) });
@@ -125,6 +131,21 @@ namespace PSTools
                 }
             });
             return l;
+        }
+
+        static Form Popup(PowerMenuOptions opt)
+        {
+            opt.Harness = true;
+            opt.Summary = @"C:\Users\demo\projects\app\src";
+            opt.Location = new Point(40, 40);
+            var q = new MenuQuery
+            {
+                Context = ContextKind.Folder, Paths = new[] { @"C:\Users\demo\projects\app\src" }, Catalog = ActionCatalog.Load(new CatalogInput { Builtins = Actions.All, ShippedPath = Path.Combine(Program.ExeDir, "actions.json"), LibraryPath = Path.Combine(Program.ExeDir, "commands.json") }),
+                Favorites = new List<string> { "copy.path.quoted", "copy.tree.ascii", "archive.zip-smart", "inspect.space-map", "git.copy.branch" },
+                Recent = new List<string> { "copy.tree.ascii", "search.large" },
+                HasTool = t => true, IsDirectory = p => true
+            };
+            return new PowerMenu(q, opt);
         }
 
         static void Pump()

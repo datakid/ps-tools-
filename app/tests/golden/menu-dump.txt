@@ -63,7 +63,7 @@ HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\00power
   MUIVerb = Power menu...
   MultiSelectModel = Player
 HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\00power\command
-  (default) = "<EXE>" menu "%V"
+  (default) = "<EXE>" menu-bg "%V"
 HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\10copy.path.quoted
   MUIVerb = Path (quoted)
   CommandFlags = 0x20

@@ -113,7 +113,7 @@ namespace PSTools
                     .Set("MUIVerb", "PS Tools").Set("Icon", "\"" + exe + "\",0").Set("SubCommands", "").Set("MultiSelectModel", "Player"));
                 string shell = root + @"\shell";
                 plan.Add(new RegEntry { Key = shell + @"\00power" }.Set("MUIVerb", "Power menu...").Set("MultiSelectModel", "Player"));
-                plan.Add(new RegEntry { Key = shell + @"\00power\command" }.Set("", "\"" + exe + "\" menu \"" + arg + "\""));
+                plan.Add(new RegEntry { Key = shell + @"\00power\command" }.Set("", "\"" + exe + "\" " + (t == Target.Background ? "menu-bg" : "menu") + " \"" + arg + "\""));
                 int n = 0;
                 var seen = new HashSet<string>();
                 foreach (var fav in state.Favorites)
@@ -140,6 +140,12 @@ namespace PSTools
                 }
             }
             return plan;
+        }
+
+        public static void RefreshIfInstalled()
+        {
+            try { if (IsInstalled()) Install(); }
+            catch { }
         }
 
         public static string DumpMenu(SettingsData state, string exe)

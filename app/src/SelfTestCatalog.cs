@@ -374,7 +374,7 @@ namespace PSTools
             string[] lines = dump.Replace("\r", "").Split('\n');
             foreach (string root in new[] { "Directory\\shell\\PSTools", "Directory\\Background\\shell\\PSTools", "Drive\\shell\\PSTools", "*\\shell\\PSTools" })
                 if (!lines.Any(l => l == "HKCU\\Software\\Classes\\" + root)) problems.Add("root missing: " + root);
-            if (!dump.Contains("menu \"%V\"")) problems.Add("background must pass %V");
+            if (!dump.Contains("menu-bg \"%V\"")) problems.Add("background must use menu-bg and pass %V");
             if (!dump.Contains("00power")) problems.Add("Power menu entry missing");
             if (dump.Split(new[] { "99open" }, StringSplitOptions.None).Length - 1 != 6) problems.Add("Open in PS Tools must be written for folder, background and drive only (3 roots x key and command)");
             foreach (string root in new[] { "Directory\\shell", "Directory\\Background\\shell", "Drive\\shell", "*\\shell" })

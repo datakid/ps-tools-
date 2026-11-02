@@ -487,7 +487,12 @@ namespace PSTools
 
         void OpenPalette()
         {
-            new PaletteForm(this, RunAction, suggestions.ToList()).Show(this);
+            var q = PowerMenuLauncher.QueryFor(ContextKind.Background, new string[0]);
+            var opt = PowerMenuLauncher.Options(Path0, "background");
+            opt.Location = new Point(Left + (Width - UI.S(420)) / 2, Top + Math.Max(24, Height / 8));
+            var pm = new PowerMenu(q, opt);
+            pm.FormClosed += (s, e) => { if (pm.ToRun != null) BeginInvoke(pm.ToRun); };
+            pm.Show(this);
         }
 
         void RunSelected()

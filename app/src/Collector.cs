@@ -31,7 +31,7 @@ namespace PSTools
             return false;
         }
 
-        public static string[] Gather(string id, string path)
+        public static string[] Gather(string id, string path, int waitMs = 320)
         {
             string dir = Path.Combine(Journal.Dir, "tmp");
             Directory.CreateDirectory(dir);
@@ -40,7 +40,7 @@ namespace PSTools
             string gate = Path.Combine(dir, "lead-" + id + ".lock");
             if (!TryLead(gate)) return null;
 
-            Thread.Sleep(320);
+            Thread.Sleep(waitMs);
             try { File.Delete(gate); } catch { }
 
             var list = new List<string>();
