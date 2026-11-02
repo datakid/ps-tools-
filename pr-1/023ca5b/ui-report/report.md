@@ -6,4 +6,4 @@ Images checked: 38
 - out-of-bounds: 44
 - overlap: 8
 - text-clip: 16
-- diff new: 38
+- diff same: 38
