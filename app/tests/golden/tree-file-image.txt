@@ -1,0 +1,64 @@
+# Suggested
+  - Convert to PNG  (image.png)  [modifies]
+  - Convert to JPEG  (image.jpg)  [modifies]
+  - Shrink to 1600 px  (image.resize-1600)  [modifies]
+  - Strip metadata  (image.strip)  [modifies]
+# Favorites
+  - Path (quoted)  (copy.path.quoted)
+  - Zip (skip build folders)  (archive.zip-smart)  [modifies]
+  - Convert to PNG  (image.png)  [modifies]
+  - Windows PowerShell here  (open.ps)
+  - Branch name  (git.copy.branch)
++ Copy/
+  + Contents/
+    - File contents  (copy.contents)
+    - Data URI  (copy.datauri)
+  + Hash/
+    - SHA-256  (copy.hash.sha256)
+    - SHA-1  (copy.hash.sha1)
+    - MD5  (copy.hash.md5)
+    - Verify hash from clipboard  (copy.hash.verify)
+  + Names/
+    - Names of selected  (copy.names.selected)
+    - Names without extension  (copy.names.stem)
+    - Names, comma-separated  (copy.names.csv)
+  + Paths/
+    - Path with /  (copy.path.fwd)
+    - Path (quoted)  (copy.path.quoted)
+    - Parent folder path  (copy.path.parent)
+    - Parent folder name  (copy.path.parent-name)
+    - file:// URL  (copy.path.uri)
+    - WSL path  (copy.path.wsl)
+    - UNC / network path  (copy.path.unc)
+    - Markdown link  (copy.path.markdown-link)
+    - cd command for this folder  (copy.path.cd)
+    - Paths as JSON array  (copy.path.json-array)
+  - Size  (copy.size)
+- Paste & New: Move into new folder...  (new.group-selected)  [modifies]
++ Open/
+  - Windows PowerShell here  (open.ps)
+  - Command Prompt here  (open.cmd)
+  - Open in VS Code  (open.vscode)
+  - Open in Notepad  (open.notepad)
+- Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
++ Image/
+  - Convert to PNG  (image.png)  [modifies]
+  - Convert to JPEG  (image.jpg)  [modifies]
+  - Shrink to 1600 px  (image.resize-1600)  [modifies]
+  - Shrink to 800 px  (image.resize-800)  [modifies]
+  - Strip metadata  (image.strip)  [modifies]
+- Compare: Mark for link or compare  (compare.mark)
+- Git: Branch name  (git.copy.branch)
++ Fix/
+  + Attributes/
+    - Hide  (fix.attr.hide)  [modifies]
+    - Unhide  (fix.attr.unhide)  [modifies]
+    - Make read-only  (fix.attr.readonly-on)  [modifies]
+    - Clear read-only  (fix.attr.readonly-off)  [modifies]
+  + Encoding/
+    - Line endings to LF  (fix.eol.lf)  [modifies]
+    - Line endings to CRLF  (fix.eol.crlf)  [modifies]
+    - Add UTF-8 BOM  (fix.bom.add)  [modifies]
+    - Remove UTF-8 BOM  (fix.bom.remove)  [modifies]
+  - Set dates to now  (fix.touch)  [modifies]
+  - Unblock selected files  (fix.unblock)

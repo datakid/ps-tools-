@@ -58,7 +58,8 @@ namespace PSTools
                 Builtins = Actions.All,
                 ShippedPath = Path.Combine(Program.ExeDir, "actions.json"),
                 LibraryPath = Path.Combine(Program.ExeDir, "commands.json"),
-                UserDir = Path.Combine(Journal.Dir, "actions")
+                UserDir = Path.Combine(Journal.Dir, "actions"),
+                Overrides = Settings.Overrides
             };
         }
     }

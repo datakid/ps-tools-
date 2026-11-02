@@ -1,0 +1,205 @@
+HKCU\Software\Classes\Directory\shell\PSTools
+  MUIVerb = PS Tools
+  Icon = "<EXE>",0
+  SubCommands = 
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\00power
+  MUIVerb = Power menu...
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\00power\command
+  (default) = "<EXE>" menu "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\10copy.path.quoted
+  MUIVerb = Path (quoted)
+  CommandFlags = 0x20
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\10copy.path.quoted\command
+  (default) = "<EXE>" copy.path.quoted "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\11copy.tree.ascii
+  MUIVerb = Tree (ASCII)
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\11copy.tree.ascii\command
+  (default) = "<EXE>" copy.tree.ascii "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\12archive.zip-smart
+  MUIVerb = Zip (skip build folders)
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\12archive.zip-smart\command
+  (default) = "<EXE>" archive.zip-smart "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\13new.paste-image
+  MUIVerb = Paste image as PNG
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\13new.paste-image\command
+  (default) = "<EXE>" new.paste-image "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\14inspect.space-map
+  MUIVerb = Folder space map
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\14inspect.space-map\command
+  (default) = "<EXE>" inspect.space-map "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\15search.here
+  MUIVerb = Search here...
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\15search.here\command
+  (default) = "<EXE>" search.here "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\16open.ps
+  MUIVerb = Windows PowerShell here
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\16open.ps\command
+  (default) = "<EXE>" open.ps "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\17new.paste-text
+  MUIVerb = Paste text as file
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\shell\PSTools\shell\17new.paste-text\command
+  (default) = "<EXE>" new.paste-text "%1"
+HKCU\Software\Classes\Directory\shell\PSTools\shell\99open
+  MUIVerb = Open in PS Tools
+  CommandFlags = 0x20
+HKCU\Software\Classes\Directory\shell\PSTools\shell\99open\command
+  (default) = "<EXE>" open "%1"
+HKCU\Software\Classes\Directory\Background\shell\PSTools
+  MUIVerb = PS Tools
+  Icon = "<EXE>",0
+  SubCommands = 
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\00power
+  MUIVerb = Power menu...
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\00power\command
+  (default) = "<EXE>" menu "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\10copy.path.quoted
+  MUIVerb = Path (quoted)
+  CommandFlags = 0x20
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\10copy.path.quoted\command
+  (default) = "<EXE>" copy.path.quoted "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\11copy.tree.ascii
+  MUIVerb = Tree (ASCII)
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\11copy.tree.ascii\command
+  (default) = "<EXE>" copy.tree.ascii "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\12archive.zip-smart
+  MUIVerb = Zip (skip build folders)
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\12archive.zip-smart\command
+  (default) = "<EXE>" archive.zip-smart "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\13new.paste-image
+  MUIVerb = Paste image as PNG
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\13new.paste-image\command
+  (default) = "<EXE>" new.paste-image "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\14inspect.space-map
+  MUIVerb = Folder space map
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\14inspect.space-map\command
+  (default) = "<EXE>" inspect.space-map "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\15search.here
+  MUIVerb = Search here...
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\15search.here\command
+  (default) = "<EXE>" search.here "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\16open.ps
+  MUIVerb = Windows PowerShell here
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\16open.ps\command
+  (default) = "<EXE>" open.ps "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\17new.paste-text
+  MUIVerb = Paste text as file
+  MultiSelectModel = Player
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\17new.paste-text\command
+  (default) = "<EXE>" new.paste-text "%V"
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\99open
+  MUIVerb = Open in PS Tools
+  CommandFlags = 0x20
+HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\99open\command
+  (default) = "<EXE>" open "%V"
+HKCU\Software\Classes\Drive\shell\PSTools
+  MUIVerb = PS Tools
+  Icon = "<EXE>",0
+  SubCommands = 
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\00power
+  MUIVerb = Power menu...
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\00power\command
+  (default) = "<EXE>" menu "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\10copy.path.quoted
+  MUIVerb = Path (quoted)
+  CommandFlags = 0x20
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\10copy.path.quoted\command
+  (default) = "<EXE>" copy.path.quoted "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\11copy.tree.ascii
+  MUIVerb = Tree (ASCII)
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\11copy.tree.ascii\command
+  (default) = "<EXE>" copy.tree.ascii "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\12archive.zip-smart
+  MUIVerb = Zip (skip build folders)
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\12archive.zip-smart\command
+  (default) = "<EXE>" archive.zip-smart "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\13new.paste-image
+  MUIVerb = Paste image as PNG
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\13new.paste-image\command
+  (default) = "<EXE>" new.paste-image "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\14inspect.space-map
+  MUIVerb = Folder space map
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\14inspect.space-map\command
+  (default) = "<EXE>" inspect.space-map "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\15search.here
+  MUIVerb = Search here...
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\15search.here\command
+  (default) = "<EXE>" search.here "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\16open.ps
+  MUIVerb = Windows PowerShell here
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\16open.ps\command
+  (default) = "<EXE>" open.ps "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\17new.paste-text
+  MUIVerb = Paste text as file
+  MultiSelectModel = Player
+HKCU\Software\Classes\Drive\shell\PSTools\shell\17new.paste-text\command
+  (default) = "<EXE>" new.paste-text "%1"
+HKCU\Software\Classes\Drive\shell\PSTools\shell\99open
+  MUIVerb = Open in PS Tools
+  CommandFlags = 0x20
+HKCU\Software\Classes\Drive\shell\PSTools\shell\99open\command
+  (default) = "<EXE>" open "%1"
+HKCU\Software\Classes\*\shell\PSTools
+  MUIVerb = PS Tools
+  Icon = "<EXE>",0
+  SubCommands = 
+  MultiSelectModel = Player
+HKCU\Software\Classes\*\shell\PSTools\shell\00power
+  MUIVerb = Power menu...
+  MultiSelectModel = Player
+HKCU\Software\Classes\*\shell\PSTools\shell\00power\command
+  (default) = "<EXE>" menu "%1"
+HKCU\Software\Classes\*\shell\PSTools\shell\10copy.path.quoted
+  MUIVerb = Path (quoted)
+  CommandFlags = 0x20
+  MultiSelectModel = Player
+HKCU\Software\Classes\*\shell\PSTools\shell\10copy.path.quoted\command
+  (default) = "<EXE>" copy.path.quoted "%1"
+HKCU\Software\Classes\*\shell\PSTools\shell\11archive.zip-smart
+  MUIVerb = Zip (skip build folders)
+  MultiSelectModel = Player
+HKCU\Software\Classes\*\shell\PSTools\shell\11archive.zip-smart\command
+  (default) = "<EXE>" archive.zip-smart "%1"
+HKCU\Software\Classes\*\shell\PSTools\shell\12image.png
+  MUIVerb = Convert to PNG
+  AppliesTo = System.FileExtension:=".png" OR System.FileExtension:=".jpg" OR System.FileExtension:=".jpeg" OR System.FileExtension:=".bmp" OR System.FileExtension:=".gif" OR System.FileExtension:=".tif" OR System.FileExtension:=".tiff"
+  MultiSelectModel = Player
+HKCU\Software\Classes\*\shell\PSTools\shell\12image.png\command
+  (default) = "<EXE>" image.png "%1"
+HKCU\Software\Classes\*\shell\PSTools\shell\13open.ps
+  MUIVerb = Windows PowerShell here
+  MultiSelectModel = Player
+HKCU\Software\Classes\*\shell\PSTools\shell\13open.ps\command
+  (default) = "<EXE>" open.ps "%1"
+HKCU\Software\Classes\*\shell\PSTools\shell\14git.copy.branch
+  MUIVerb = Branch name
+  MultiSelectModel = Player
+HKCU\Software\Classes\*\shell\PSTools\shell\14git.copy.branch\command
+  (default) = "<EXE>" git.copy.branch "%1"

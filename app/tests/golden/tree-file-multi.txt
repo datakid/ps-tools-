@@ -1,0 +1,42 @@
+# Favorites
+  - Path (quoted)  (copy.path.quoted)
+  - Zip (skip build folders)  (archive.zip-smart)  [modifies]
++ Copy/
+  - Contents: File contents  (copy.contents)
+  + Hash/
+    - SHA-256  (copy.hash.sha256)
+    - SHA-1  (copy.hash.sha1)
+    - MD5  (copy.hash.md5)
+  + Names/
+    - Names of selected  (copy.names.selected)
+    - Names without extension  (copy.names.stem)
+    - Names, comma-separated  (copy.names.csv)
+  + Paths/
+    - Path with /  (copy.path.fwd)
+    - Path (quoted)  (copy.path.quoted)
+    - Parent folder path  (copy.path.parent)
+    - Parent folder name  (copy.path.parent-name)
+    - file:// URL  (copy.path.uri)
+    - WSL path  (copy.path.wsl)
+    - UNC / network path  (copy.path.unc)
+    - Markdown link  (copy.path.markdown-link)
+    - cd command for this folder  (copy.path.cd)
+    - Paths as JSON array  (copy.path.json-array)
+  - Size  (copy.size)
+- Paste & New: Move into new folder...  (new.group-selected)  [modifies]
+- Open: Open in Notepad  (open.notepad)
+- Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
+- Compare: Mark for link or compare  (compare.mark)
++ Fix/
+  + Attributes/
+    - Hide  (fix.attr.hide)  [modifies]
+    - Unhide  (fix.attr.unhide)  [modifies]
+    - Make read-only  (fix.attr.readonly-on)  [modifies]
+    - Clear read-only  (fix.attr.readonly-off)  [modifies]
+  + Encoding/
+    - Line endings to LF  (fix.eol.lf)  [modifies]
+    - Line endings to CRLF  (fix.eol.crlf)  [modifies]
+    - Add UTF-8 BOM  (fix.bom.add)  [modifies]
+    - Remove UTF-8 BOM  (fix.bom.remove)  [modifies]
+  - Set dates to now  (fix.touch)  [modifies]
+  - Unblock selected files  (fix.unblock)

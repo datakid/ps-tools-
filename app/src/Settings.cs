@@ -9,6 +9,12 @@ namespace PSTools
     class SettingsData
     {
         public const int CurrentVersion = 3;
+        public const int SchemaVersion = 4;
+        public int Schema;
+        public List<string> Favorites = new List<string>();
+        public HashSet<string> Hidden = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, OverrideEdit> Edits = new Dictionary<string, OverrideEdit>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, List<string>> Used = new Dictionary<string, List<string>>();
 
         public string Theme = "auto";
         public int Version;
@@ -48,6 +54,27 @@ namespace PSTools
                 else if (k == "configured") d.Configured = true;
                 else if (k == "win") d.Win = v;
                 else if (k == "recent" && d.Recent.Count < 8) d.Recent.Add(v);
+                else if (k == "schema") { int n; if (int.TryParse(v, out n)) d.Schema = n; }
+                else if (k == "favorite") { if (v.Length > 0 && !d.Favorites.Contains(v)) d.Favorites.Add(v); }
+                else if (k == "hidden") { if (v.Length > 0) d.Hidden.Add(v); }
+                else if (k == "override")
+                {
+                    string[] p = v.Split('\t');
+                    if (p.Length >= 4 && p[0].Length > 0)
+                    {
+                        var e = new OverrideEdit { Title = p[1].Length > 0 ? p[1] : null, Menu = p[2].Length > 0 ? p[2] : null };
+                        int n;
+                        if (int.TryParse(p[3], out n)) e.Order = n;
+                        d.Edits[p[0]] = e;
+                    }
+                }
+                else if (k.StartsWith("used."))
+                {
+                    string ctx = k.Substring(5);
+                    List<string> l;
+                    if (!d.Used.TryGetValue(ctx, out l)) d.Used[ctx] = l = new List<string>();
+                    if (l.Count < 5 && !l.Contains(v)) l.Add(v);
+                }
             }
             return d;
         }
@@ -65,6 +92,16 @@ namespace PSTools
             foreach (var p in LibPins.OrderBy(x => x, StringComparer.Ordinal)) sb.AppendLine("pin=" + p);
             if (Win != null) sb.AppendLine("win=" + Win);
             foreach (var r in Recent) sb.AppendLine("recent=" + r);
+            if (Schema >= SchemaVersion)
+            {
+                sb.AppendLine("schema=" + Schema);
+                foreach (var f in Favorites) sb.AppendLine("favorite=" + f);
+                foreach (var h in Hidden.OrderBy(x => x, StringComparer.Ordinal)) sb.AppendLine("hidden=" + h);
+                foreach (var kv in Edits.OrderBy(x => x.Key, StringComparer.Ordinal))
+                    sb.AppendLine("override=" + kv.Key + "\t" + (kv.Value.Title ?? "") + "\t" + (kv.Value.Menu ?? "") + "\t" + (kv.Value.Order.HasValue ? kv.Value.Order.Value.ToString() : ""));
+                foreach (var kv in Used.OrderBy(x => x.Key, StringComparer.Ordinal))
+                    foreach (var id in kv.Value) sb.AppendLine("used." + kv.Key + "=" + id);
+            }
             return sb.ToString();
         }
 
@@ -87,16 +124,96 @@ namespace PSTools
         {
             var a = Actions.Find(id);
             if (a == null || (a.Targets & t) == 0 || !ContextPins.ContainsKey(t)) return false;
-            if (ContextPins[t].Contains(id)) { Enabled.Add(id); return true; }
+            if (ContextPins[t].Contains(id)) { Enabled.Add(id); AddFavorite(id); return true; }
             if (ContextPins[t].Count >= Settings.MaxPins) return false;
             ContextPins[t].Add(id);
             Enabled.Add(id);
+            AddFavorite(id);
             return true;
         }
 
         public void Unpin(Target t, string id)
         {
             if (ContextPins.ContainsKey(t)) ContextPins[t].Remove(id);
+            if (!DefaultPins.Contexts.Any(c => ContextPins[c].Contains(id))) RemoveFavorite(id);
+        }
+
+        public string FavoriteIdOf(string anyId)
+        {
+            var s = ActionCatalog.Current.Find(anyId);
+            return s == null ? null : s.Id;
+        }
+
+        public void AddFavorite(string anyId)
+        {
+            string id = FavoriteIdOf(anyId);
+            if (id != null && !Favorites.Contains(id)) Favorites.Add(id);
+        }
+
+        public void RemoveFavorite(string anyId)
+        {
+            string id = FavoriteIdOf(anyId);
+            if (id != null) Favorites.Remove(id);
+        }
+
+        public bool IsFavorite(string anyId)
+        {
+            string id = FavoriteIdOf(anyId);
+            return id != null && Favorites.Contains(id);
+        }
+
+        public void NoteUsed(string ctxName, string anyId)
+        {
+            string id = FavoriteIdOf(anyId);
+            if (id == null) return;
+            List<string> l;
+            if (!Used.TryGetValue(ctxName, out l)) Used[ctxName] = l = new List<string>();
+            l.Remove(id);
+            l.Insert(0, id);
+            if (l.Count > 5) l.RemoveRange(5, l.Count - 5);
+        }
+
+        public CatalogOverrides ToOverrides()
+        {
+            var o = new CatalogOverrides();
+            foreach (var h in Hidden) o.Hidden.Add(h);
+            foreach (var kv in Edits) o.Edits[kv.Key] = kv.Value;
+            return o;
+        }
+
+        public static List<string> FavoritesFromPins(SettingsData d)
+        {
+            var list = new List<string>();
+            var cat = ActionCatalog.Current;
+            foreach (var t in new[] { Target.Folder, Target.Background, Target.File, Target.Drive })
+            {
+                List<string> pins;
+                if (!d.ContextPins.TryGetValue(t, out pins)) continue;
+                foreach (var id in pins)
+                {
+                    var s = cat.Find(id);
+                    if (s != null && !list.Contains(s.Id)) list.Add(s.Id);
+                }
+            }
+            foreach (var id in d.LibPins.OrderBy(x => x, StringComparer.Ordinal))
+            {
+                var s = cat.Find("lib-" + id);
+                if (s != null && !list.Contains(s.Id)) list.Add(s.Id);
+            }
+            foreach (var r in RecipeData.All.Where(x => x.Menu))
+            {
+                var s = cat.Find("recipe-" + r.Id);
+                if (s != null && !list.Contains(s.Id)) list.Add(s.Id);
+            }
+            return list;
+        }
+
+        public static bool MigrateToV4(SettingsData d)
+        {
+            if (d.Schema >= SchemaVersion) return false;
+            d.Favorites = FavoritesFromPins(d);
+            d.Schema = SchemaVersion;
+            return true;
         }
 
         public bool MovePin(Target t, string id, int delta)
@@ -128,6 +245,8 @@ namespace PSTools
             if (!LibPins.SetEquals(o.LibPins)) { difference = "library pins"; return false; }
             if (Win != o.Win) { difference = "window"; return false; }
             if (!Recent.SequenceEqual(o.Recent)) { difference = "recent"; return false; }
+            if (!Favorites.SequenceEqual(o.Favorites)) { difference = "favorites"; return false; }
+            if (!Hidden.SetEquals(o.Hidden)) { difference = "hidden"; return false; }
             return true;
         }
 
@@ -199,7 +318,9 @@ namespace PSTools
     {
         public const int MaxPins = 12;
 
-        static string FilePath { get { return Path.Combine(Journal.Dir, "settings.txt"); } }
+        public static string FileOverride;
+
+        static string FilePath { get { return FileOverride ?? Path.Combine(Journal.Dir, "settings.txt"); } }
 
         static SettingsData data = new SettingsData();
         static bool loaded;
@@ -223,6 +344,7 @@ namespace PSTools
             data.Enabled = SettingsData.DefaultEnabled();
             SettingsData.FillDefaultPins(data);
             data.Version = SettingsData.CurrentVersion;
+            SettingsData.MigrateToV4(data);
         }
 
         public static SettingsData Snapshot()
@@ -281,7 +403,66 @@ namespace PSTools
             if (prepared) return;
             prepared = true;
             if (!data.Configured) Defaults();
-            else SettingsData.Migrate(data, Actions.All);
+            else
+            {
+                SettingsData.Migrate(data, Actions.All);
+                if (data.Schema < SettingsData.SchemaVersion)
+                {
+                    BackupV3();
+                    SettingsData.MigrateToV4(data);
+                    try { Save(); } catch { }
+                }
+            }
+        }
+
+        static void BackupV3()
+        {
+            try
+            {
+                string backup = Path.Combine(Path.GetDirectoryName(FilePath), "settings.v3.bak.txt");
+                if (File.Exists(FilePath) && !File.Exists(backup)) File.Copy(FilePath, backup);
+            }
+            catch { }
+        }
+
+        public static List<string> Favorites { get { EnsureLoaded(); return new List<string>(data.Favorites); } }
+
+        public static CatalogOverrides Overrides { get { EnsureLoaded(); return data.ToOverrides(); } }
+
+        public static List<string> UsedIn(string ctxName)
+        {
+            EnsureLoaded();
+            List<string> l;
+            return data.Used.TryGetValue(ctxName, out l) ? new List<string>(l) : new List<string>();
+        }
+
+        public static bool IsFavorite(string id) { EnsureLoaded(); return data.IsFavorite(id); }
+
+        public static bool ToggleFavorite(string id)
+        {
+            EnsureLoaded();
+            bool now;
+            if (data.IsFavorite(id)) { data.RemoveFavorite(id); now = false; }
+            else { data.AddFavorite(id); now = true; }
+            Save();
+            return now;
+        }
+
+        public static void NoteUsed(string ctxName, string id)
+        {
+            EnsureLoaded();
+            data.NoteUsed(ctxName, id);
+            try { Save(); } catch { }
+        }
+
+        public static void SetHidden(string id, bool hidden)
+        {
+            EnsureLoaded();
+            var s = ActionCatalog.Current.Find(id);
+            string key = s == null ? id : s.Id;
+            if (hidden) data.Hidden.Add(key); else data.Hidden.Remove(key);
+            Save();
+            ActionCatalog.Reset();
         }
 
         public static bool IsEnabled(string id)

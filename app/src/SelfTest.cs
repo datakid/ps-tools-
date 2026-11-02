@@ -53,6 +53,9 @@ namespace PSTools
             CheckUserFolder();
             CheckOverrides();
             CheckCatalogSpeed();
+            CheckMenuTree();
+            CheckRegistryPlan();
+            CheckMigrationV4();
             Console.WriteLine();
             Console.WriteLine(passes + " passed, " + failures + " failed, " + warnings + " warnings in " + clock.ElapsedMilliseconds + " ms");
             return failures == 0 ? 0 : 1;

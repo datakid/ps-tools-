@@ -63,58 +63,107 @@ namespace PSTools
             catch { RemoveMenu(); throw; }
         }
 
+        class RegValue
+        {
+            public string Name;
+            public object Value;
+        }
+
+        class RegEntry
+        {
+            public string Key;
+            public List<RegValue> Values = new List<RegValue>();
+
+            public RegEntry Set(string name, object value)
+            {
+                Values.Add(new RegValue { Name = name, Value = value });
+                return this;
+            }
+        }
+
+        public const int MaxFavoritesPerContext = 8;
+
+        static ContextKind ContextOf(Target t)
+        {
+            switch (t)
+            {
+                case Target.Folder: return ContextKind.Folder;
+                case Target.Background: return ContextKind.Background;
+                case Target.Drive: return ContextKind.Drive;
+                default: return ContextKind.File;
+            }
+        }
+
+        static string ExtQuery(List<string> exts)
+        {
+            return string.Join(" OR ", exts.Select(e => "System.FileExtension:=\"." + e + "\"").ToArray());
+        }
+
+        static List<RegEntry> BuildPlan(SettingsData state, string exe)
+        {
+            var plan = new List<RegEntry>();
+            var cat = ActionCatalog.Current;
+            for (int i = 0; i < Roots.Length; i++)
+            {
+                var t = Kinds[i];
+                var ctx = ContextOf(t);
+                string root = Roots[i];
+                string arg = t == Target.Background ? "%V" : "%1";
+                plan.Add(new RegEntry { Key = root }
+                    .Set("MUIVerb", "PS Tools").Set("Icon", "\"" + exe + "\",0").Set("SubCommands", "").Set("MultiSelectModel", "Player"));
+                string shell = root + @"\shell";
+                plan.Add(new RegEntry { Key = shell + @"\00power" }.Set("MUIVerb", "Power menu...").Set("MultiSelectModel", "Player"));
+                plan.Add(new RegEntry { Key = shell + @"\00power\command" }.Set("", "\"" + exe + "\" menu \"" + arg + "\""));
+                int n = 0;
+                var seen = new HashSet<string>();
+                foreach (var fav in state.Favorites)
+                {
+                    if (n >= MaxFavoritesPerContext) break;
+                    var s = cat.Find(fav);
+                    if (s == null || !seen.Add(s.Id) || s.AppOnly || s.UserHidden || !s.AppliesTo(ctx)) continue;
+                    if (s.Legacy == null && !s.IsScript) continue;
+                    string key = shell + @"\" + (10 + n).ToString("D2") + s.Id;
+                    var e = new RegEntry { Key = key }.Set("MUIVerb", s.Title);
+                    if (n == 0) e.Set("CommandFlags", 0x20);
+                    if (s.MatchExt.Count > 0) e.Set("AppliesTo", ExtQuery(s.MatchExt));
+                    else if (s.Legacy != null && !string.IsNullOrEmpty(s.Legacy.AppliesTo)) e.Set("AppliesTo", s.Legacy.AppliesTo);
+                    if (s.Extended) e.Set("Extended", "");
+                    e.Set("MultiSelectModel", "Player");
+                    plan.Add(e);
+                    plan.Add(new RegEntry { Key = key + @"\command" }.Set("", "\"" + exe + "\" " + s.Id + " \"" + arg + "\""));
+                    n++;
+                }
+                if (t != Target.File)
+                {
+                    plan.Add(new RegEntry { Key = shell + @"\99open" }.Set("MUIVerb", "Open in PS Tools").Set("CommandFlags", 0x20));
+                    plan.Add(new RegEntry { Key = shell + @"\99open\command" }.Set("", "\"" + exe + "\" open \"" + arg + "\""));
+                }
+            }
+            return plan;
+        }
+
+        public static string DumpMenu(SettingsData state, string exe)
+        {
+            var sb = new StringBuilder();
+            foreach (var e in BuildPlan(state, exe))
+            {
+                sb.AppendLine(@"HKCU\" + e.Key);
+                foreach (var v in e.Values)
+                    sb.AppendLine("  " + (v.Name.Length == 0 ? "(default)" : v.Name) + " = " + (v.Value is int ? "0x" + ((int)v.Value).ToString("X") : (string)v.Value));
+            }
+            return sb.ToString();
+        }
+
         static void Write()
         {
             RemoveMenu();
             Settings.EnsureLoaded();
             var state = Settings.Snapshot();
             string exe = System.Windows.Forms.Application.ExecutablePath;
-            for (int i = 0; i < Roots.Length; i++)
-            {
-                var t = Kinds[i];
-                var plan = MenuPlan.Build(t, true, state);
-                if (plan.ActionCount == 0 && !plan.OpenEntry) continue;
-                string root = Roots[i];
-                string arg = t == Target.Background ? "%V" : "%1";
-                using (var k = Registry.CurrentUser.CreateSubKey(root))
-                {
-                    k.SetValue("MUIVerb", "PS Tools");
-                    k.SetValue("Icon", "\"" + exe + "\",0");
-                    k.SetValue("SubCommands", "");
-                }
-                string shell = root + @"\shell";
-                int n = 0;
-                if (plan.OpenEntry) Add(shell, n++, "Open in PS Tools", "open", exe, arg, null, false);
-                foreach (var a in plan.Pinned) Add(shell, n++, a.Label, a.Id, exe, arg, a.AppliesTo, a.Extended);
-                bool first = true;
-                foreach (var g in plan.Groups)
-                {
-                    string mk = shell + @"\" + (n++).ToString("D2") + "m";
-                    using (var k = Registry.CurrentUser.CreateSubKey(mk))
-                    {
-                        k.SetValue("MUIVerb", g.Name);
-                        k.SetValue("SubCommands", "");
-                        if (first && (plan.OpenEntry || plan.Pinned.Count > 0)) k.SetValue("CommandFlags", 0x20, RegistryValueKind.DWord);
-                        if (g.CommonAppliesTo != null) k.SetValue("AppliesTo", g.CommonAppliesTo);
-                        if (g.AllExtended) k.SetValue("Extended", "");
-                    }
-                    first = false;
-                    int j = 0;
-                    foreach (var a in g.Items) Add(mk + @"\shell", j++, a.Label, a.Id, exe, arg, a.AppliesTo, a.Extended);
-                }
-            }
-        }
-
-        static void Add(string parent, int index, string label, string action, string exe, string arg, string appliesTo, bool extended)
-        {
-            using (var k = Registry.CurrentUser.CreateSubKey(parent + @"\" + index.ToString("D2") + action))
-            {
-                k.SetValue("MUIVerb", label);
-                if (!string.IsNullOrEmpty(appliesTo)) k.SetValue("AppliesTo", appliesTo);
-                if (extended) k.SetValue("Extended", "");
-                using (var c = k.CreateSubKey("command"))
-                    c.SetValue("", "\"" + exe + "\" " + action + " \"" + arg + "\"");
-            }
+            foreach (var e in BuildPlan(state, exe))
+                using (var k = Registry.CurrentUser.CreateSubKey(e.Key))
+                    foreach (var v in e.Values)
+                        k.SetValue(v.Name, v.Value, v.Value is int ? RegistryValueKind.DWord : RegistryValueKind.String);
         }
 
         public static void RemoveMenu()
