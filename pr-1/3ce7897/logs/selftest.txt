@@ -14,4 +14,4 @@ PASS  menu plan: Everyday preset in all four contexts  -  top-level entries: fol
 PASS  menu plan: Developer preset in all four contexts  -  top-level entries: folder 11+1, background 14+1, file 11, drive 11+1
 PASS  menu plan: Everything preset in all four contexts  -  top-level entries: folder 15+1, background 18+1, file 12, drive 13+1
 
-15 passed, 0 failed, 0 warnings in 1125 ms
+15 passed, 0 failed, 0 warnings in 1110 ms
