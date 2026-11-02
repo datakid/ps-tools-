@@ -130,9 +130,13 @@ namespace PSTools
 
         static void CopyTree(string from, string to)
         {
+            if (to.Length > 230) return;
             Directory.CreateDirectory(to);
             foreach (var f in Directory.GetFiles(from))
-                File.Copy(f, Path.Combine(to, Path.GetFileName(f)), true);
+            {
+                string dest = Path.Combine(to, Path.GetFileName(f));
+                if (dest.Length < 250) File.Copy(f, dest, true);
+            }
             foreach (var d in Directory.GetDirectories(from))
                 CopyTree(d, Path.Combine(to, Path.GetFileName(d)));
         }

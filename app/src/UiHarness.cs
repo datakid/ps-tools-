@@ -195,7 +195,7 @@ namespace PSTools
                     { "type", c.GetType().Name },
                     { "x", r.X - origin.X }, { "y", r.Y - origin.Y }, { "w", r.Width }, { "h", r.Height },
                     { "text", c.Text ?? "" },
-                    { "visible", c.Visible && IsShown(c) },
+                    { "visible", c.Visible && IsShown(c) }, { "enabled", c.Enabled },
                     { "font", c.Font.Name }, { "size", c.Font.SizeInPoints },
                     { "depth", depth },
                     { "parent", string.IsNullOrEmpty(parent.Name) ? parent.GetType().Name : parent.Name },
@@ -240,6 +240,7 @@ namespace PSTools
             Directory.CreateDirectory(Journal.DirOverride);
 
             log = new StreamWriter(Path.Combine(outDir, "harness." + theme + "." + Num(scale) + ".log"), false, new UTF8Encoding(false));
+            Log("screen " + Screen.PrimaryScreen.Bounds.Width + "x" + Screen.PrimaryScreen.Bounds.Height + ", work area " + Screen.PrimaryScreen.WorkingArea.Width + "x" + Screen.PrimaryScreen.WorkingArea.Height);
 
             int rgb = Convert.ToInt32(accentText, 16);
             UI.AccentOverride = Color.FromArgb((rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255);

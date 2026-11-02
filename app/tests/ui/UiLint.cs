@@ -135,6 +135,8 @@ public static class UiLint
 
     static Rectangle Box(Dictionary<string, object> c) { return new Rectangle(I(c, "x"), I(c, "y"), I(c, "w"), I(c, "h")); }
 
+    static bool Enabled(Dictionary<string, object> c) { object v; return !c.TryGetValue("enabled", out v) || !(v is bool) || (bool)v; }
+
     static bool IsTextual(Dictionary<string, object> c)
     {
         string t = S(c, "type");
@@ -229,7 +231,7 @@ public static class UiLint
 
         foreach (var c in visible)
         {
-            if (!IsTextual(c) || S(c, "text").Length == 0) continue;
+            if (!IsTextual(c) || S(c, "text").Length == 0 || !Enabled(c)) continue;
             Rectangle b = Rectangle.Intersect(Box(c), new Rectangle(0, 0, pic.W, pic.H));
             if (b.Width < 16 || b.Height < 10) continue;
             var freq = new Dictionary<int, int>();
