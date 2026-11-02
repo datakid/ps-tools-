@@ -1,15 +1,141 @@
 [
-  { "name": "copy-name.file", "id": "copy-name", "fixture": "tree-basic", "targets": ["src/app/main.py"] },
-  { "name": "copy-name.multi", "id": "copy-name", "fixture": "tree-basic", "targets": ["src/app/main.py", "src/app/util.py"] },
-  { "name": "copy-path-quoted.dir", "id": "copy-path-quoted", "fixture": "tree-basic", "targets": ["src"] },
-  { "name": "copy-path-fwd.awkward", "id": "copy-path-fwd", "fixture": "names", "targets": ["a&b.txt"] },
-  { "name": "copy-parent.file", "id": "copy-parent", "fixture": "tree-basic", "targets": ["docs/readme.md"] },
-  { "name": "copy-sha256.file", "id": "copy-sha256", "fixture": "tree-basic", "targets": ["src/app/main.py"] },
-  { "name": "copy-contents.file", "id": "copy-contents", "fixture": "tree-basic", "targets": ["src/app/util.py"] },
-  { "name": "copy-names.dir", "id": "copy-names", "fixture": "tree-basic", "targets": [""] },
-  { "name": "copy-tree.dir", "id": "copy-tree", "fixture": "tree-basic", "targets": [""] },
-  { "name": "copy-dirs-rel.dir", "id": "copy-dirs-rel", "fixture": "tree-basic", "targets": [""] },
-  { "name": "copy-size.dir", "id": "copy-size", "fixture": "tree-basic", "targets": [""] },
-  { "name": "folder-sizes.dir", "id": "folder-sizes", "fixture": "tree-basic", "targets": [""] },
-  { "name": "new-folder-clip.undo", "id": "new-folder-clip", "fixture": "tree-basic", "targets": [""], "clipboard": "My new folder", "expectFiles": ["My new folder"], "undo": true }
+  {
+    "name": "copy-name.file",
+    "id": "copy-name",
+    "fixture": "tree-basic",
+    "targets": [
+      "src/app/main.py"
+    ]
+  },
+  {
+    "name": "copy-name.multi",
+    "id": "copy-name",
+    "fixture": "tree-basic",
+    "targets": [
+      "src/app/main.py",
+      "src/app/util.py"
+    ]
+  },
+  {
+    "name": "copy-path-quoted.dir",
+    "id": "copy-path-quoted",
+    "fixture": "tree-basic",
+    "targets": [
+      "src"
+    ]
+  },
+  {
+    "name": "copy-path-fwd.awkward",
+    "id": "copy-path-fwd",
+    "fixture": "names",
+    "targets": [
+      "a&b.txt"
+    ]
+  },
+  {
+    "name": "copy-parent.file",
+    "id": "copy-parent",
+    "fixture": "tree-basic",
+    "targets": [
+      "docs/readme.md"
+    ]
+  },
+  {
+    "name": "copy-sha256.file",
+    "id": "copy-sha256",
+    "fixture": "tree-basic",
+    "targets": [
+      "src/app/main.py"
+    ]
+  },
+  {
+    "name": "copy-contents.file",
+    "id": "copy-contents",
+    "fixture": "tree-basic",
+    "targets": [
+      "src/app/util.py"
+    ]
+  },
+  {
+    "name": "copy-names.dir",
+    "id": "copy-names",
+    "fixture": "tree-basic",
+    "targets": [
+      ""
+    ]
+  },
+  {
+    "name": "copy-tree.dir",
+    "id": "copy-tree",
+    "fixture": "tree-basic",
+    "targets": [
+      ""
+    ]
+  },
+  {
+    "name": "copy-dirs-rel.dir",
+    "id": "copy-dirs-rel",
+    "fixture": "tree-basic",
+    "targets": [
+      ""
+    ]
+  },
+  {
+    "name": "copy-size.dir",
+    "id": "copy-size",
+    "fixture": "tree-basic",
+    "targets": [
+      ""
+    ]
+  },
+  {
+    "name": "folder-sizes.dir",
+    "id": "folder-sizes",
+    "fixture": "tree-basic",
+    "targets": [
+      ""
+    ]
+  },
+  {
+    "name": "new-folder-clip.undo",
+    "id": "new-folder-clip",
+    "fixture": "tree-basic",
+    "targets": [
+      ""
+    ],
+    "clipboard": "My new folder",
+    "expectFiles": [
+      "My new folder"
+    ],
+    "undo": true
+  },
+  {
+    "name": "copy-path-quoted.v4id",
+    "id": "copy.path.quoted",
+    "fixture": "tree-basic",
+    "targets": [
+      "src"
+    ]
+  },
+  {
+    "name": "copy-tree.v4id",
+    "id": "copy.tree.ascii",
+    "fixture": "tree-basic",
+    "targets": [
+      ""
+    ]
+  },
+  {
+    "name": "new-folder-clip.v4id",
+    "id": "new.folder-from-clip",
+    "fixture": "tree-basic",
+    "targets": [
+      ""
+    ],
+    "clipboard": "My new folder",
+    "expectFiles": [
+      "My new folder"
+    ],
+    "undo": true
+  }
 ]

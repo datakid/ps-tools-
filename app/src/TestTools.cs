@@ -82,17 +82,33 @@ namespace PSTools
         {
             var sb = new StringBuilder();
             bool json = Flag(args, "--json");
-            var all = Actions.All.OrderBy(a => a.Id, StringComparer.Ordinal).ToList();
+            if (Flag(args, "--legacy"))
+            {
+                foreach (var a in Actions.All.OrderBy(a => a.Id, StringComparer.Ordinal)) sb.AppendLine(a.Id);
+                Emit(args, sb.ToString());
+                return 0;
+            }
+            var all = ActionCatalog.Current.All.OrderBy(a => a.Id, StringComparer.Ordinal).ToList();
             if (json)
             {
                 var list = new List<Dictionary<string, object>>();
                 foreach (var a in all)
                     list.Add(new Dictionary<string, object>
                     {
-                        { "id", a.Id }, { "label", a.Label }, { "group", a.Group }, { "targets", a.Targets.ToString() },
-                        { "multi", a.Multi }, { "tier", a.Tier.ToString() }, { "window", a.Window != null }, { "script", a.Script != null }
+                        { "id", a.Id }, { "aliases", a.Aliases.ToArray() }, { "title", a.Title }, { "menu", a.Menu }, { "order", a.Order },
+                        { "when", SpecRules.ContextNames(a.When).ToArray() }, { "matchExt", a.MatchExt.ToArray() }, { "requires", a.Requires.ToArray() },
+                        { "shell", a.Shell.ToString().ToLowerInvariant() }, { "output", a.Output.ToString().ToLowerInvariant() },
+                        { "risk", a.Risk.ToString().ToLowerInvariant() }, { "admin", a.Admin }, { "multi", a.Multi.ToString().ToLowerInvariant() },
+                        { "undo", a.Undo.ToString().ToLowerInvariant() }, { "extended", a.Extended }, { "keywords", a.Keywords.ToArray() },
+                        { "description", a.Description }, { "source", a.Source.ToString().ToLowerInvariant() }, { "sourceFile", a.SourceFile },
+                        { "overrides", a.Overrides }, { "popupHidden", a.PopupHidden }, { "appOnly", a.AppOnly }, { "hidden", a.UserHidden }
                     });
-                sb.AppendLine(new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Serialize(list));
+                sb.AppendLine(new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Serialize(new Dictionary<string, object>
+                {
+                    { "count", list.Count },
+                    { "problems", ActionCatalog.Current.Problems.Select(p => p.ToString()).ToArray() },
+                    { "actions", list }
+                }));
             }
             else
                 foreach (var a in all) sb.AppendLine(a.Id);
@@ -187,8 +203,9 @@ namespace PSTools
                     if (!Directory.Exists(src)) { o.Status = "skip"; o.Detail = "fixture missing: " + fixture; continue; }
                     CopyTree(src, Path.Combine(work, fixture));
 
-                    var action = Actions.Find(o.Id);
-                    if (action == null) { o.Status = "fail"; o.Detail = "unknown action id"; continue; }
+                    var catalogSpec = ActionCatalog.Current.Find(o.Id);
+                    var action = catalogSpec == null ? null : catalogSpec.Legacy;
+                    if (action == null) { o.Status = "fail"; o.Detail = catalogSpec == null ? "unknown action id" : "action has no built-in implementation to run"; continue; }
 
                     var targets = Strings(spec.ContainsKey("targets") ? spec["targets"] : null)
                         .Select(t => t.Length == 0 ? Path.Combine(work, fixture) : Path.Combine(work, fixture, t.Replace('/', '\\')))
