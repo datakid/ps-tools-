@@ -62,10 +62,8 @@ foreach ($size in @(@(980, 640), @(860, 520), @(1200, 760))) {
     Check $main ("Menu page") $size[0] $size[1]
 }
 
-$set = 'System.Collections.Generic.HashSet[string]'
-$presets = $asm.GetType('PSTools.Presets')
-$ids = $presets.GetMethod('Ids').Invoke($null, @('Everyday'))
-$preview = [Activator]::CreateInstance($asm.GetType('PSTools.PreviewForm'), @($ids, (New-Object $set)))
+$state = $asm.GetType('PSTools.Settings').GetMethod('DefaultState').Invoke($null, $null)
+$preview = [Activator]::CreateInstance($asm.GetType('PSTools.PreviewForm'), [object[]]@($state))
 Check $preview 'Menu preview' 0 0
 
 $first = [Activator]::CreateInstance($asm.GetType('PSTools.FirstRunForm'))

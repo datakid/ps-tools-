@@ -52,6 +52,8 @@ namespace PSTools
         }
 
         public static bool Dark;
+        public static Color? AccentOverride;
+        static float fontFactor = 1f;
         static float scale = -1f;
         static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Form, object> scaledForms = new System.Runtime.CompilerServices.ConditionalWeakTable<Form, object>();
 
@@ -70,6 +72,19 @@ namespace PSTools
         }
 
         public static int S(int v) { return (int)Math.Round(v * Scale); }
+
+        public static void ForceScale(float s)
+        {
+            scale = s;
+            fontFactor = s;
+            Font = new Font(Family, 10f * s);
+            Small = new Font(Family, 9f * s);
+            Bold = new Font(SemiFamily, 10f * s);
+            SmallBold = new Font(SemiFamily, 9f * s);
+            Head = new Font(SemiFamily, 12f * s);
+            Title = new Font(SemiFamily, 15f * s);
+            Mono = new Font(Pick("Cascadia Mono", "Consolas"), 10f * s);
+        }
         public const string Version = "3.0.0";
 
         static string Pick(params string[] names)
@@ -103,7 +118,7 @@ namespace PSTools
         public static Font Head = new Font(SemiFamily, 12f);
         public static Font Title = new Font(SemiFamily, 15f);
         public static Font Mono = new Font(Pick("Cascadia Mono", "Consolas"), 10f);
-        public static Font Icons(float size) { return new Font(IconFamily ?? "Segoe UI", size); }
+        public static Font Icons(float size) { return new Font(IconFamily ?? "Segoe UI", size * fontFactor); }
 
         public static Color Accent = Color.FromArgb(0, 103, 192);
         public static Color Back = Color.FromArgb(243, 243, 243);
@@ -174,6 +189,7 @@ namespace PSTools
 
         static Color SystemAccent()
         {
+            if (AccentOverride.HasValue) return AccentOverride.Value;
             try
             {
                 using (var k = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM"))
@@ -548,9 +564,17 @@ namespace PSTools
 
     static class Clip
     {
+        public static string Text()
+        {
+            if (TestSink.Active) return TestSink.ClipboardIn;
+            try { return Clipboard.ContainsText() ? Clipboard.GetText() : ""; }
+            catch { return ""; }
+        }
+
         public static void Set(string text)
         {
             if (text == null) return;
+            if (TestSink.Active) { TestSink.Clips.Add(text); return; }
             for (int i = 0; i < 5; i++)
             {
                 try { Clipboard.SetDataObject(text, true, 3, 80); return; }

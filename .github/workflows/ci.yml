@@ -1,0 +1,109 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-test:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare log folder
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force app\out\logs | Out-Null
+      - name: Build with .NET Framework csc
+        id: build
+        shell: cmd
+        run: cd app && build.cmd
+      - name: Self-test
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\ci\invoke-exe.ps1 -Exe app\out\PSTools.exe -Arguments '--selftest','--quiet' -Log app\out\logs\selftest.txt
+          exit $LASTEXITCODE
+      - name: Fixtures
+        id: fixtures
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\fixtures\make-fixtures.ps1 -Params @{ Out = "$env:RUNNER_TEMP\fx" } -Log app\out\logs\fixtures.txt
+          exit $LASTEXITCODE
+      - name: Generate goldens (artifact only, for review)
+        if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\run-action-tests.ps1 -Exe app\out\PSTools.exe -Fixtures "$env:RUNNER_TEMP\fx" -UpdateGoldens -Goldens app\out\goldens-generated -Report app\out\action-report-generated.json -Log app\out\logs\action-tests-generate.txt
+          exit 0
+      - name: Action tests (goldens)
+        if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\run-action-tests.ps1 -Exe app\out\PSTools.exe -Fixtures "$env:RUNNER_TEMP\fx" -Report app\out\action-report.json -Log app\out\logs\action-tests.txt
+          exit $LASTEXITCODE
+      - name: Snippet check
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tools\snippet-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\snippet-check.txt
+          exit $LASTEXITCODE
+      - name: Layout lint (v3 has known issues, see docs/v4/FINDINGS.md)
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tools\layout-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\layout-check.txt
+          exit $LASTEXITCODE
+      - name: Screenshots
+        id: shots
+        if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\capture.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Out = 'app\out\shots'; Fixtures = "$env:RUNNER_TEMP\fx" } -Log app\out\logs\capture.txt
+          exit $LASTEXITCODE
+      - name: Visual diff and pixel lint
+        if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\compare.ps1 -Params @{ Shots = 'app\out\shots'; Baseline = 'app\tests\ui\baseline-v3'; Out = 'app\out\ui-report'; LintWarnOnly = $true } -Log app\out\logs\compare.txt
+          exit $LASTEXITCODE
+      - name: Footprint check
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tools\footprint-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\footprint.txt
+          exit $LASTEXITCODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pstools-${{ github.sha }}
+          path: app/out
+          if-no-files-found: warn
+  gallery:
+    needs: build-test
+    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: pstools-${{ github.sha }}
+          path: artifact
+      - name: Publish gallery
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BUILD_RESULT: ${{ needs.build-test.result }}
+        run: bash app/tests/ui/publish-gallery.sh

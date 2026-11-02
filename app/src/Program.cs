@@ -24,6 +24,26 @@ namespace PSTools
                 try { AttachConsole(-1); } catch { }
                 return args[0] == "--selftest" ? SelfTest.Run() : SelfTest.DumpSnippets();
             }
+            string dataDir = TestTools.Option(args, "--data-dir");
+            if (dataDir != null) Journal.DirOverride = dataDir;
+            if (args.Length >= 1 && args[0] == "--list-actions")
+            {
+                Quiet = true;
+                try { AttachConsole(-1); } catch { }
+                return TestTools.ListActions(args);
+            }
+            if (args.Length >= 1 && args[0] == "--test-actions")
+            {
+                Quiet = true;
+                try { AttachConsole(-1); } catch { }
+                return TestTools.RunActionTests(args);
+            }
+            if (args.Length >= 1 && args[0] == "--screenshot")
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                return UiHarness.Run(args);
+            }
             if (args.Length != argv.Length)
             {
                 Quiet = true;
@@ -78,18 +98,21 @@ namespace PSTools
 
         public static void Msg(string text)
         {
+            if (TestSink.Active) { TestSink.Dialogs.Add(text); return; }
             if (Quiet) { Console.WriteLine(text); return; }
             FDialog.Show(text, "PS Tools", FDialog.Kind.Info, false);
         }
 
         public static void Fail(string text)
         {
+            if (TestSink.Active) { TestSink.Dialogs.Add("ERROR: " + text); return; }
             if (Quiet) { Console.WriteLine(text); return; }
             FDialog.Show(text, "PS Tools - error", FDialog.Kind.Error, false);
         }
 
         public static bool Ask(string text)
         {
+            if (TestSink.Active) { TestSink.Dialogs.Add("ASK: " + text); return true; }
             if (Quiet) { Console.WriteLine(text + "\n(confirmation needed, so nothing was run in --quiet mode)"); return false; }
             return FDialog.Show(text, "PS Tools", FDialog.Kind.Question, true);
         }

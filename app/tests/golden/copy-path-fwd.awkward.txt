@@ -1,0 +1,4 @@
+[clipboard]
+<FX>/names/a&b.txt
+[toast]
+<truncated>
