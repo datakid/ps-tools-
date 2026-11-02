@@ -1,0 +1,17 @@
+Explorer menu keys (HKCU):
+  Software\Classes\Directory\shell\PSTools
+  Software\Classes\Directory\Background\shell\PSTools
+  Software\Classes\Drive\shell\PSTools
+  Software\Classes\*\shell\PSTools
+
+Menu points to: D:\a\ps-tools-\ps-tools-\app\out\PSTools.exe  (this exe)
+Data folder: C:\Users\runneradmin\AppData\Local\PSTools  (1.6 KB)
+Menu selection: Everyday
+Windows settings changed by PS Tools: none
+Executable: D:\a\ps-tools-\ps-tools-\app\out\PSTools.exe
+Explorer menu removed.
+Settings, undo data and temporary files deleted.
+
+You can now delete PSTools.exe and commands.json.
+Clean: nothing PS Tools created or changed remains.
+exit code 0
