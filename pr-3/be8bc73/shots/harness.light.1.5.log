@@ -1,0 +1,8 @@
+screen 1024x768, work area 1024x720
+ok    main-actions.light.1.5.png  1024x720  printwindow  91 controls
+ok    main-menu.light.1.5.png  1024x720  printwindow  91 controls
+ok    popup-root.light.1.5.png  945x788  printwindow  8 controls
+ok    popup-details.light.1.5.png  1044x788  printwindow  8 controls
+ok    popup-input.light.1.5.png  945x723  printwindow  18 controls
+ok    dialog-info.light.1.5.png  726x365  printwindow  3 controls
+6 screenshots, 0 failed, theme=light, scale=1.5, font=Segoe UI Variable Text
