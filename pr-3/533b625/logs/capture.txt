@@ -1,0 +1,74 @@
+=== screenshots: theme=light scale=1
+screen 1024x768, work area 1024x720
+ok    main-actions.light.1.png  1024x720  printwindow  91 controls
+ok    main-menu.light.1.png  1024x720  printwindow  91 controls
+ok    first-run.light.1.png  594x547  printwindow  16 controls
+ok    results-grid.light.1.png  976x619  printwindow  11 controls
+ok    history.light.1.png  876x599  printwindow  15 controls
+ok    preview.light.1.png  496x599  printwindow  7 controls
+ok    recipes.light.1.png  976x659  printwindow  36 controls
+ok    structure.light.1.png  876x639  printwindow  18 controls
+ok    search.light.1.png  996x639  printwindow  12 controls
+ok    rename.light.1.png  936x639  printwindow  42 controls
+ok    library.light.1.png  1016x659  printwindow  20 controls
+ok    palette.light.1.png  560x392  printwindow  6 controls
+ok    popup-root.light.1.png  420x558  printwindow  8 controls
+ok    popup-drill.light.1.png  420x514  printwindow  8 controls
+ok    popup-search.light.1.png  420x558  printwindow  8 controls
+ok    popup-details.light.1.png  700x514  printwindow  8 controls
+ok    popup-200.light.1.png  420x478  printwindow  8 controls
+ok    popup-input.light.1.png  420x322  printwindow  18 controls
+ok    popup-empty.light.1.png  420x270  printwindow  8 controls
+ok    popup-many.light.1.png  420x558  printwindow  8 controls
+ok    dialog-info.light.1.png  486x202  printwindow  3 controls
+ok    dialog-question.light.1.png  486x221  printwindow  4 controls
+ok    dialog-error.light.1.png  486x183  printwindow  3 controls
+ok    toast.light.1.png  237x68  printwindow  2 controls
+24 screenshots, 0 failed, theme=light, scale=1, font=Segoe UI Variable Text
+=== screenshots: theme=dark scale=1
+screen 1024x768, work area 1024x720
+ok    main-actions.dark.1.png  1024x720  printwindow  91 controls
+ok    main-menu.dark.1.png  1024x720  printwindow  91 controls
+ok    first-run.dark.1.png  594x547  printwindow  16 controls
+ok    results-grid.dark.1.png  976x619  printwindow  11 controls
+ok    history.dark.1.png  876x599  printwindow  15 controls
+ok    preview.dark.1.png  496x599  printwindow  7 controls
+ok    recipes.dark.1.png  976x659  printwindow  36 controls
+ok    structure.dark.1.png  876x639  printwindow  18 controls
+ok    search.dark.1.png  996x639  printwindow  12 controls
+ok    rename.dark.1.png  936x639  printwindow  42 controls
+ok    library.dark.1.png  1016x659  printwindow  20 controls
+ok    palette.dark.1.png  560x392  printwindow  6 controls
+ok    popup-root.dark.1.png  420x558  printwindow  8 controls
+ok    popup-drill.dark.1.png  420x514  printwindow  8 controls
+ok    popup-search.dark.1.png  420x558  printwindow  8 controls
+ok    popup-details.dark.1.png  700x514  printwindow  8 controls
+ok    popup-200.dark.1.png  420x478  printwindow  8 controls
+ok    popup-input.dark.1.png  420x322  printwindow  18 controls
+ok    popup-empty.dark.1.png  420x270  printwindow  8 controls
+ok    popup-many.dark.1.png  420x558  printwindow  8 controls
+ok    dialog-info.dark.1.png  486x202  printwindow  3 controls
+ok    dialog-question.dark.1.png  486x221  printwindow  4 controls
+ok    dialog-error.dark.1.png  486x183  printwindow  3 controls
+ok    toast.dark.1.png  237x68  printwindow  2 controls
+24 screenshots, 0 failed, theme=dark, scale=1, font=Segoe UI Variable Text
+=== screenshots: theme=light scale=1.5
+screen 1024x768, work area 1024x720
+ok    main-actions.light.1.5.png  1024x720  printwindow  91 controls
+ok    main-menu.light.1.5.png  1024x720  printwindow  91 controls
+ok    popup-root.light.1.5.png  945x788  printwindow  8 controls
+ok    popup-details.light.1.5.png  945x788  printwindow  8 controls
+ok    popup-input.light.1.5.png  945x723  printwindow  18 controls
+ok    dialog-info.light.1.5.png  726x365  printwindow  3 controls
+6 screenshots, 0 failed, theme=light, scale=1.5, font=Segoe UI Variable Text
+=== screenshots: theme=dark scale=1.5
+screen 1024x768, work area 1024x720
+ok    main-actions.dark.1.5.png  1024x720  printwindow  91 controls
+ok    main-menu.dark.1.5.png  1024x720  printwindow  91 controls
+ok    popup-root.dark.1.5.png  945x788  printwindow  8 controls
+ok    popup-details.dark.1.5.png  945x788  printwindow  8 controls
+ok    popup-input.dark.1.5.png  945x723  printwindow  18 controls
+ok    dialog-info.dark.1.5.png  726x365  printwindow  3 controls
+6 screenshots, 0 failed, theme=dark, scale=1.5, font=Segoe UI Variable Text
+manifest.json: 60 screenshots
+exit code 0
