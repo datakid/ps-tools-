@@ -68,6 +68,10 @@ namespace PSTools
             list.Activated += (s, e) => ActivateSelected();
             list.SelectionChanged += (s, e) => { UpdateDetails(); footer.Folder = SelectedFolder(); footer.Invalidate(); };
             empty.RunRequested += RunTypedText;
+            crumbs.LevelClicked += level => { while (stack.Count > level) { stack.RemoveAt(stack.Count - 1); stackSelection.Clear(); } Rebuild(0); };
+            list.RowRightClicked += (s, e) => ShowRowMenu(e.Location);
+            AccessibleName = "PS Tools Power menu";
+            AccessibleDescription = "";
             Controls.Add(list);
             Controls.Add(empty);
             Controls.Add(crumbs);
@@ -95,10 +99,11 @@ namespace PSTools
             if (options.InitialSearch.Length > 0) search.Input.Text = options.InitialSearch;
             else Rebuild(0);
             Relayout();
+            AccessibleDescription = SummaryText;
 
             Shown += (s, e) =>
             {
-                if (!options.Harness) { Activate(); try { SetForegroundWindow(Handle); } catch { } }
+                if (!options.Harness) TakeForeground();
                 search.Input.Focus();
                 search.Input.SelectionStart = search.Input.TextLength;
             };
@@ -126,7 +131,10 @@ namespace PSTools
                 if (!string.IsNullOrEmpty(options.Summary)) return FGfx.MiddleEllipsis(options.Summary, 38);
                 if (paths.Length == 0) return "This folder";
                 if (paths.Length == 1) return FGfx.MiddleEllipsis(paths[0], 38);
-                return paths.Length + " items selected";
+                var isDir = query.IsDirectory ?? (p => { try { return System.IO.Directory.Exists(p); } catch { return false; } });
+                int dirs = paths.Count(p => isDir(p));
+                int files = paths.Length - dirs;
+                return paths.Length + " items \u00B7 " + dirs + " folder" + (dirs == 1 ? "" : "s") + ", " + files + " file" + (files == 1 ? "" : "s");
             }
         }
 
@@ -140,13 +148,53 @@ namespace PSTools
             }
         }
 
+        public static Point PlaceAt(Point cursor, Size size, Rectangle area)
+        {
+            int x = cursor.X + 2, y = cursor.Y + 2;
+            if (x + size.Width > area.Right) x = area.Right - size.Width;
+            if (y + size.Height > area.Bottom)
+            {
+                int up = cursor.Y - 2 - size.Height;
+                y = up >= area.Top ? up : area.Bottom - size.Height;
+            }
+            return new Point(Math.Max(area.Left, x), Math.Max(area.Top, y));
+        }
+
         void PlaceNearCursor()
         {
             var pt = Cursor.Position;
-            var area = Screen.FromPoint(pt).WorkingArea;
-            int x = Math.Min(Math.Max(area.Left, pt.X - Width / 3), Math.Max(area.Left, area.Right - Width));
-            int y = Math.Min(Math.Max(area.Top, pt.Y), Math.Max(area.Top, area.Bottom - Height));
-            Location = new Point(x, y);
+            Location = PlaceAt(pt, Size, Screen.FromPoint(pt).WorkingArea);
+        }
+
+        [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+        [DllImport("user32.dll")]
+        static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+        [DllImport("kernel32.dll")]
+        static extern uint GetCurrentThreadId();
+
+        void TakeForeground()
+        {
+            Activate();
+            try
+            {
+                if (SetForegroundWindow(Handle) && GetForegroundWindow() == Handle) return;
+                uint pid;
+                uint fore = GetWindowThreadProcessId(GetForegroundWindow(), out pid);
+                uint me = GetCurrentThreadId();
+                if (fore != 0 && fore != me)
+                {
+                    AttachThreadInput(me, fore, true);
+                    SetForegroundWindow(Handle);
+                    AttachThreadInput(me, fore, false);
+                }
+            }
+            catch { }
         }
 
         List<MenuNode> Current()
@@ -182,13 +230,15 @@ namespace PSTools
                         rows.Add(new PmRow { Title = n.Title, Header = true });
                         foreach (var c in n.Children) rows.Add(ActionRow(c, favs, false));
                     }
-                    else if (n.Kind == NodeKind.Folder) rows.Add(new PmRow { Title = n.Title, Folder = true, Node = n });
+                    else if (n.Kind == NodeKind.Folder) rows.Add(new PmRow { Title = n.Title, Folder = true, Node = n, Glyph = GlyphForFolder(n.Title) });
                     else rows.Add(ActionRow(n, favs, false));
                 }
             }
             crumbsOn = stack.Count > 0 && text.Length == 0;
             crumbs.Visible = crumbsOn;
             crumbs.Trail = stack.Count == 0 ? "" : "Menu \u203A " + string.Join(" \u203A ", stack.Select(s => s.Title).ToArray());
+            crumbs.Parts = stack.Select(x => x.Title).ToList();
+            list.ShowDigits = text.Length == 0;
             crumbs.Invalidate();
             list.SetRows(rows, select);
             empty.Query = text;
@@ -206,8 +256,30 @@ namespace PSTools
             return new PmRow
             {
                 Title = n.Title, Node = n, Favorite = favs.Contains(n.Spec.Id), Risk = n.Spec.Risk, Admin = n.Spec.Admin,
-                Secondary = withPath ? n.Path : ""
+                Secondary = withPath ? n.Path : "", Glyph = GlyphFor(n.Spec), Extended = n.Spec.Extended
             };
+        }
+
+        static readonly Dictionary<string, string> FolderGlyphs = new Dictionary<string, string>
+        {
+            { "Copy", "\uE8C8" }, { "Paste & New", "\uE710" }, { "Search", "\uE721" }, { "Open", "\uE8E5" }, { "Rename", "\uE8AC" },
+            { "Organize", "\uE8FD" }, { "Archive", "\uE7B8" }, { "Image", "\uEB9F" }, { "Media", "\uE714" }, { "Inspect", "\uE946" },
+            { "Compare", "\uE8A1" }, { "Dev", "\uE943" }, { "Git", "\uE8F1" }, { "Links", "\uE71B" }, { "Clean up", "\uE74D" },
+            { "Fix", "\uE90F" }, { "Clipboard", "\uE77F" }, { "System", "\uE770" }, { "Recipes", "\uE8D4" }, { "My actions", "\uE734" },
+            { "Library", "\uE8F1" }
+        };
+
+        static string GlyphForFolder(string top)
+        {
+            string g;
+            return FolderGlyphs.TryGetValue(top, out g) ? g : "\uE8B7";
+        }
+
+        static string GlyphFor(ActionSpec s)
+        {
+            if (s.Icon.Length > 0 && s.Icon.Length <= 2) return s.Icon;
+            string[] parts = s.MenuParts;
+            return GlyphForFolder(parts.Length == 0 ? (s.Source == SpecSource.User ? "My actions" : "") : parts[0]);
         }
 
         void Relayout()
@@ -270,11 +342,69 @@ namespace PSTools
 
         void RunSpec(ActionSpec s)
         {
+            if (s.Inputs.Count > 0) { ShowInputs(s); return; }
+            RunWith(s, null);
+        }
+
+        void RunWith(ActionSpec s, Dictionary<string, string> inputs)
+        {
             if (options.NoteUsed != null) options.NoteUsed(s.Id);
             var spec = s;
             var targets = paths.Length == 0 ? new[] { FallbackFolder() } : paths;
-            ToRun = () => Executor.Run(spec, targets);
+            ToRun = () => Executor.Run(spec, targets, inputs);
             CloseMenu();
+        }
+
+        InputPanel inputPanel;
+
+        public void ShowInputsFor(ActionSpec s) { ShowInputs(s); }
+
+        void ShowInputs(ActionSpec s)
+        {
+            HideInputs();
+            inputPanel = new InputPanel(s);
+            Controls.Add(inputPanel);
+            inputPanel.SetBounds(list.Left, list.Top, list.Width, list.Height);
+            inputPanel.BringToFront();
+            UI.Walk(inputPanel);
+            list.Visible = false;
+            empty.Visible = false;
+            crumbs.Visible = false;
+            footer.InputMode = true;
+            footer.Invalidate();
+            inputPanel.FocusFirst();
+        }
+
+        void HideInputs()
+        {
+            if (inputPanel == null) return;
+            Controls.Remove(inputPanel);
+            inputPanel.Dispose();
+            inputPanel = null;
+            footer.InputMode = false;
+            list.Visible = !emptyOn;
+            empty.Visible = emptyOn;
+            crumbs.Visible = crumbsOn;
+            search.Input.Focus();
+            footer.Invalidate();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (inputPanel != null)
+            {
+                if (keyData == Keys.Enter)
+                {
+                    string error;
+                    var values = inputPanel.Collect(out error);
+                    if (values == null) { inputPanel.ShowError(error); return true; }
+                    var spec = inputPanel.Spec;
+                    RunWith(spec, values);
+                    return true;
+                }
+                if (keyData == Keys.Escape) { HideInputs(); return true; }
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         string FallbackFolder()
@@ -338,7 +468,15 @@ namespace PSTools
             else if (e.KeyCode == Keys.Enter) { ActivateSelected(); e.SuppressKeyPress = true; e.Handled = true; }
             else if (e.KeyCode == Keys.Right && (input.TextLength == 0 || input.SelectionStart >= input.TextLength) && SelectedFolder())
             { ActivateSelected(); e.SuppressKeyPress = true; e.Handled = true; }
-            else if (e.KeyCode == Keys.Left && input.TextLength == 0 && stack.Count > 0) { Back(); e.SuppressKeyPress = true; e.Handled = true; }
+            else if ((e.KeyCode == Keys.Left || e.KeyCode == Keys.Back) && input.TextLength == 0 && stack.Count > 0) { Back(); e.SuppressKeyPress = true; e.Handled = true; }
+            else if (input.TextLength == 0 && !e.Control && !e.Alt && !e.Shift && DigitOf(e.KeyCode) > 0)
+            {
+                var visible = list.VisibleSelectable();
+                int n = DigitOf(e.KeyCode);
+                e.SuppressKeyPress = true;
+                e.Handled = true;
+                if (n <= visible.Count) { list.Select(visible[n - 1]); ActivateSelected(); }
+            }
             else if (e.KeyCode == Keys.Escape)
             {
                 if (input.TextLength > 0) input.Text = "";
@@ -351,6 +489,74 @@ namespace PSTools
             else if (e.KeyCode == Keys.D && e.Control) { ToggleFavorite(); e.SuppressKeyPress = true; e.Handled = true; }
             else if (e.KeyCode == Keys.F1) { ToggleDetails(); e.SuppressKeyPress = true; e.Handled = true; }
             else if (e.KeyCode == Keys.OemQuestion && e.Shift && input.TextLength == 0) { ToggleDetails(); e.SuppressKeyPress = true; e.Handled = true; }
+        }
+
+        static int DigitOf(Keys k)
+        {
+            if (k >= Keys.D1 && k <= Keys.D9) return k - Keys.D0;
+            if (k >= Keys.NumPad1 && k <= Keys.NumPad9) return k - Keys.NumPad0;
+            return 0;
+        }
+
+        void ShowRowMenu(Point at)
+        {
+            var r = list.SelectedRow;
+            if (r == null || r.Node == null) return;
+            var menu = new ContextMenuStrip();
+            Fx.ThemeMenu(menu);
+            if (r.Folder)
+            {
+                var node = r.Node;
+                menu.Items.Add("Open", null, (s, e) => Drill(node));
+            }
+            else
+            {
+                var spec = r.Node.Spec;
+                menu.Items.Add(spec.Inputs.Count > 0 ? "Run with options..." : "Run", null, (s, e) => RunSpec(spec));
+                string code = spec.Legacy != null ? (spec.Legacy.Ps ?? "") : spec.Command;
+                var copy = menu.Items.Add("Copy PowerShell equivalent", null, (s, e) => Clip.Set(code));
+                copy.Enabled = code.Length > 0;
+                menu.Items.Add(new ToolStripSeparator());
+                bool fav = r.Favorite;
+                menu.Items.Add(fav ? "Remove from Explorer menu" : "Add to Explorer menu", null, (s, e) => ToggleFavorite());
+                menu.Items.Add("Hide from menu", null, (s, e) => HideSpec(spec));
+                menu.Items.Add(new ToolStripSeparator());
+                if (spec.Source == SpecSource.User && spec.SourceFile.Length > 0)
+                    menu.Items.Add("Edit", null, (s, e) => { try { Process.Start(spec.SourceFile); } catch { } });
+                else
+                {
+                    var dup = menu.Items.Add("Duplicate as my action", null, (s, e) => DuplicateSpec(spec));
+                    dup.Enabled = code.Length > 0;
+                }
+            }
+            menu.Show(list, at);
+        }
+
+        void HideSpec(ActionSpec spec)
+        {
+            if (!options.Harness) Settings.SetHidden(spec.Id, true);
+            spec.UserHidden = true;
+            root = MenuTree.Build(query);
+            Rebuild(0);
+        }
+
+        void DuplicateSpec(ActionSpec spec)
+        {
+            try
+            {
+                string code = spec.Legacy != null ? (spec.Legacy.Ps ?? "") : spec.Command;
+                string dir = System.IO.Path.Combine(Journal.Dir, "actions", "My actions");
+                System.IO.Directory.CreateDirectory(dir);
+                string name = new string(spec.Title.Where(c => char.IsLetterOrDigit(c) || c == ' ' || c == '-').ToArray()).Trim();
+                if (name.Length == 0) name = spec.Id;
+                string file = System.IO.Path.Combine(dir, name + ".ps1");
+                string header = "<#\n@title " + spec.Title + " (copy)\n@description " + spec.Description + "\n@when " + string.Join(", ", SpecRules.ContextNames(spec.When).ToArray()) + "\n@output " + spec.Output.ToString().ToLowerInvariant() + "\n@risk " + spec.Risk.ToString().ToLowerInvariant() + "\n#>\n";
+                System.IO.File.WriteAllText(file, header + code + "\n", new System.Text.UTF8Encoding(true));
+                ActionCatalog.Reset();
+                Runner.Notify(null, "Saved " + name + ".ps1 in your actions folder", false);
+                try { Process.Start("explorer.exe", "/select,\"" + file + "\""); } catch { }
+            }
+            catch (Exception ex) { Program.Fail("Could not save the copy: " + ex.Message); }
         }
 
         void ToggleDetails()
@@ -369,6 +575,104 @@ namespace PSTools
                 catch { }
             };
             CloseMenu();
+        }
+
+        class InputPanel : Panel
+        {
+            public readonly ActionSpec Spec;
+            readonly List<KeyValuePair<InputSpec, Control>> fields = new List<KeyValuePair<InputSpec, Control>>();
+            readonly Label error = new Label();
+
+            public InputPanel(ActionSpec spec)
+            {
+                Spec = spec;
+                BackColor = Tok.SurfaceAlt;
+                AutoScroll = true;
+                int y = Tok.S3;
+                var title = new Label { Text = spec.Title, Font = Tok.Semibold, AutoSize = false, Left = Tok.S3, Top = y, Width = UI.S(380), Height = UI.S(24) };
+                Controls.Add(title);
+                y += UI.S(30);
+                foreach (var input in spec.Inputs)
+                {
+                    var lbl = new Label { Text = input.Label, Font = Tok.Caption, AutoSize = false, Left = Tok.S3, Top = y, Width = UI.S(380), Height = UI.S(20) };
+                    Controls.Add(lbl);
+                    y += UI.S(22);
+                    Control field;
+                    if (input.Type == "bool")
+                    {
+                        var t = new FToggle { Text = input.Label, Left = Tok.S3, Top = y, Width = UI.S(380), Height = UI.S(28) };
+                        t.Checked = string.Equals(input.Default, "true", StringComparison.OrdinalIgnoreCase);
+                        lbl.Visible = false;
+                        y -= UI.S(22);
+                        field = t;
+                        field.Top = y;
+                        y += UI.S(36);
+                    }
+                    else if (input.Type == "pick")
+                    {
+                        var cb = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Left = Tok.S3, Top = y, Width = UI.S(380), Font = Tok.Body };
+                        foreach (var o in input.Options) cb.Items.Add(o);
+                        int idx = input.Options.IndexOf(input.Default);
+                        cb.SelectedIndex = idx >= 0 ? idx : 0;
+                        field = cb;
+                        y += UI.S(38);
+                    }
+                    else
+                    {
+                        var box = new FSearchBox("") { ShowGlyph = false, Left = Tok.S3, Top = y, Width = UI.S(380), Height = Tok.InputHeight };
+                        box.Input.Text = input.Default;
+                        field = box;
+                        y += UI.S(44);
+                    }
+                    Controls.Add(field);
+                    fields.Add(new KeyValuePair<InputSpec, Control>(input, field));
+                }
+                error.AutoSize = false;
+                error.Left = Tok.S3; error.Top = y; error.Width = UI.S(380); error.Height = UI.S(36);
+                error.Font = Tok.Caption;
+                error.ForeColor = Tok.RiskDestructive;
+                Controls.Add(error);
+            }
+
+            public void FocusFirst()
+            {
+                foreach (var f in fields)
+                {
+                    var box = f.Value as FSearchBox;
+                    if (box != null) { box.Input.Focus(); box.Input.SelectAll(); return; }
+                    f.Value.Focus();
+                    return;
+                }
+            }
+
+            public void ShowError(string text)
+            {
+                error.Text = text;
+            }
+
+            public Dictionary<string, string> Collect(out string problem)
+            {
+                problem = null;
+                var values = new Dictionary<string, string>();
+                foreach (var f in fields)
+                {
+                    string v;
+                    var box = f.Value as FSearchBox;
+                    var cb = f.Value as ComboBox;
+                    var tg = f.Value as FToggle;
+                    if (box != null) v = box.Input.Text;
+                    else if (cb != null) v = cb.SelectedItem == null ? "" : cb.SelectedItem.ToString();
+                    else v = tg != null && tg.Checked ? "true" : "false";
+                    if (f.Key.Type == "number")
+                    {
+                        double d;
+                        if (!double.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out d)) { problem = f.Key.Label + " must be a number."; return null; }
+                    }
+                    if ((f.Key.Type == "text" || f.Key.Type == "folder" || f.Key.Type == "file") && v.Trim().Length == 0) { problem = f.Key.Label + " is required."; return null; }
+                    values[f.Key.Name] = v;
+                }
+                return values;
+            }
         }
 
         class HeaderBar : Control
@@ -405,7 +709,7 @@ namespace PSTools
 
         class FooterBar : Control
         {
-            public bool Folder;
+            public bool Folder, InputMode;
 
             public FooterBar()
             {
@@ -417,11 +721,13 @@ namespace PSTools
                 var g = e.Graphics;
                 g.Clear(Tok.SurfaceAlt);
                 using (var p = new Pen(Tok.Stroke)) g.DrawLine(p, 0, 0, Width, 0);
-                var hints = new List<string[]>
-                {
-                    new[] { "\u21B5", Folder ? "Open" : "Run" }, new[] { "\u2192", "Open" }, new[] { "\u2190", "Back" },
-                    new[] { "Ctrl D", "\u2605" }, new[] { "?", "Details" }
-                };
+                var hints = InputMode
+                    ? new List<string[]> { new[] { "\u21B5", "Run" }, new[] { "Esc", "Back" } }
+                    : new List<string[]>
+                    {
+                        new[] { "\u21B5", Folder ? "Open" : "Run" }, new[] { "\u2192", "Open" }, new[] { "\u2190", "Back" },
+                        new[] { "Ctrl D", "\u2605" }, new[] { "?", "Details" }, new[] { "1-9", "Run" }, new[] { "Esc", "Close" }
+                    };
                 int gap = Tok.S3;
                 int x = Tok.S3, used = x;
                 var widths = hints.Select(h => FKbd.Measure(g, h[0], h[1])).ToList();

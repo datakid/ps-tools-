@@ -113,6 +113,8 @@ namespace PSTools
             l.Add(new Scenario { Name = "popup-drill", Build = () => Popup(new PowerMenuOptions { Drill = new[] { "Copy", "Paths" } }) });
             l.Add(new Scenario { Name = "popup-search", Build = () => Popup(new PowerMenuOptions { InitialSearch = "ta" }) });
             l.Add(new Scenario { Name = "popup-details", Build = () => Popup(new PowerMenuOptions { Details = true, Drill = new[] { "Copy", "Paths" } }) });
+            l.Add(new Scenario { Name = "popup-200", Build = () => PopupMany() });
+            l.Add(new Scenario { Name = "popup-input", Build = () => PopupInput() });
             l.Add(new Scenario { Name = "popup-empty", Build = () => Popup(new PowerMenuOptions { InitialSearch = "zzqx" }) });
             l.Add(new Scenario { Name = "popup-many", Build = () => Popup(new PowerMenuOptions { InitialSearch = "e" }) });
             l.Add(new Scenario { Name = "dialog-info", Build = () => Show(Create<FDialog>("Explorer menu installed.\n\nWindows 11: right-click > Show more options.", "PS Tools", FDialog.Kind.Info, false)) });
@@ -146,6 +148,38 @@ namespace PSTools
                 HasTool = t => true, IsDirectory = p => true
             };
             return new PowerMenu(q, opt);
+        }
+
+        static Form PopupInput()
+        {
+            var spec = new ActionSpec
+            {
+                Id = "user.demo.serve", Title = "Serve folder on localhost", Menu = "Dev", When = ContextKind.Folder | ContextKind.Background, Shell = ActionShell.PowerShell,
+                Command = "python -m http.server {input:port}", Output = ActionOutput.Console, Risk = Risk.Modifies, Description = "Serves this folder over HTTP.", Source = SpecSource.User
+            };
+            spec.Inputs.Add(new InputSpec { Name = "port", Label = "Port", Type = "number", Default = "8080" });
+            spec.Inputs.Add(new InputSpec { Name = "host", Label = "Listen on", Type = "pick", Default = "localhost", Options = new List<string> { "localhost", "all interfaces" } });
+            spec.Inputs.Add(new InputSpec { Name = "open", Label = "Open the browser when ready", Type = "bool", Default = "true" });
+            var cat = new ActionCatalog();
+            cat.All.Add(spec);
+            var q = new MenuQuery { Context = ContextKind.Folder, Paths = new[] { @"C:\Users\demo\projects\app\src" }, Catalog = cat, HasTool = t => true, IsDirectory = p => true };
+            var pm = new PowerMenu(q, new PowerMenuOptions { Harness = true, Location = new Point(40, 40), Summary = @"C:\Users\demo\projects\app\src", InitialSearch = "" });
+            pm.ShowInputsFor(spec);
+            return pm;
+        }
+
+        static Form PopupMany()
+        {
+            var paths = new List<string>();
+            for (int i = 1; i <= 200; i++) paths.Add(@"C:\Users\demo\projects\app\src\file_" + i.ToString("000") + (i % 10 == 0 ? "" : ".txt"));
+            var q = new MenuQuery
+            {
+                Context = ContextKind.File | ContextKind.Folder, Paths = paths.ToArray(),
+                Catalog = ActionCatalog.Load(new CatalogInput { Builtins = Actions.All, ShippedPath = Path.Combine(Program.ExeDir, "actions.json"), LibraryPath = Path.Combine(Program.ExeDir, "commands.json") }),
+                Favorites = new List<string> { "copy.names.selected", "copy.path.quoted" }, Recent = new List<string>(), HasTool = t => true,
+                IsDirectory = p => !p.EndsWith(".txt")
+            };
+            return new PowerMenu(q, new PowerMenuOptions { Harness = true, Location = new Point(40, 40) });
         }
 
         static void Pump()

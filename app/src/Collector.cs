@@ -31,7 +31,7 @@ namespace PSTools
             return false;
         }
 
-        public static string[] Gather(string id, string path, int waitMs = 320)
+        public static string[] Gather(string id, string path, int waitMs = 320, bool settle = false, int maxMs = 3000)
         {
             string dir = Path.Combine(Journal.Dir, "tmp");
             Directory.CreateDirectory(dir);
@@ -41,6 +41,18 @@ namespace PSTools
             if (!TryLead(gate)) return null;
 
             Thread.Sleep(waitMs);
+            if (settle)
+            {
+                int last = -1, stable = 0;
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                while (watch.ElapsedMilliseconds < maxMs)
+                {
+                    int n = Directory.GetFiles(dir, "p-" + id + "-*.txt").Length;
+                    if (n == last) { stable += 40; if (stable >= waitMs) break; }
+                    else { stable = 0; last = n; }
+                    Thread.Sleep(40);
+                }
+            }
             try { File.Delete(gate); } catch { }
 
             var list = new List<string>();

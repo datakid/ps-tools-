@@ -29,7 +29,14 @@ namespace PSTools
 
         public static PlaceholderContext ContextFor(string[] paths)
         {
-            return new PlaceholderContext { Paths = paths, Clip = Clip.Text(), GitRoot = FindGitRoot };
+            return ContextFor(paths, null);
+        }
+
+        public static PlaceholderContext ContextFor(string[] paths, Dictionary<string, string> inputs)
+        {
+            var c = new PlaceholderContext { Paths = paths, Clip = Clip.Text(), GitRoot = FindGitRoot };
+            if (inputs != null) c.Inputs = inputs;
+            return c;
         }
 
         static string WorkDir(string[] paths)
@@ -46,6 +53,11 @@ namespace PSTools
 
         public static void Run(ActionSpec s, string[] paths)
         {
+            Run(s, paths, null);
+        }
+
+        public static void Run(ActionSpec s, string[] paths, Dictionary<string, string> inputs)
+        {
             if (s.Legacy != null)
             {
                 Runner.Execute(s.Legacy, s.Legacy.Multi ? paths : new[] { paths[0] }, null);
@@ -59,7 +71,7 @@ namespace PSTools
             else batches.Add(paths);
 
             string firstScript;
-            try { firstScript = Placeholders.Expand(s.Command, s.Shell, ContextFor(batches[0])); }
+            try { firstScript = Placeholders.Expand(s.Command, s.Shell, ContextFor(batches[0], inputs)); }
             catch (PlaceholderException ex) { Program.Fail(ex.Message); return; }
 
             if (s.Risk != Risk.Safe)
@@ -72,7 +84,7 @@ namespace PSTools
             foreach (var batch in batches)
             {
                 string script;
-                try { script = Placeholders.Expand(s.Command, s.Shell, ContextFor(batch)); }
+                try { script = Placeholders.Expand(s.Command, s.Shell, ContextFor(batch, inputs)); }
                 catch (PlaceholderException ex) { Program.Fail(ex.Message); return; }
                 int code;
                 string text = Execute(s.Shell, script, WorkDir(batch), out code);

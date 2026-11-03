@@ -152,6 +152,72 @@ Add-Result 'popup-background-opens' ([bool]$el) 'menu-bg opens the popup'
 if ($el) { Snap $el '4-popup-background' }
 Stop-Popup $h
 
+
+function Find-Row($root, [string]$name) {
+    $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name)
+    return $root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
+}
+
+function Invoke-Row($row) {
+    $pattern = $null
+    if ($row.TryGetCurrentPattern([System.Windows.Automation.LegacyIAccessiblePattern]::Pattern, [ref]$pattern)) { $pattern.DoDefaultAction(); return $true }
+    if ($row.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$pattern)) { $pattern.Invoke(); return $true }
+    return $false
+}
+
+$env = New-Env 'drill'
+$h = Start-Popup $env 'menu' $folder
+$el = Find-Popup 15000
+if (-not $el) { Add-Result 'popup-drill' $false 'popup did not appear' }
+else {
+    Start-Sleep -Milliseconds 400
+    $copy = Find-Row $el 'Copy'
+    $found = [bool]$copy
+    Add-Result 'popup-rows-exposed' $found 'rows are visible to UI Automation (accessible names)'
+    if ($found) {
+        [void](Invoke-Row $copy)
+        Start-Sleep -Milliseconds 300
+        $tree = Find-Row $el 'Tree'
+        if ($tree) { [void](Invoke-Row $tree); Start-Sleep -Milliseconds 300 }
+        $leaf = Find-Row $el 'Tree (ASCII)'
+        Snap $el '5-popup-drill'
+        Add-Result 'popup-drill' ([bool]$leaf) 'Copy then Tree then Tree (ASCII) is reachable by drilling in'
+        Send-Keys $el '{BACKSPACE}'
+        $back = Find-Row $el 'Tree'
+        Add-Result 'popup-back' ([bool]$back) 'Backspace with an empty search box goes up one level'
+    }
+}
+Stop-Popup $h
+
+foreach ($n in 1, 20, 200) {
+    $env = New-Env ('multi' + $n)
+    $dir = Join-Path $work ('files' + $n)
+    New-Item -ItemType Directory -Path $dir | Out-Null
+    for ($i = 1; $i -le $n; $i++) { [IO.File]::WriteAllText((Join-Path $dir ('file_{0:000}.txt' -f $i)), 'x') }
+    $procs = New-Object System.Collections.ArrayList
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    for ($i = 1; $i -le $n; $i++) {
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $Exe
+        $psi.Arguments = 'menu "{0}" --settings "{1}" --data-dir "{2}" --tools git' -f (Join-Path $dir ('file_{0:000}.txt' -f $i)), $env.Settings, $env.Dir
+        $psi.UseShellExecute = $false
+        [void]$procs.Add([Diagnostics.Process]::Start($psi))
+    }
+    $spawned = $sw.ElapsedMilliseconds
+    $el = Find-Popup 30000
+    $visible = $sw.ElapsedMilliseconds
+    if (-not $el) { Add-Result ('popup-multi-' + $n) $false ('no popup within 30 s after starting {0} processes' -f $n) }
+    else {
+        $help = $el.Current.HelpText
+        $count = if ($help -match '^(\d+) items') { [int]$Matches[1] } elseif ($n -eq 1) { 1 } else { -1 }
+        $popups = @([System.Windows.Automation.AutomationElement]::RootElement.FindAll([System.Windows.Automation.TreeScope]::Children, (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, 'PS Tools Power menu')))).Count
+        if ($n -eq 200) { Snap $el '6-popup-200' }
+        Add-Result ('popup-multi-' + $n) ($count -eq $n -and $popups -eq 1) ('{0} processes started in {1} ms, popup visible after {2} ms, popup lists {3} items, popups open: {4}' -f $n, $spawned, $visible, $count, $popups)
+    }
+    Get-Process -Name ([IO.Path]::GetFileNameWithoutExtension($Exe)) -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 500
+}
+
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 $failed = @($results | Where-Object { -not $_.Ok }).Count
 Write-Host ('{0} scenarios, {1} failed' -f $results.Count, $failed)
