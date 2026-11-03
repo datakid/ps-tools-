@@ -30,4 +30,4 @@ PASS  MenuTree: build time  -  0.2 ms per build, 218 actions in the catalog
 PASS  Explorer menu: v4 registry layout (power menu, favorites, caps, filters)
 PASS  Settings: v3 pins become v4 favorites, schema 4 round-trips
 
-31 passed, 0 failed, 0 warnings in 1765 ms
+31 passed, 0 failed, 0 warnings in 1783 ms
