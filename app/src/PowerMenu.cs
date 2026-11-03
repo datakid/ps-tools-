@@ -285,15 +285,21 @@ namespace PSTools
 
         void Relayout()
         {
+            var area = Screen.FromControl(this).WorkingArea;
             int width = UI.S(420);
-            int detailsWidth = showDetails ? UI.S(280) : 0;
+            int detailsWidth = UI.S(280);
+            bool below = showDetails && width + detailsWidth > area.Width - UI.S(16);
+            int sideWidth = showDetails && !below ? detailsWidth : 0;
             int headerH = UI.S(44), searchH = inputPanel != null ? 0 : UI.S(48), footerH = UI.S(32);
             int crumbH = crumbsOn && inputPanel == null ? UI.S(28) : 0;
-            int minList = Tok.RowHeight * 4, maxList = Tok.RowHeight * 12;
+            int belowH = below ? UI.S(190) : 0;
+            int fixedH = headerH + searchH + crumbH + footerH + belowH + 2;
+            int fits = Math.Max(3, (area.Height - fixedH - UI.S(24)) / Tok.RowHeight);
+            int minList = Tok.RowHeight * Math.Min(4, fits), maxList = Tok.RowHeight * Math.Min(12, fits);
             int content = inputPanel != null ? inputPanel.ContentHeight : emptyOn ? minList : list.ContentHeight;
             int listH = Math.Max(minList, Math.Min(maxList, content));
             int total = headerH + searchH + crumbH + listH + footerH;
-            ClientSize = new Size(width + detailsWidth, total + 2);
+            ClientSize = new Size(width + sideWidth, total + belowH + 2);
             int x = 1, w = width - 2;
             header.SetBounds(x, 1, w, headerH);
             search.SetBounds(x + Tok.S2, 1 + headerH + Tok.S2 / 2 + UI.S(4), w - Tok.S2 * 2, Tok.InputHeight);
@@ -305,7 +311,8 @@ namespace PSTools
             if (inputPanel != null) inputPanel.SetBounds(x, y, w, listH);
             footer.SetBounds(x, y + listH, w, footerH);
             details.Visible = showDetails;
-            details.SetBounds(width, 1, detailsWidth - 1, total);
+            if (below) details.SetBounds(1, total + 1, width - 2, belowH);
+            else details.SetBounds(width, 1, sideWidth - 1, total);
             list.EnsureVisible();
         }
 
