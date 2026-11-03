@@ -262,5 +262,166 @@ namespace PSTools
             else if (sw.ElapsedMilliseconds > 150) Line("WARN", "Catalog: load time", sw.ElapsedMilliseconds + " ms for " + cat.All.Count + " actions");
             else Line("PASS", "Catalog: load time", sw.ElapsedMilliseconds + " ms for " + cat.All.Count + " actions");
         }
+
+        static MenuQuery Query(ContextKind ctx, string[] paths, Func<string, bool> tools, params string[] favorites)
+        {
+            return new MenuQuery
+            {
+                Context = ctx, Paths = paths, Catalog = ActionCatalog.Current, Favorites = new List<string>(favorites), HasTool = tools,
+                IsDirectory = p => !System.IO.Path.HasExtension(p)
+            };
+        }
+
+        static void CheckMenuTree()
+        {
+            var problems = new List<string>();
+            var allTools = (Func<string, bool>)(t => true);
+            var noTools = (Func<string, bool>)(t => false);
+
+            var folder = MenuTree.Build(Query(ContextKind.Folder, new[] { @"C:\x\src" }, allTools, "copy.path.quoted", "archive.zip-smart"));
+            var names = folder.Select(n => n.Kind + ":" + n.Title).ToList();
+            if (names.Count == 0 || names[0] != "Section:Favorites") problems.Add("Favorites must be the first node, got " + (names.Count == 0 ? "nothing" : names[0]));
+            int copyAt = names.IndexOf("Folder:Copy"), pasteAt = names.IndexOf("Folder:Paste & New"), searchAt = names.IndexOf("Folder:Search");
+            if (copyAt < 0 || pasteAt < copyAt || searchAt < pasteAt) problems.Add("canonical folder order broken: " + string.Join(", ", names.ToArray()));
+            if (!names.Contains("Action:Rename: Batch rename...")) problems.Add("a folder with one action must be inlined as 'Folder: Action'");
+            var allIds = new List<string>();
+            Collect(folder.Where(n => n.Kind != NodeKind.Section).ToList(), allIds);
+            if (allIds.GroupBy(x => x).Any(g => g.Count() > 1)) problems.Add("an action appears twice in the folder part: " + string.Join(", ", allIds.GroupBy(x => x).Where(g => g.Count() > 1).Select(g => g.Key).ToArray()));
+            if (allIds.Any(id => id.StartsWith("lib."))) problems.Add("library entries must stay out of the tree unless favorited");
+            if (allIds.Any(id => id.StartsWith("system.dism"))) problems.Add("extended or app-only actions leaked into the tree");
+
+            var withLib = MenuTree.Build(Query(ContextKind.Folder, new[] { @"C:\x\src" }, allTools, "lib.flatten-copy"));
+            var libIds = new List<string>();
+            Collect(withLib, libIds);
+            if (!libIds.Contains("lib.flatten-copy")) problems.Add("a favorited library entry must appear");
+
+            var bg = MenuTree.Build(Query(ContextKind.Background, new string[0], allTools));
+            var bgIds = new List<string>();
+            Collect(bg, bgIds);
+            if (!bgIds.Contains("new.paste-image") || bgIds.Contains("archive.extract")) problems.Add("background context filtering is wrong");
+
+            var file = MenuTree.Build(Query(ContextKind.File, new[] { @"C:\x\a.txt" }, allTools));
+            var fileIds = new List<string>();
+            Collect(file, fileIds);
+            if (fileIds.Contains("image.png")) problems.Add("image actions must not apply to a .txt file");
+            if (!fileIds.Contains("copy.contents")) problems.Add("copy.contents must apply to a file");
+            var pic = MenuTree.Build(Query(ContextKind.File, new[] { @"C:\x\a.png" }, allTools));
+            if (!pic.Any(n => n.Kind == NodeKind.Section && n.Title == "Suggested" && n.Children.Any(c => c.Spec.Id == "image.png"))) problems.Add("images must get a Suggested section");
+
+            var multi = MenuTree.Build(Query(ContextKind.File, new[] { @"C:\x\a.txt", @"C:\x\b.txt" }, allTools));
+            var multiIds = new List<string>();
+            Collect(multi, multiIds);
+            if (multiIds.Contains("copy.hash.verify")) problems.Add("single-only actions must hide when several items are selected");
+            if (!multiIds.Contains("copy.names.selected")) problems.Add("multi-capable actions must stay");
+
+            var gitless = new List<string>();
+            Collect(MenuTree.Build(Query(ContextKind.Folder, new[] { @"C:\x\src" }, noTools)), gitless);
+            if (gitless.Contains("git.copy.branch") || gitless.Contains("git.status.repos") || gitless.Contains("open.vscode")) problems.Add("actions that require a missing tool must be hidden");
+            var gitful = new List<string>();
+            Collect(MenuTree.Build(Query(ContextKind.Folder, new[] { @"C:\x\src" }, allTools)), gitful);
+            if (!gitful.Contains("git.copy.branch")) problems.Add("git.copy.branch must show when git exists");
+
+            var shift = Query(ContextKind.Background, new string[0], allTools);
+            shift.Shift = false;
+            var plain = new List<string>(); Collect(MenuTree.Build(shift), plain);
+            shift.Shift = true;
+            var shifted = new List<string>(); Collect(MenuTree.Build(shift), shifted);
+            if (shifted.Count < plain.Count) problems.Add("Shift must never remove actions");
+
+            Report("MenuTree: sections, order, inlining, filtering, requires, extended", problems, "");
+
+            problems = new List<string>();
+            var q = Query(ContextKind.Folder, new[] { @"C:\x\src" }, allTools);
+            var ta = MenuTree.Search(q, "ta");
+            if (ta.Count == 0 || ta[0].Spec.Id != "copy.tree.ascii") problems.Add("searching 'ta' must rank Tree (ASCII) first, got " + (ta.Count == 0 ? "nothing" : ta[0].Title));
+            var cop = MenuTree.Search(q, "copy name");
+            if (cop.Count == 0 || !cop.Take(3).Any(n => n.Spec.Id == "copy.names.selected" || n.Spec.Id == "copy.names.stem")) problems.Add("'copy name' must find the name actions near the top");
+            if (MenuTree.Search(q, "zzzzqq").Count != 0) problems.Add("nonsense must match nothing");
+            var lib = MenuTree.Search(q, "flatten");
+            if (!lib.Any(n => n.Spec.Id == "lib.flatten-copy")) problems.Add("search must include library entries that the tree hides");
+            var kw = MenuTree.Search(q, "ls");
+            if (kw.Count == 0) problems.Add("keywords must be searched");
+            Report("MenuTree: search ranking (initials, prefix, keywords, library)", problems, "");
+
+            var swSearch = Stopwatch.StartNew();
+            var sq = Query(ContextKind.Folder, new[] { @"C:\\x\\src" }, allTools);
+            string[] typed = { "t", "ta", "tre", "tree", "tree a", "copy", "e", "pa", "zip", "git" };
+            foreach (var t in typed) MenuTree.Search(sq, t);
+            swSearch.Stop();
+            double perKey = swSearch.Elapsed.TotalMilliseconds / typed.Length;
+            string sdetail = perKey.ToString("0.0") + " ms per keystroke over " + ActionCatalog.Current.All.Count + " actions";
+            if (perKey > 30) Line("FAIL", "MenuTree: search time", sdetail + " (limit 30 ms)");
+            else Line("PASS", "MenuTree: search time", sdetail);
+
+            var sw = Stopwatch.StartNew();
+            int runs = 20;
+            for (int i = 0; i < runs; i++) MenuTree.Build(Query(ContextKind.Folder, new[] { @"C:\x\src" }, allTools, "copy.path.quoted"));
+            sw.Stop();
+            double perBuild = sw.Elapsed.TotalMilliseconds / runs;
+            int total = ActionCatalog.Current.All.Count;
+            string detail = perBuild.ToString("0.0") + " ms per build, " + total + " actions in the catalog";
+            if (perBuild > 50) Line("FAIL", "MenuTree: build time", detail + " (limit 50 ms)");
+            else if (perBuild > 15) Line("WARN", "MenuTree: build time", detail + " (target 15 ms)");
+            else Line("PASS", "MenuTree: build time", detail);
+        }
+
+        static void Collect(List<MenuNode> nodes, List<string> ids)
+        {
+            foreach (var n in nodes)
+            {
+                if (n.Kind == NodeKind.Action) ids.Add(n.Spec.Id);
+                else Collect(n.Children, ids);
+            }
+        }
+
+        static void CheckRegistryPlan()
+        {
+            var problems = new List<string>();
+            var state = new SettingsData { Schema = SettingsData.SchemaVersion, Configured = true };
+            foreach (var id in new[] { "copy.path.quoted", "image.png", "new.paste-image", "inspect.space-map", "archive.extract", "open.ps", "search.here", "new.paste-text", "new.download-clip", "copy.size", "copy.names.selected" })
+                state.Favorites.Add(id);
+            string dump = Shell.DumpMenu(state, "C:\\Tools\\PSTools.exe");
+            string[] lines = dump.Replace("\r", "").Split('\n');
+            foreach (string root in new[] { "Directory\\shell\\PSTools", "Directory\\Background\\shell\\PSTools", "Drive\\shell\\PSTools", "*\\shell\\PSTools" })
+                if (!lines.Any(l => l == "HKCU\\Software\\Classes\\" + root)) problems.Add("root missing: " + root);
+            if (!dump.Contains("menu-bg \"%V\"")) problems.Add("background must use menu-bg and pass %V");
+            if (!dump.Contains("00power")) problems.Add("Power menu entry missing");
+            if (dump.Split(new[] { "99open" }, StringSplitOptions.None).Length - 1 != 6) problems.Add("Open in PS Tools must be written for folder, background and drive only (3 roots x key and command)");
+            foreach (string root in new[] { "Directory\\shell", "Directory\\Background\\shell", "Drive\\shell", "*\\shell" })
+            {
+                int favs = lines.Count(l => l.StartsWith("HKCU\\Software\\Classes\\" + root + "\\PSTools\\shell\\") && !l.EndsWith("\\command") && !l.EndsWith("00power") && !l.EndsWith("99open"));
+                if (favs > Shell.MaxFavoritesPerContext) problems.Add(root + " has " + favs + " favorites, cap is " + Shell.MaxFavoritesPerContext);
+            }
+            if (!dump.Contains("image.png")) problems.Add("image favorite missing");
+            int imageAt = Array.FindIndex(lines, l => l.Contains("\\shell\\PSTools\\shell\\1") && l.EndsWith("image.png"));
+            if (imageAt >= 0 && !lines.Skip(imageAt).Take(6).Any(l => l.Contains("AppliesTo = System.FileExtension"))) problems.Add("image favorite must carry an AppliesTo filter");
+            int multi = lines.Count(l => l.Trim() == "MultiSelectModel = Player");
+            if (multi < 8) problems.Add("MultiSelectModel=Player must be written on the root and every verb");
+            Report("Explorer menu: v4 registry layout (power menu, favorites, caps, filters)", problems, "");
+        }
+
+        static void CheckMigrationV4()
+        {
+            var problems = new List<string>();
+            string file = FindTestFile("v3-settings-sample.txt");
+            if (file == null) { Line("WARN", "Settings: v3 to v4 migration", "tests\\v3-settings-sample.txt not found next to this build"); return; }
+            var d = SettingsData.Parse(File.ReadAllLines(file, Encoding.UTF8));
+            if (d.Schema != 0) problems.Add("a v3 file must parse with schema 0");
+            SettingsData.Migrate(d, Actions.All);
+            bool changed = SettingsData.MigrateToV4(d);
+            if (!changed || d.Schema != SettingsData.SchemaVersion) problems.Add("migration did not run");
+            var expected = new[] { "copy.path.quoted", "archive.zip-smart", "inspect.space-map", "new.paste-image", "new.paste-text", "search.here", "copy.names.selected", "image.png", "lib.flatten-copy" };
+            if (!d.Favorites.SequenceEqual(expected)) problems.Add("favorites were " + string.Join(", ", d.Favorites.ToArray()) + " but expected " + string.Join(", ", expected));
+            if (d.Favorites.GroupBy(x => x).Any(g => g.Count() > 1)) problems.Add("favorites must be de-duplicated");
+            var again = SettingsData.Parse(d.Serialize().Replace("\r", "").Split('\n'));
+            if (again.Schema != SettingsData.SchemaVersion || !again.Favorites.SequenceEqual(d.Favorites)) problems.Add("schema 4 must round-trip through Serialize/Parse");
+            if (SettingsData.MigrateToV4(again)) problems.Add("migration must be idempotent");
+            if (!again.Used.Count.Equals(0) || again.Hidden.Count != 0) problems.Add("unexpected data appeared");
+            d.NoteUsed("folder", "copy-name");
+            d.NoteUsed("folder", "copy.tree.ascii");
+            d.NoteUsed("folder", "copy.names.selected");
+            if (!d.Used["folder"].SequenceEqual(new[] { "copy.names.selected", "copy.tree.ascii" })) problems.Add("recently used must be most-recent-first and de-duplicated: " + string.Join(", ", d.Used["folder"].ToArray()));
+            Report("Settings: v3 pins become v4 favorites, schema 4 round-trips", problems, "");
+        }
     }
 }

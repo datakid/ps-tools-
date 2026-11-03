@@ -51,3 +51,32 @@ UI Automation scenarios, menu snapshot, cheat sheet checks, startup timing probe
   - cmd values with a trailing backslash get it doubled so `"C:\"` cannot escape the closing quote.
 - **Declarative actions cannot run yet.** The two shipped entries in `actions.json` (`system.ip-local`, `git.copy.branch`) load and validate, and the CLI says plainly that script actions arrive with the Executor in Phase 3.
 - **Local gate:** C# 5 is also checked locally with Mono `mcs -langversion:5` before each push; CI with the real compiler remains the authority.
+
+## Phase 2
+
+### Measured on windows-latest (UI Automation scenarios, `logs/scenarios.txt`)
+- **Cold start to visible popup** (process start to the window being found by UI Automation, 5 runs): median 386-463 ms across CI runs. The very first launch of a fresh exe is slower (800-1050 ms, disk cache and Defender scan); it stays under the 1.5 s hard limit but above the 700 ms target. No ReadyToRun/NGEN is available with plain `csc.exe`, so the remaining lever is less work at startup.
+- **Multi-select fan-out** (N `menu <file>` processes started back to back, one popup expected):
+  | selected | processes started in | popup visible after | items in popup |
+  |---|---|---|---|
+  | 1 | 15-17 ms | 390-560 ms | 1 |
+  | 20 | 32-45 ms | 840-1005 ms | 20 |
+  | 200 | 450-890 ms | 4.9-6.5 s | 200 |
+  With the first implementation (leader waits a fixed quiet time) only 101 of 200 were collected, because the runner was still starting processes. The collector now waits until the file count has been stable for 120 ms **and** no peer process started in the last 8 s is still without a window (max 10 s). Real Explorer's spawn rate was not measured (CI cannot drive Explorer's own context menu).
+- **Search cost:** 0.5-1.0 ms per keystroke over 218 actions (selftest limit 30 ms); menu build 0.2 ms (limit 50 ms). Repaint time was not measured separately.
+- **UI Automation works** on the runner (SendKeys, row enumeration, screen captures). `LegacyIAccessiblePattern` is not available from PowerShell, so scenarios navigate with the keyboard and read row names. Rows are exposed through a custom `AccessibleObject` (role MenuItem, name = title, value = id).
+
+### Not verifiable in CI
+- Whether Explorer honours `MultiSelectModel=Player` on the new layout, and how the Windows 11 modern menu shows the entries (classic verbs sit under "Show more options" unless the classic menu toggle is on). This needs one check on a real Windows 11 machine. Registry layout is covered by `--dump-menu` goldens and the footprint check.
+- Foreground focus when launched by Explorer: `SetForegroundWindow` with an `AttachThreadInput` fallback is implemented; on CI the popup received typed keys in every scenario.
+
+### Deviations and decisions
+- **Search ranking:** for 2-3 character queries an initials match (`ta` = Tree ASCII) outranks a plain title prefix (`ta` = Take ownership), because the plan's own scenario needs `ta` to find Tree (ASCII) first. Library entries are demoted by 25 points so built-ins win ties.
+- **Favorites:** stored in settings schema 4 as `favorite=`, `hidden=`, `override=`, `used.<ctx>=`. Until the v3 Menu page is removed in Phase 6, pinning there is mirrored into favorites; its preview (still `MenuPlan`) no longer matches the real registry layout.
+- **Controls** live in `FluentTree.cs` and `Tokens.cs`, not `Fluent.cs`, to keep the diff reviewable. `UI.Style` leaves a `TextBox` with `Tag = "raw"` alone (the default wraps it in a card, which collapsed the search input to 10 px; found through the control map in the manifest).
+- **Interim executor:** declarative actions run through `Executor.cs` (PowerShell/pwsh/cmd with placeholders, confirm for risky ones, output to clipboard/toast/dialog). "Run ... in console" in the empty state uses it too. Phase 3 replaces both with the real Run console.
+- **Hidden-from-popup:** library entries only show in search or when favorited. App-only v3 actions never show.
+- **Popup size:** fixed 420 px wide, list 4-12 rows, capped to the work area; at narrow work areas the details pane opens below the list instead of beside it.
+- **Row menu:** Run, Run with options, Copy PowerShell equivalent, Add/Remove from Explorer menu, Hide from menu, Edit (user scripts) or Duplicate as my action. "Open in Run console" is added in Phase 3.
+- **Menu verbs:** `menu "%1"` for file/folder/drive, `menu-bg "%V"` for folder background, `open "%1"` for the app.
+- **Local check:** menu/tree goldens are generated with Mono on Linux and match the Windows output byte for byte, so they can be regenerated without a Windows machine.

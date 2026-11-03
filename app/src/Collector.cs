@@ -31,7 +31,24 @@ namespace PSTools
             return false;
         }
 
-        public static string[] Gather(string id, string path)
+        static int RecentPeers(string exeName, int seconds)
+        {
+            int count = 0;
+            try
+            {
+                int me = System.Diagnostics.Process.GetCurrentProcess().Id;
+                foreach (var p in System.Diagnostics.Process.GetProcessesByName(exeName))
+                {
+                    try { if (p.Id != me && (DateTime.Now - p.StartTime).TotalSeconds < seconds && !p.HasExited && p.MainWindowHandle == IntPtr.Zero) count++; }
+                    catch { }
+                    finally { p.Dispose(); }
+                }
+            }
+            catch { }
+            return count;
+        }
+
+        public static string[] Gather(string id, string path, int waitMs = 320, bool settle = false, int maxMs = 3000)
         {
             string dir = Path.Combine(Journal.Dir, "tmp");
             Directory.CreateDirectory(dir);
@@ -40,7 +57,20 @@ namespace PSTools
             string gate = Path.Combine(dir, "lead-" + id + ".lock");
             if (!TryLead(gate)) return null;
 
-            Thread.Sleep(320);
+            if (!settle) Thread.Sleep(waitMs);
+            if (settle)
+            {
+                int last = -1, stable = 0;
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                string exeName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+                while (watch.ElapsedMilliseconds < maxMs)
+                {
+                    int n = Directory.GetFiles(dir, "p-" + id + "-*.txt").Length;
+                    if (n == last) { stable += 40; if (stable >= waitMs && RecentPeers(exeName, 8) == 0) break; }
+                    else { stable = 0; last = n; }
+                    Thread.Sleep(40);
+                }
+            }
             try { File.Delete(gate); } catch { }
 
             var list = new List<string>();

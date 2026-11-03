@@ -46,6 +46,12 @@ jobs:
         run: |
           app\tests\run-action-tests.ps1 -Exe app\out\PSTools.exe -Fixtures "$env:RUNNER_TEMP\fx" -Report app\out\action-report.json -Log app\out\logs\action-tests.txt
           exit $LASTEXITCODE
+      - name: Menu snapshot
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\menu-snapshot.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\menu-snapshot.txt
+          exit $LASTEXITCODE
       - name: Snippet check
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: pwsh
@@ -65,6 +71,13 @@ jobs:
         shell: powershell
         run: |
           app\tests\ci\run-logged.ps1 -Script app\tests\ui\capture.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Out = 'app\out\shots'; Fixtures = "$env:RUNNER_TEMP\fx" } -Log app\out\logs\capture.txt
+          exit $LASTEXITCODE
+      - name: UI Automation scenarios
+        id: scenarios
+        if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\scenarios.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Fixtures = "$env:RUNNER_TEMP\fx"; Out = 'app\out\shots' } -Log app\out\logs\scenarios.txt
           exit $LASTEXITCODE
       - name: Visual diff and pixel lint
         if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}

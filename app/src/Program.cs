@@ -26,6 +26,19 @@ namespace PSTools
             }
             string dataDir = TestTools.Option(args, "--data-dir");
             if (dataDir != null) Journal.DirOverride = dataDir;
+            MenuCli.ApplyGlobalOptions(args);
+            if (args.Length >= 1 && args[0] == "--dump-menu")
+            {
+                Quiet = true;
+                try { AttachConsole(-1); } catch { }
+                return MenuCli.DumpMenu(args);
+            }
+            if (args.Length >= 1 && args[0] == "--dump-tree")
+            {
+                Quiet = true;
+                try { AttachConsole(-1); } catch { }
+                return MenuCli.DumpTree(args);
+            }
             if (args.Length >= 1 && args[0] == "--list-actions")
             {
                 Quiet = true;
@@ -71,6 +84,7 @@ namespace PSTools
             {
                 string path = Clean(args[1]);
                 if (args[0] == "open") { Application.Run(new MainForm(path)); return 0; }
+                if (args[0] == "menu" || args[0] == "menu-bg") return PowerMenuLauncher.Run(args[0] == "menu-bg", path);
                 var spec = ActionCatalog.Current.Find(args[0]);
                 if (spec == null) { Msg("Unknown action: " + args[0]); return 1; }
                 Action a = spec.Legacy;
