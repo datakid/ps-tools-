@@ -14,8 +14,8 @@ $invoke = Join-Path $PSScriptRoot '..\ci\invoke-exe.ps1'
 $runs = @(
     @{ Theme = 'light'; Scale = '1'; Only = $null },
     @{ Theme = 'dark'; Scale = '1'; Only = $null },
-    @{ Theme = 'light'; Scale = '1.5'; Only = 'main-actions,main-menu,dialog-info' },
-    @{ Theme = 'dark'; Scale = '1.5'; Only = 'main-actions,main-menu,dialog-info' }
+    @{ Theme = 'light'; Scale = '1.5'; Only = 'main-actions,main-menu,dialog-info,popup-root,popup-details,popup-input' },
+    @{ Theme = 'dark'; Scale = '1.5'; Only = 'main-actions,main-menu,dialog-info,popup-root,popup-details,popup-input' }
 )
 
 $failed = 0

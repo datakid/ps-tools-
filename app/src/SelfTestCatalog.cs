@@ -343,6 +343,16 @@ namespace PSTools
             if (kw.Count == 0) problems.Add("keywords must be searched");
             Report("MenuTree: search ranking (initials, prefix, keywords, library)", problems, "");
 
+            var swSearch = Stopwatch.StartNew();
+            var sq = Query(ContextKind.Folder, new[] { @"C:\\x\\src" }, allTools);
+            string[] typed = { "t", "ta", "tre", "tree", "tree a", "copy", "e", "pa", "zip", "git" };
+            foreach (var t in typed) MenuTree.Search(sq, t);
+            swSearch.Stop();
+            double perKey = swSearch.Elapsed.TotalMilliseconds / typed.Length;
+            string sdetail = perKey.ToString("0.0") + " ms per keystroke over " + ActionCatalog.Current.All.Count + " actions";
+            if (perKey > 30) Line("FAIL", "MenuTree: search time", sdetail + " (limit 30 ms)");
+            else Line("PASS", "MenuTree: search time", sdetail);
+
             var sw = Stopwatch.StartNew();
             int runs = 20;
             for (int i = 0; i < runs; i++) MenuTree.Build(Query(ContextKind.Folder, new[] { @"C:\x\src" }, allTools, "copy.path.quoted"));
