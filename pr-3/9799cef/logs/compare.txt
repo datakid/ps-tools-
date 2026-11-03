@@ -113,7 +113,6 @@ LINT out-of-bounds   main-menu.light.1.5.png: FButton 'Drive' {X=1004,Y=136,Widt
 {X=338,Y=124,Width=651,Height=81}
 LINT light-dark-box  main-menu.light.1.5.png: dark region 1024x720 at 0,0 (20592 px) in a light screenshot
 LINT default-grey    main-menu.light.1.5.png: default WinForms grey region 16x45 at 724,376
-LINT light-dark-box  popup-root.light.1.5.png: dark region 945x60 at 0,728 (56700 px) in a light screenshot
 LINT light-dark-box  dialog-info.light.1.5.png: dark region 726x365 at 0,0 (5070 px) in a light screenshot
 LINT light-dark-box  main-actions.light.1.png: dark region 1024x720 at 0,0 (20592 px) in a light screenshot
 LINT default-grey    main-actions.light.1.png: default WinForms grey region 16x505 at 537,144
@@ -181,6 +180,6 @@ DIFF new          popup-200.light.1.png (0.00%)
 DIFF new          popup-input.light.1.png (0.00%)
 DIFF new          popup-empty.light.1.png (0.00%)
 DIFF new          popup-many.light.1.png (0.00%)
-112 lint issues, 0 images differ from baseline, 22 new
+111 lint issues, 0 images differ from baseline, 22 new
 ::warning title=ui-lint::pixel/layout lint reported issues (warn-only for the unchanged v3 UI)
 exit code 0

@@ -1,0 +1,17 @@
+PASS  copy-name.file                       261 ms
+PASS  copy-name.multi                       13 ms
+PASS  copy-path-quoted.dir                  27 ms
+PASS  copy-path-fwd.awkward                 12 ms
+PASS  copy-parent.file                      11 ms
+PASS  copy-sha256.file                      57 ms
+PASS  copy-contents.file                    35 ms
+PASS  copy-names.dir                        14 ms
+PASS  copy-tree.dir                        220 ms
+PASS  copy-dirs-rel.dir                     86 ms
+PASS  copy-size.dir                        112 ms
+PASS  folder-sizes.dir                     365 ms
+PASS  new-folder-clip.undo                 211 ms
+PASS  copy-path-quoted.v4id                 23 ms
+PASS  copy-tree.v4id                        33 ms
+PASS  new-folder-clip.v4id                  13 ms
+16 passed, 0 failed, 0 skipped (goldens rewritten)
