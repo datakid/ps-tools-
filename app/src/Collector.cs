@@ -40,7 +40,7 @@ namespace PSTools
             string gate = Path.Combine(dir, "lead-" + id + ".lock");
             if (!TryLead(gate)) return null;
 
-            Thread.Sleep(waitMs);
+            if (!settle) Thread.Sleep(waitMs);
             if (settle)
             {
                 int last = -1, stable = 0;

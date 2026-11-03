@@ -158,11 +158,18 @@ function Find-Row($root, [string]$name) {
     return $root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
 }
 
+Add-Type -Namespace Native -Name Mouse -MemberDefinition @"
+[System.Runtime.InteropServices.DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, System.UIntPtr extra);
+"@
+
 function Invoke-Row($row) {
-    $pattern = $null
-    if ($row.TryGetCurrentPattern([System.Windows.Automation.LegacyIAccessiblePattern]::Pattern, [ref]$pattern)) { $pattern.DoDefaultAction(); return $true }
-    if ($row.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$pattern)) { $pattern.Invoke(); return $true }
-    return $false
+    $r = $row.Current.BoundingRectangle
+    if ($r.Width -lt 2) { return $false }
+    [System.Windows.Forms.Cursor]::Position = New-Object System.Drawing.Point([int]($r.X + $r.Width / 2), [int]($r.Y + $r.Height / 2))
+    Start-Sleep -Milliseconds 120
+    [Native.Mouse]::mouse_event(0x0002, 0, 0, 0, [UIntPtr]::Zero)
+    [Native.Mouse]::mouse_event(0x0004, 0, 0, 0, [UIntPtr]::Zero)
+    return $true
 }
 
 $env = New-Env 'drill'
