@@ -33,7 +33,7 @@ namespace PSTools
             if (background) paths = new string[0];
             else
             {
-                paths = Collector.Gather("menu", path, 120, true, 4000);
+                paths = Collector.Gather("menu", path, 120, true, 10000);
                 if (paths == null) return 0;
             }
             var ctx = MenuTree.ContextFor(paths, background);

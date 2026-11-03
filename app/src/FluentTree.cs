@@ -280,6 +280,7 @@ namespace PSTools
         public FTreeList()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            SetStyle(ControlStyles.Selectable, false);
             TabStop = false;
         }
 
@@ -533,6 +534,7 @@ namespace PSTools
         public FBreadcrumb()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            SetStyle(ControlStyles.Selectable, false);
             Height = UI.S(28);
             TabStop = false;
         }

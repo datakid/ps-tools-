@@ -66,6 +66,7 @@ namespace PSTools
             search.Input.TextChanged += (s, e) => { stack.Clear(); stackSelection.Clear(); Rebuild(0); };
             search.Input.KeyDown += OnSearchKeyDown;
             list.Activated += (s, e) => ActivateSelected();
+            list.MouseUp += (s, e) => { if (inputPanel == null) search.Input.Focus(); };
             list.SelectionChanged += (s, e) => { UpdateDetails(); footer.Folder = SelectedFolder(); footer.Invalidate(); };
             empty.RunRequested += RunTypedText;
             crumbs.LevelClicked += level => { while (stack.Count > level) { stack.RemoveAt(stack.Count - 1); stackSelection.Clear(); } Rebuild(0); };
@@ -684,6 +685,7 @@ namespace PSTools
             {
                 owner = o;
                 SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+                SetStyle(ControlStyles.Selectable, false);
                 Cursor = Cursors.Default;
             }
 
@@ -714,6 +716,7 @@ namespace PSTools
             public FooterBar()
             {
                 SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+                SetStyle(ControlStyles.Selectable, false);
             }
 
             protected override void OnPaint(PaintEventArgs e)
@@ -756,6 +759,7 @@ namespace PSTools
             public EmptyState()
             {
                 SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+                SetStyle(ControlStyles.Selectable, false);
                 Visible = false;
             }
 
@@ -793,6 +797,7 @@ namespace PSTools
             public DetailsPane()
             {
                 SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+                SetStyle(ControlStyles.Selectable, false);
                 Visible = false;
             }
 
