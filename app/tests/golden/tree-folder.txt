@@ -55,7 +55,7 @@
   - Windows PowerShell here  (open.ps)
   - Command Prompt here  (open.cmd)
   - WSL here  (open.wsl)
-  - Open in VS Code  (open.vscode)
+  - VS Code  (open.vscode)
 - Rename: Batch rename...  (rename.batch)  [modifies]
 + Organize/
   - Flatten tree (copy)  (organize.flatten-copy)  [modifies]

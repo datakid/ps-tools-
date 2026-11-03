@@ -24,7 +24,7 @@
     - Paths as JSON array  (copy.path.json-array)
   - Size  (copy.size)
 - Paste & New: Move into new folder...  (new.group-selected)  [modifies]
-- Open: Open in Notepad  (open.notepad)
+- Open: Notepad  (open.notepad)
 - Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
 - Compare: Mark for link or compare  (compare.mark)
 + Fix/

@@ -153,22 +153,21 @@ if ($el) { Snap $el '4-popup-background' }
 Stop-Popup $h
 
 
-function Find-Row($root, [string]$name) {
-    $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name)
-    return $root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
+function Get-RowNames($root) {
+    $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::MenuItem)
+    $items = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $cond)
+    $rows = @()
+    foreach ($i in $items) { $rows += [pscustomobject]@{ Name = $i.Current.Name; Y = $i.Current.BoundingRectangle.Y } }
+    return @($rows | Sort-Object Y | ForEach-Object { $_.Name })
 }
 
-Add-Type -Namespace Native -Name Mouse -MemberDefinition @"
-[System.Runtime.InteropServices.DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, System.UIntPtr extra);
-"@
-
-function Invoke-Row($row) {
-    $r = $row.Current.BoundingRectangle
-    if ($r.Width -lt 2) { return $false }
-    [System.Windows.Forms.Cursor]::Position = New-Object System.Drawing.Point([int]($r.X + $r.Width / 2), [int]($r.Y + $r.Height / 2))
-    Start-Sleep -Milliseconds 120
-    [Native.Mouse]::mouse_event(0x0002, 0, 0, 0, [UIntPtr]::Zero)
-    [Native.Mouse]::mouse_event(0x0004, 0, 0, 0, [UIntPtr]::Zero)
+function Go-To-Row($el, [string]$name) {
+    $names = Get-RowNames $el
+    $headers = @('Recent', 'Suggested', 'Favorites')
+    $selectable = @($names | Where-Object { $headers -notcontains $_ })
+    $index = [array]::IndexOf($selectable, $name)
+    if ($index -lt 0) { return $false }
+    if ($index -gt 0) { Send-Keys $el ('{DOWN ' + $index + '}') }
     return $true
 }
 
@@ -178,21 +177,19 @@ $el = Find-Popup 15000
 if (-not $el) { Add-Result 'popup-drill' $false 'popup did not appear' }
 else {
     Start-Sleep -Milliseconds 400
-    $copy = Find-Row $el 'Copy'
-    $found = [bool]$copy
-    Add-Result 'popup-rows-exposed' $found 'rows are visible to UI Automation (accessible names)'
-    if ($found) {
-        [void](Invoke-Row $copy)
-        Start-Sleep -Milliseconds 300
-        $tree = Find-Row $el 'Tree'
-        if ($tree) { [void](Invoke-Row $tree); Start-Sleep -Milliseconds 300 }
-        $leaf = Find-Row $el 'Tree (ASCII)'
-        Snap $el '5-popup-drill'
-        Add-Result 'popup-drill' ([bool]$leaf) 'Copy then Tree then Tree (ASCII) is reachable by drilling in'
-        Send-Keys $el '{BACKSPACE}'
-        $back = Find-Row $el 'Tree'
-        Add-Result 'popup-back' ([bool]$back) 'Backspace with an empty search box goes up one level'
-    }
+    $rootNames = Get-RowNames $el
+    Add-Result 'popup-rows-exposed' ($rootNames.Count -gt 5) ('rows are visible to UI Automation: ' + (($rootNames | Select-Object -First 6) -join ', '))
+    $ok1 = Go-To-Row $el 'Copy'
+    if ($ok1) { Send-Keys $el '{RIGHT}' }
+    $inCopy = Get-RowNames $el
+    $ok2 = ($inCopy -contains 'Paths') -and ($inCopy -notcontains 'Recent')
+    if ($ok2 -and (Go-To-Row $el 'Tree')) { Send-Keys $el '{RIGHT}' }
+    $inTree = Get-RowNames $el
+    Snap $el '5-popup-drill'
+    Add-Result 'popup-drill' (($inTree -contains 'Tree (ASCII)') -and ($inTree -notcontains 'Recent') -and ($inTree -notcontains 'Paths')) ('drilled Copy > Tree with the keyboard: ' + ($inTree -join ', '))
+    Send-Keys $el '{BACKSPACE}'
+    $back = Get-RowNames $el
+    Add-Result 'popup-back' (($back -contains 'Paths') -and ($back -notcontains 'Tree (ASCII)')) ('Backspace with an empty search box goes up one level: ' + (($back | Select-Object -First 5) -join ', '))
 }
 Stop-Popup $h
 

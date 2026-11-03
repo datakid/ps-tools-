@@ -38,8 +38,8 @@
 + Open/
   - Windows PowerShell here  (open.ps)
   - Command Prompt here  (open.cmd)
-  - Open in VS Code  (open.vscode)
-  - Open in Notepad  (open.notepad)
+  - VS Code  (open.vscode)
+  - Notepad  (open.notepad)
 - Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
 + Image/
   - Convert to PNG  (image.png)  [modifies]
