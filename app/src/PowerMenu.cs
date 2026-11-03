@@ -287,10 +287,10 @@ namespace PSTools
         {
             int width = UI.S(420);
             int detailsWidth = showDetails ? UI.S(280) : 0;
-            int headerH = UI.S(44), searchH = UI.S(48), footerH = UI.S(32);
-            int crumbH = crumbsOn ? UI.S(28) : 0;
+            int headerH = UI.S(44), searchH = inputPanel != null ? 0 : UI.S(48), footerH = UI.S(32);
+            int crumbH = crumbsOn && inputPanel == null ? UI.S(28) : 0;
             int minList = Tok.RowHeight * 4, maxList = Tok.RowHeight * 12;
-            int content = emptyOn ? minList : list.ContentHeight;
+            int content = inputPanel != null ? inputPanel.ContentHeight : emptyOn ? minList : list.ContentHeight;
             int listH = Math.Max(minList, Math.Min(maxList, content));
             int total = headerH + searchH + crumbH + listH + footerH;
             ClientSize = new Size(width + detailsWidth, total + 2);
@@ -302,6 +302,7 @@ namespace PSTools
             y += crumbH;
             list.SetBounds(x, y, w, listH);
             empty.SetBounds(x, y, w, listH);
+            if (inputPanel != null) inputPanel.SetBounds(x, y, w, listH);
             footer.SetBounds(x, y + listH, w, footerH);
             details.Visible = showDetails;
             details.SetBounds(width, 1, detailsWidth - 1, total);
@@ -363,15 +364,16 @@ namespace PSTools
         void ShowInputs(ActionSpec s)
         {
             HideInputs();
-            inputPanel = new InputPanel(s);
+            inputPanel = new InputPanel(s, UI.S(420) - 2 - Tok.S3 * 2);
             Controls.Add(inputPanel);
-            inputPanel.SetBounds(list.Left, list.Top, list.Width, list.Height);
-            inputPanel.BringToFront();
-            UI.Walk(inputPanel);
             list.Visible = false;
             empty.Visible = false;
             crumbs.Visible = false;
+            search.Visible = false;
             footer.InputMode = true;
+            Relayout();
+            inputPanel.BringToFront();
+            UI.Walk(inputPanel);
             footer.Invalidate();
             inputPanel.FocusFirst();
         }
@@ -386,6 +388,8 @@ namespace PSTools
             list.Visible = !emptyOn;
             empty.Visible = emptyOn;
             crumbs.Visible = crumbsOn;
+            search.Visible = true;
+            Relayout();
             search.Input.Focus();
             footer.Invalidate();
         }
@@ -584,24 +588,25 @@ namespace PSTools
             readonly List<KeyValuePair<InputSpec, Control>> fields = new List<KeyValuePair<InputSpec, Control>>();
             readonly Label error = new Label();
 
-            public InputPanel(ActionSpec spec)
+            public int ContentHeight;
+
+            public InputPanel(ActionSpec spec, int fieldWidth)
             {
                 Spec = spec;
                 BackColor = Tok.SurfaceAlt;
-                AutoScroll = true;
                 int y = Tok.S3;
-                var title = new Label { Text = spec.Title, Font = Tok.Semibold, AutoSize = false, Left = Tok.S3, Top = y, Width = UI.S(380), Height = UI.S(24) };
+                var title = new Label { Text = spec.Title, Font = Tok.Semibold, AutoSize = false, Left = Tok.S3, Top = y, Width = fieldWidth, Height = UI.S(24) };
                 Controls.Add(title);
                 y += UI.S(30);
                 foreach (var input in spec.Inputs)
                 {
-                    var lbl = new Label { Text = input.Label, Font = Tok.Caption, AutoSize = false, Left = Tok.S3, Top = y, Width = UI.S(380), Height = UI.S(20) };
+                    var lbl = new Label { Text = input.Label, Font = Tok.Caption, AutoSize = false, Left = Tok.S3, Top = y, Width = fieldWidth, Height = UI.S(20) };
                     Controls.Add(lbl);
                     y += UI.S(22);
                     Control field;
                     if (input.Type == "bool")
                     {
-                        var t = new FToggle { Text = input.Label, Left = Tok.S3, Top = y, Width = UI.S(380), Height = UI.S(28) };
+                        var t = new FToggle { Text = input.Label, Left = Tok.S3, Top = y, Width = fieldWidth, Height = UI.S(28) };
                         t.Checked = string.Equals(input.Default, "true", StringComparison.OrdinalIgnoreCase);
                         lbl.Visible = false;
                         y -= UI.S(22);
@@ -611,7 +616,7 @@ namespace PSTools
                     }
                     else if (input.Type == "pick")
                     {
-                        var cb = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Left = Tok.S3, Top = y, Width = UI.S(380), Font = Tok.Body };
+                        var cb = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Left = Tok.S3, Top = y, Width = fieldWidth, Font = Tok.Body };
                         foreach (var o in input.Options) cb.Items.Add(o);
                         int idx = input.Options.IndexOf(input.Default);
                         cb.SelectedIndex = idx >= 0 ? idx : 0;
@@ -620,7 +625,7 @@ namespace PSTools
                     }
                     else
                     {
-                        var box = new FSearchBox("") { ShowGlyph = false, Left = Tok.S3, Top = y, Width = UI.S(380), Height = Tok.InputHeight };
+                        var box = new FSearchBox("") { ShowGlyph = false, Left = Tok.S3, Top = y, Width = fieldWidth, Height = Tok.InputHeight };
                         box.Input.Text = input.Default;
                         field = box;
                         y += UI.S(44);
@@ -629,7 +634,8 @@ namespace PSTools
                     fields.Add(new KeyValuePair<InputSpec, Control>(input, field));
                 }
                 error.AutoSize = false;
-                error.Left = Tok.S3; error.Top = y; error.Width = UI.S(380); error.Height = UI.S(36);
+                error.Left = Tok.S3; error.Top = y; error.Width = fieldWidth; error.Height = UI.S(36);
+                ContentHeight = y + UI.S(40);
                 error.Font = Tok.Caption;
                 error.ForeColor = Tok.RiskDestructive;
                 Controls.Add(error);
