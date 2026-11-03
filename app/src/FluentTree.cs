@@ -84,6 +84,7 @@ namespace PSTools
         public FSearchBox(string cue)
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            Input.Tag = "raw";
             Input.BorderStyle = BorderStyle.None;
             Input.Font = Tok.Body;
             Input.BackColor = Tok.Input;

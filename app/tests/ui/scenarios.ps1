@@ -141,7 +141,7 @@ else {
     Send-Keys $el '^d'
     Snap $el '3-popup-favorite'
     $text = Get-Content -LiteralPath $env.Settings -Raw
-    Add-Result 'popup-favorite-toggle' ($text -match 'favorite=copy\.size' -or $text -notmatch 'favorite=copy\.names\.selected') 'Ctrl+D changed the favorites in the settings file'
+    Add-Result 'popup-favorite-toggle' ($text -match 'favorite=copy\.size') 'Ctrl+D on the Size row added it to the favorites in the settings file'
 }
 Stop-Popup $h
 

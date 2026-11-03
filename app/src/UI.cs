@@ -365,6 +365,7 @@ namespace PSTools
         {
             if (c is Panel || c is TableLayoutPanel || c is FlowLayoutPanel || c is ListView || c is TreeView || c is SplitContainer || c is TabControl || c is Label || c is GroupBox) Buffer(c);
             var tb = c as TextBox;
+            if (tb != null && tb.Tag as string == "raw") { tb.BackColor = Tok.Input; tb.ForeColor = Tok.Text; tb.BorderStyle = BorderStyle.None; return; }
             if (tb != null)
             {
                 tb.BackColor = Field; tb.ForeColor = Text;
