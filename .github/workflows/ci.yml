@@ -72,6 +72,13 @@ jobs:
         run: |
           app\tests\ci\run-logged.ps1 -Script app\tests\ui\capture.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Out = 'app\out\shots'; Fixtures = "$env:RUNNER_TEMP\fx" } -Log app\out\logs\capture.txt
           exit $LASTEXITCODE
+      - name: UI Automation scenarios
+        id: scenarios
+        if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\scenarios.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Fixtures = "$env:RUNNER_TEMP\fx"; Out = 'app\out\shots' } -Log app\out\logs\scenarios.txt
+          exit $LASTEXITCODE
       - name: Visual diff and pixel lint
         if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
         shell: powershell

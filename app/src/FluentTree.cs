@@ -109,7 +109,20 @@ namespace PSTools
         {
             int left = Tok.S3 + UI.S(20);
             int h = Input.PreferredHeight;
-            Input.SetBounds(left, (Height - h) / 2, Math.Max(10, Width - left - Tok.S3), h);
+            var want = new Rectangle(left, (Height - h) / 2, Math.Max(10, Width - left - Tok.S3), h);
+            if (Input.Bounds != want) Input.SetBounds(want.X, want.Y, want.Width, want.Height);
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            PlaceInput();
+        }
+
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+            PlaceInput();
         }
 
         protected override void OnLayout(LayoutEventArgs e)
@@ -127,6 +140,7 @@ namespace PSTools
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            PlaceInput();
             var g = e.Graphics;
             g.Clear(Parent == null ? Tok.SurfaceAlt : Parent.BackColor);
             var r = new Rectangle(0, 0, Width - 1, Height - 1);
