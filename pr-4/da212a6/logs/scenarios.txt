@@ -1,4 +1,4 @@
-PASS  popup-perf  median 463 ms, runs: 870, 445, 463, 454, 476
+PASS  popup-perf  median 386 ms, runs: 823, 386, 385, 384, 405
 PASS  popup-search-run  typed "ta", Enter; clipboard starts with: tree-basic/
 PASS  popup-recent-recorded  settings file lists the action as recently used
 PASS  popup-escape-clears-search  first Esc clears the text and keeps the popup open
@@ -9,16 +9,17 @@ PASS  popup-rows-exposed  rows are visible to UI Automation: Tree (ASCII), Path 
 Zip (skip build folders), Paste image as PNG
 PASS  popup-drill  drilled Copy > Tree with the keyboard: Tree, folders only, Tree (ASCII), Folder structure...
 PASS  popup-back  Backspace with an empty search box goes up one level: Lists, Names, Paths, Tree, Size
-PASS  popup-multi-1  1 processes started in 17 ms, popup visible after 476 ms, popup lists 1 items, popups open: 1
-PASS  popup-multi-20  20 processes started in 47 ms, popup visible after 1063 ms, popup lists 20 items, popups open: 1
-PASS  popup-multi-200  200 processes started in 445 ms, popup visible after 6751 ms, popup lists 200 items, popups 
+PASS  popup-multi-1  1 processes started in 12 ms, popup visible after 398 ms, popup lists 1 items, popups open: 1
+PASS  popup-multi-20  20 processes started in 32 ms, popup visible after 817 ms, popup lists 20 items, popups open: 1
+PASS  popup-multi-200  200 processes started in 2231 ms, popup visible after 4883 ms, popup lists 200 items, popups 
 open: 1
-PASS  run-echo  status: ● Exit 0 · 0.45 s; output has hello-pst: True
-PASS  run-cmd  status: ● Exit 0 · 0.04 s
-PASS  run-stop  while running: Running 0.5 s; after Esc: Stopped
+PASS  run-echo  status: ● Exit 0 · 0.30 s; output has hello-pst: True
+PASS  run-cmd  status: ● Exit 0 · 0.03 s
+PASS  run-stop  while running: Running 0.3 s; after Esc: Stopped
 PASS  run-table  Show as table opens a result window with the rows
 FAIL  save-action-roundtrip  typed a command, saved it as Python files under Search, ran it from the popup on another 
-folder.  menu was not Search: <#
+folder.  [menu: failed: Exception calling "GetCurrentPattern" with "1" argument(s): "Unsupported Pattern.", result: 
+failed: Exception calling "GetCurrentPattern" with "1" argument(s): "Unsupported Pattern."] menu was not Search: <#
 @id user.my-actions-python-files
 @title Python files
 @menu My actions

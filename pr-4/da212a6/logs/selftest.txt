@@ -23,13 +23,13 @@ PASS  Placeholders: quoting matrix (PowerShell, back-compat, cmd, tokens)  -  15
 PASS  Script headers: ps1 and cmd parsing
 PASS  Catalog: user folder (structure = menu, headers, problems, override)
 PASS  Catalog: hidden and overrides from settings
-PASS  Catalog: load time  -  6 ms for 218 actions
+PASS  Catalog: load time  -  5 ms for 218 actions
 PASS  MenuTree: sections, order, inlining, filtering, requires, extended
 PASS  MenuTree: search ranking (initials, prefix, keywords, library)
-PASS  MenuTree: search time  -  0.6 ms per keystroke over 218 actions
+PASS  MenuTree: search time  -  0.5 ms per keystroke over 218 actions
 PASS  MenuTree: build time  -  0.1 ms per build, 218 actions in the catalog
 PASS  Explorer menu: v4 registry layout (power menu, favorites, caps, filters)
 PASS  Settings: v3 pins become v4 favorites, schema 4 round-trips
 PASS  RiskScan: 54 commands classified
 
-33 passed, 0 failed, 0 warnings in 1733 ms
+33 passed, 0 failed, 0 warnings in 2044 ms
