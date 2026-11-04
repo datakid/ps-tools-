@@ -91,7 +91,8 @@ namespace PSTools
             if (!string.IsNullOrEmpty(r.Dir)) sb.AppendLine("Set-Location -LiteralPath " + Lit(r.Dir));
             sb.AppendLine("$Paths = @(" + string.Join(",", (r.Paths ?? new string[0]).Select(Lit).ToArray()) + ")");
             sb.AppendLine("$Dir = " + Lit(r.Dir ?? ""));
-            sb.AppendLine("function __PstErr($e) { [Console]::Error.WriteLine((($e | Out-String).TrimEnd())) }");
+            sb.AppendLine("$global:__pstFailed = $false");
+            sb.AppendLine("function __PstErr($e) { $global:__pstFailed = $true; [Console]::Error.WriteLine((($e | Out-String).TrimEnd())) }");
             if (!r.AsTable)
             {
                 sb.AppendLine("& {");
@@ -112,6 +113,7 @@ namespace PSTools
                 sb.AppendLine("  foreach ($p in $_.PSObject.Properties) { if ($p.MemberType -match 'Property') { $v = $p.Value; $o[$p.Name] = if ($null -eq $v) { '' } elseif ($v -is [datetime]) { $v.ToString('yyyy-MM-dd HH:mm:ss') } else { \"$v\" } } }");
                 sb.AppendLine("  [pscustomobject]$o } | ConvertTo-Json -Compress -Depth 2");
             }
+            sb.AppendLine("if ($global:__pstFailed) { exit 1 }");
             return sb.ToString();
         }
 
