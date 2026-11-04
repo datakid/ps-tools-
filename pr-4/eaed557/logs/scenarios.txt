@@ -1,4 +1,4 @@
-PASS  popup-perf  median 459 ms, runs: 849, 459, 456, 469, 458
+PASS  popup-perf  median 445 ms, runs: 856, 445, 436, 433, 445
 PASS  popup-search-run  typed "ta", Enter; clipboard starts with: tree-basic/
 PASS  popup-recent-recorded  settings file lists the action as recently used
 PASS  popup-escape-clears-search  first Esc clears the text and keeps the popup open
@@ -9,12 +9,12 @@ PASS  popup-rows-exposed  rows are visible to UI Automation: Tree (ASCII), Path 
 Zip (skip build folders), Paste image as PNG
 PASS  popup-drill  drilled Copy > Tree with the keyboard: Tree, folders only, Tree (ASCII), Folder structure...
 PASS  popup-back  Backspace with an empty search box goes up one level: Lists, Names, Paths, Tree, Size
-PASS  popup-multi-1  1 processes started in 17 ms, popup visible after 486 ms, popup lists 1 items, popups open: 1
-PASS  popup-multi-20  20 processes started in 45 ms, popup visible after 1096 ms, popup lists 20 items, popups open: 1
-PASS  popup-multi-200  200 processes started in 464 ms, popup visible after 6488 ms, popup lists 200 items, popups 
+PASS  popup-multi-1  1 processes started in 16 ms, popup visible after 461 ms, popup lists 1 items, popups open: 1
+PASS  popup-multi-20  20 processes started in 64 ms, popup visible after 1057 ms, popup lists 20 items, popups open: 1
+PASS  popup-multi-200  200 processes started in 450 ms, popup visible after 6424 ms, popup lists 200 items, popups 
 open: 1
 PASS  run-echo  status: ● Exit 0 · 0.42 s; output has hello-pst: True
-FAIL  run-error  status: ● Exit 1 · 0.39 s; plain error text: False
+FAIL  run-error  status: ● Exit 0 · 0.51 s; plain error text: True
 PASS  run-cmd  status: ● Exit 0 · 0.04 s
 PASS  run-stop  while running: Running 0.3 s; after Esc: Stopped
 PASS  run-table  Show as table opens a result window with the rows
