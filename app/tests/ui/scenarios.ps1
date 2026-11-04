@@ -387,6 +387,22 @@ else {
 }
 Stop-All
 
+$env = New-Env 'run-idle'
+$p = Start-Run $env 'ps' 'Start-Sleep -Seconds 40' $folder
+$win = Find-Window 'PS Tools Run console' 15000
+if (-not $win) { Add-Result 'run-idle-banner' $false 'Run console did not open' }
+else {
+    Start-Sleep -Milliseconds 500
+    Send-Keys $win '^{ENTER}'
+    $banner = $null
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while (-not $banner -and $sw.ElapsedMilliseconds -lt 30000) { $banner = Find-Named $win 'This command may be waiting for input.' $null; Start-Sleep -Milliseconds 500 }
+    if ($banner) { Snap $win '7c-run-idle-banner' }
+    Add-Result 'run-idle-banner' ([bool]$banner) ('banner appeared after {0} ms of silence and an idle process' -f $sw.ElapsedMilliseconds)
+    Send-Keys $win '{ESC}'
+}
+Stop-All
+
 $env = New-Env 'run-table'
 $p = Start-Run $env 'ps' 'Get-ChildItem | Select-Object Name, Length' $folder
 $win = Find-Window 'PS Tools Run console' 15000
