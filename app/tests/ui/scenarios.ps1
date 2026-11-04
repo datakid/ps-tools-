@@ -234,6 +234,17 @@ function Find-Window([string]$name, [int]$timeoutMs) {
     return $null
 }
 
+function Find-Dialog($owner, [string]$name, [int]$timeoutMs) {
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while ($sw.ElapsedMilliseconds -lt $timeoutMs) {
+        $el = Find-Named $owner $name $null
+        if (-not $el) { $el = Find-Window $name 200 }
+        if ($el) { return $el }
+        Start-Sleep -Milliseconds 150
+    }
+    return $null
+}
+
 function Find-Named($root, [string]$name, $type) {
     $c1 = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name)
     if ($type) {
@@ -355,7 +366,7 @@ else {
     $status = Wait-Status $win 'Exit' 20000
     Send-Keys $win '^s'
     $opened = $true
-    $dlg = Find-Window 'Save as action' 10000
+    $dlg = Find-Dialog $win 'Save as action' 10000
     $ok = $true
     $problem = ''
     if (-not $dlg) { $ok = $false; $problem = 'Save as action did not open (button found: ' + $opened + ', run status: ' + $status + ')' }
