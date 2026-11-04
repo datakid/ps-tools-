@@ -262,6 +262,21 @@ function Click-Button($root, [string]$name) {
     return $true
 }
 
+Add-Type -Namespace Native -Name Mouse -MemberDefinition @"
+[System.Runtime.InteropServices.DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, System.UIntPtr extra);
+"@
+
+function Click-Element($el, [double]$fraction) {
+    $r = $el.Current.BoundingRectangle
+    if ($r.Width -lt 2) { return $false }
+    [System.Windows.Forms.Cursor]::Position = New-Object System.Drawing.Point([int]($r.X + $r.Width * $fraction), [int]($r.Y + $r.Height / 2))
+    Start-Sleep -Milliseconds 150
+    [Native.Mouse]::mouse_event(0x0002, 0, 0, 0, [UIntPtr]::Zero)
+    [Native.Mouse]::mouse_event(0x0004, 0, 0, 0, [UIntPtr]::Zero)
+    Start-Sleep -Milliseconds 250
+    return $true
+}
+
 function Press-Button($root, [string]$name) {
     $b = Find-Named $root $name ([System.Windows.Automation.ControlType]::Button)
     if (-not $b) { return $false }
@@ -375,16 +390,19 @@ else {
         $titleBox = Find-Named $dlg 'Action title' ([System.Windows.Automation.ControlType]::Edit)
         if ($titleBox) { $titleBox.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue('Python files') } else { $ok = $false; $problem = 'title box not found' }
         $menuBox = Find-Named $dlg 'Menu location' $null
-        if ($menuBox) { try { $menuBox.SetFocus() } catch { }; Start-Sleep -Milliseconds 150; [System.Windows.Forms.SendKeys]::SendWait('^a'); [System.Windows.Forms.SendKeys]::SendWait('Search') }
+        if ($menuBox) { [void](Click-Element $menuBox 0.3); [System.Windows.Forms.SendKeys]::SendWait('^a'); [System.Windows.Forms.SendKeys]::SendWait('Search') }
         $resultBox = Find-Named $dlg 'Result' $null
-        if ($resultBox) { try { $resultBox.SetFocus() } catch { }; Start-Sleep -Milliseconds 150; [System.Windows.Forms.SendKeys]::SendWait('{DOWN}') }
+        if ($resultBox) { [void](Click-Element $resultBox 0.3); [System.Windows.Forms.SendKeys]::SendWait('{DOWN}{ENTER}') }
+        Start-Sleep -Milliseconds 300
+        $titleBox2 = Find-Named $dlg 'Action title' ([System.Windows.Automation.ControlType]::Edit)
+        if ($titleBox2) { $titleBox2.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue('Python files') }
         Start-Sleep -Milliseconds 300
         Snap $dlg '9-save-action'
         [void](Click-Button $dlg 'Save')
         Start-Sleep -Milliseconds 1500
     }
     $saved = Get-ChildItem -LiteralPath $env.Dir -Recurse -Filter 'Python files*.ps1' -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $saved) { $ok = $false; $problem += ' no file was written' }
+    if (-not $saved) { $ok = $false; $problem += ' no file was written; files: ' + ((Get-ChildItem -LiteralPath $env.Dir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName.Substring($env.Dir.Length) }) -join ', ') }
     elseif (-not ((Get-Content -LiteralPath $saved.FullName -Raw) -match '@menu Search')) { $ok = $false; $problem += ' menu was not Search: ' + (Get-Content -LiteralPath $saved.FullName -Raw).Substring(0, 120) }
     Stop-All
     if ($ok) {
