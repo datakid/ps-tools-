@@ -251,6 +251,15 @@ function Click-Button($root, [string]$name) {
     return $true
 }
 
+function Press-Button($root, [string]$name) {
+    $b = Find-Named $root $name ([System.Windows.Automation.ControlType]::Button)
+    if (-not $b) { return $false }
+    try { $b.SetFocus() } catch { }
+    Start-Sleep -Milliseconds 200
+    [System.Windows.Forms.SendKeys]::SendWait(' ')
+    return $true
+}
+
 function Get-OutputText($win) {
     $o = Find-Named $win 'Command output' $null
     if (-not $o) { return '' }
@@ -344,11 +353,11 @@ else {
     Start-Sleep -Milliseconds 500
     Send-Keys $win '^{ENTER}'
     $status = Wait-Status $win 'Exit' 20000
-    $opened = Click-Button $win 'Save as action...'
+    $opened = Press-Button $win 'Save as action...'
     $dlg = Find-Window 'Save as action' 10000
     $ok = $true
     $problem = ''
-    if (-not $dlg) { $ok = $false; $problem = 'Save as action did not open' }
+    if (-not $dlg) { $ok = $false; $problem = 'Save as action did not open (button found: ' + $opened + ', run status: ' + $status + ')' }
     else {
         Start-Sleep -Milliseconds 500
         $titleBox = Find-Named $dlg 'Action title' ([System.Windows.Automation.ControlType]::Edit)
