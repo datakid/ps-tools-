@@ -1,0 +1,19 @@
+[clipboard]
+tree-basic/
+├── .hidden/
+│   └── secret.txt
+├── bin/
+│   └── out.dll
+├── docs/
+│   └── readme.md
+├── empty/
+├── node_modules/
+│   └── pkg/
+│       └── index.js
+└── src/
+    ├── app/
+    │   ├── main.py
+    │   └── util.py
+    └── lib/
+[toast]
+Copied 16 lines
