@@ -91,12 +91,18 @@ namespace PSTools
             if (!string.IsNullOrEmpty(r.Dir)) sb.AppendLine("Set-Location -LiteralPath " + Lit(r.Dir));
             sb.AppendLine("$Paths = @(" + string.Join(",", (r.Paths ?? new string[0]).Select(Lit).ToArray()) + ")");
             sb.AppendLine("$Dir = " + Lit(r.Dir ?? ""));
-            if (!r.AsTable) sb.AppendLine(r.Script);
+            sb.AppendLine("function __PstErr($e) { [Console]::Error.WriteLine((($e | Out-String).TrimEnd())) }");
+            if (!r.AsTable)
+            {
+                sb.AppendLine("& {");
+                sb.AppendLine(r.Script);
+                sb.AppendLine("} 2>&1 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { __PstErr $_ } else { $_ } }");
+            }
             else
             {
                 sb.AppendLine("$__r = @( & {");
                 sb.AppendLine(r.Script);
-                sb.AppendLine("} )");
+                sb.AppendLine("} 2>&1 | Where-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { __PstErr $_; $false } else { $true } } )");
                 sb.AppendLine("if ($__r.Count -eq 0) { '##PST-EMPTY##'; return }");
                 sb.AppendLine("if (@($__r | Where-Object { $_ -isnot [string] -and $_ -isnot [ValueType] }).Count -eq 0) {");
                 sb.AppendLine("  '##PST-TEXT##'; $__r | ForEach-Object { \"$_\" }; return }");
