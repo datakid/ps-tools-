@@ -45,7 +45,7 @@ namespace PSTools
             Text = "Save as action";
             AccessibleName = "Save as action";
             Font = UI.Font;
-            ClientSize = new Size(UI.S(640), UI.S(600));
+            ClientSize = new Size(UI.S(640), UI.S(660));
             StartPosition = FormStartPosition.CenterParent;
             MinimizeBox = false;
             MaximizeBox = false;

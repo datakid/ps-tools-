@@ -725,7 +725,7 @@ namespace PSTools
             ReadOnly = true;
             BorderStyle = BorderStyle.None;
             DetectUrls = false;
-            WordWrap = false;
+            WordWrap = true;
             Font = Tok.Mono;
             BackColor = Tok.Surface;
             ForeColor = Tok.Text;

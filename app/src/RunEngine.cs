@@ -135,7 +135,7 @@ namespace PSTools
             }
             string exe = r.Shell == ActionShell.Pwsh ? (FindPwsh() ?? "pwsh.exe") : "powershell.exe";
             psi.FileName = exe;
-            psi.Arguments = "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand " + Convert.ToBase64String(Encoding.Unicode.GetBytes(BuildScript(r)));
+            psi.Arguments = "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -InputFormat None -OutputFormat Text -EncodedCommand " + Convert.ToBase64String(Encoding.Unicode.GetBytes(BuildScript(r)));
             return psi;
         }
 

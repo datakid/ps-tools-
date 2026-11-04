@@ -345,6 +345,20 @@ else {
 }
 Stop-All
 
+$env = New-Env 'run-error'
+$p = Start-Run $env 'ps' 'Get-Item C:\nope-does-not-exist' $folder
+$win = Find-Window 'PS Tools Run console' 15000
+if (-not $win) { Add-Result 'run-error' $false 'Run console did not open' }
+else {
+    Start-Sleep -Milliseconds 500
+    Send-Keys $win '^{ENTER}'
+    $status = Wait-Status $win 'Exit' 20000
+    $text = Get-OutputText $win
+    Snap $win '7b-run-error'
+    Add-Result 'run-error' (($status -match 'Exit 1') -and ($text -match 'Cannot find path') -and ($text -notmatch 'CLIXML')) ('status: ' + $status + '; plain error text: ' + (($text -match 'Cannot find path') -and ($text -notmatch 'CLIXML')))
+}
+Stop-All
+
 $env = New-Env 'run-cmd'
 $p = Start-Run $env 'cmd' 'echo hello-cmd' $folder
 $win = Find-Window 'PS Tools Run console' 15000
