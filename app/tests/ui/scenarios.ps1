@@ -277,6 +277,20 @@ function Click-Element($el, [double]$fraction) {
     return $true
 }
 
+function Set-Combo($dlg, [string]$name, [string]$text) {
+    $el = Find-Named $dlg $name $null
+    if (-not $el) { return 'combo not found' }
+    try { $el.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($text); return 'value' } catch { }
+    try {
+        $el.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+        Start-Sleep -Milliseconds 400
+        $cond = New-Object System.Windows.Automation.AndCondition((New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $text)), (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::ListItem)))
+        $item = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
+        if ($item) { $item.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select(); return 'list' }
+        return 'list item not found'
+    } catch { return 'failed: ' + $_.Exception.Message }
+}
+
 function Press-Button($root, [string]$name) {
     $b = Find-Named $root $name ([System.Windows.Automation.ControlType]::Button)
     if (-not $b) { return $false }
@@ -389,10 +403,9 @@ else {
         Start-Sleep -Milliseconds 500
         $titleBox = Find-Named $dlg 'Action title' ([System.Windows.Automation.ControlType]::Edit)
         if ($titleBox) { $titleBox.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue('Python files') } else { $ok = $false; $problem = 'title box not found' }
-        $menuBox = Find-Named $dlg 'Menu location' $null
-        if ($menuBox) { [void](Click-Element $menuBox 0.3); [System.Windows.Forms.SendKeys]::SendWait('^a'); [System.Windows.Forms.SendKeys]::SendWait('Search') }
-        $resultBox = Find-Named $dlg 'Result' $null
-        if ($resultBox) { [void](Click-Element $resultBox 0.3); [System.Windows.Forms.SendKeys]::SendWait('{DOWN}{ENTER}') }
+        $how1 = Set-Combo $dlg 'Menu location' 'Search'
+        $how2 = Set-Combo $dlg 'Result' 'Copy output to the clipboard'
+        $problem += ' [menu: ' + $how1 + ', result: ' + $how2 + ']'
         Start-Sleep -Milliseconds 300
         $titleBox2 = Find-Named $dlg 'Action title' ([System.Windows.Automation.ControlType]::Edit)
         if ($titleBox2) { $titleBox2.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue('Python files') }
