@@ -65,7 +65,7 @@ namespace PSTools
             menu.AccessibleName = "Menu location";
 
             forFile.Checked = contextName == "file";
-            forFolder.Checked = contextName == "folder";
+            forFolder.Checked = contextName == "folder" || contextName == "background";
             forBackground.Checked = true;
             forDrive.Checked = contextName == "drive";
 
