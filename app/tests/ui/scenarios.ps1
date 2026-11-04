@@ -278,7 +278,7 @@ function Click-Element($el, [double]$fraction) {
 }
 
 function Set-Combo($dlg, [string]$name, [string]$text) {
-    $el = Find-Named $dlg $name $null
+    $el = Find-Named $dlg $name ([System.Windows.Automation.ControlType]::ComboBox)
     if (-not $el) { return 'combo not found' }
     Write-Host ('combo ' + $name + ': ' + $el.Current.ControlType.ProgrammaticName + ' class=' + $el.Current.ClassName)
     foreach ($c in $el.FindAll([System.Windows.Automation.TreeScope]::Children, [System.Windows.Automation.Condition]::TrueCondition)) { Write-Host ('   child: ' + $c.Current.ControlType.ProgrammaticName + ' name=' + $c.Current.Name + ' class=' + $c.Current.ClassName) }
