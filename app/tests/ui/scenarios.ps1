@@ -222,6 +222,172 @@ foreach ($n in 1, 20, 200) {
     Start-Sleep -Milliseconds 500
 }
 
+
+function Find-Window([string]$name, [int]$timeoutMs) {
+    $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name)
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while ($sw.ElapsedMilliseconds -lt $timeoutMs) {
+        $el = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Children, $cond)
+        if ($el) { return $el }
+        Start-Sleep -Milliseconds 100
+    }
+    return $null
+}
+
+function Find-Named($root, [string]$name, $type) {
+    $c1 = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name)
+    if ($type) {
+        $c2 = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, $type)
+        $c1 = New-Object System.Windows.Automation.AndCondition($c1, $c2)
+    }
+    return $root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $c1)
+}
+
+function Click-Button($root, [string]$name) {
+    $b = Find-Named $root $name ([System.Windows.Automation.ControlType]::Button)
+    if (-not $b) { return $false }
+    $p = $b.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
+    $p.Invoke()
+    return $true
+}
+
+function Get-OutputText($win) {
+    $o = Find-Named $win 'Command output' $null
+    if (-not $o) { return '' }
+    try { return $o.GetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern).DocumentRange.GetText(-1) } catch { return '' }
+}
+
+function Get-StatusText($win) {
+    $s = Find-Named $win 'Run status' $null
+    if (-not $s) { return '' }
+    return $s.Current.HelpText
+}
+
+function Wait-Status($win, [string]$pattern, [int]$timeoutMs) {
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while ($sw.ElapsedMilliseconds -lt $timeoutMs) {
+        $t = Get-StatusText $win
+        if ($t -match $pattern) { return $t }
+        Start-Sleep -Milliseconds 200
+    }
+    return Get-StatusText $win
+}
+
+function Start-Run($env, [string]$shellKey, [string]$command, [string]$dirPath) {
+    $arguments = 'run "{0}" --shell {1} --command "{2}" --settings "{3}" --data-dir "{4}"' -f $dirPath, $shellKey, $command, $env.Settings, $env.Dir
+    return Start-Process -FilePath $Exe -ArgumentList $arguments -PassThru
+}
+
+function Stop-All { Get-Process -Name ([IO.Path]::GetFileNameWithoutExtension($Exe)) -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue }
+
+$env = New-Env 'run-echo'
+$p = Start-Run $env 'ps' 'Write-Output hello-pst' $folder
+$win = Find-Window 'PS Tools Run console' 15000
+if (-not $win) { Add-Result 'run-echo' $false 'Run console did not open' }
+else {
+    Start-Sleep -Milliseconds 500
+    Send-Keys $win '^{ENTER}'
+    $status = Wait-Status $win 'Exit' 20000
+    $text = Get-OutputText $win
+    Snap $win '7-run-echo'
+    Add-Result 'run-echo' (($status -match 'Exit 0') -and ($text -match 'hello-pst')) ('status: ' + $status + '; output has hello-pst: ' + ($text -match 'hello-pst'))
+}
+Stop-All
+
+$env = New-Env 'run-cmd'
+$p = Start-Run $env 'cmd' 'echo hello-cmd' $folder
+$win = Find-Window 'PS Tools Run console' 15000
+if (-not $win) { Add-Result 'run-cmd' $false 'Run console did not open' }
+else {
+    Start-Sleep -Milliseconds 500
+    Send-Keys $win '^{ENTER}'
+    $status = Wait-Status $win 'Exit' 20000
+    $text = Get-OutputText $win
+    Add-Result 'run-cmd' (($status -match 'Exit 0') -and ($text -match 'hello-cmd')) ('status: ' + $status)
+}
+Stop-All
+
+$env = New-Env 'run-stop'
+$p = Start-Run $env 'ps' 'Start-Sleep -Seconds 60' $folder
+$win = Find-Window 'PS Tools Run console' 15000
+if (-not $win) { Add-Result 'run-stop' $false 'Run console did not open' }
+else {
+    Start-Sleep -Milliseconds 500
+    Send-Keys $win '^{ENTER}'
+    $running = Wait-Status $win 'Running' 8000
+    Start-Sleep -Milliseconds 1200
+    Send-Keys $win '{ESC}'
+    $status = Wait-Status $win 'Stopped' 10000
+    Add-Result 'run-stop' ($status -match 'Stopped') ('while running: ' + $running + '; after Esc: ' + $status)
+}
+Stop-All
+
+$env = New-Env 'run-table'
+$p = Start-Run $env 'ps' 'Get-ChildItem | Select-Object Name, Length' $folder
+$win = Find-Window 'PS Tools Run console' 15000
+if (-not $win) { Add-Result 'run-table' $false 'Run console did not open' }
+else {
+    Start-Sleep -Milliseconds 500
+    $clicked = Click-Button $win 'Show as table'
+    $table = Find-Window ('Result of: Get-ChildItem | Select-Object Name, Length') 20000
+    Add-Result 'run-table' ([bool]($clicked -and $table)) 'Show as table opens a result window with the rows'
+    if ($table) { Snap $table '8-run-table' }
+}
+Stop-All
+
+$env = New-Env 'roundtrip'
+$command = 'Get-ChildItem -Recurse -Filter *.py | Select-Object Name, Length'
+$p = Start-Run $env 'ps' $command $folder
+$win = Find-Window 'PS Tools Run console' 15000
+if (-not $win) { Add-Result 'save-action-roundtrip' $false 'Run console did not open' }
+else {
+    Start-Sleep -Milliseconds 500
+    Send-Keys $win '^{ENTER}'
+    $status = Wait-Status $win 'Exit' 20000
+    $opened = Click-Button $win 'Save as action...'
+    $dlg = Find-Window 'Save as action' 10000
+    $ok = $true
+    $problem = ''
+    if (-not $dlg) { $ok = $false; $problem = 'Save as action did not open' }
+    else {
+        Start-Sleep -Milliseconds 500
+        $titleBox = Find-Named $dlg 'Action title' ([System.Windows.Automation.ControlType]::Edit)
+        if ($titleBox) { $titleBox.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue('Python files') } else { $ok = $false; $problem = 'title box not found' }
+        $menuBox = Find-Named $dlg 'Menu location' $null
+        if ($menuBox) { try { $menuBox.SetFocus() } catch { }; Start-Sleep -Milliseconds 150; [System.Windows.Forms.SendKeys]::SendWait('^a'); [System.Windows.Forms.SendKeys]::SendWait('Search') }
+        $resultBox = Find-Named $dlg 'Result' $null
+        if ($resultBox) { try { $resultBox.SetFocus() } catch { }; Start-Sleep -Milliseconds 150; [System.Windows.Forms.SendKeys]::SendWait('{DOWN}') }
+        Start-Sleep -Milliseconds 300
+        Snap $dlg '9-save-action'
+        [void](Click-Button $dlg 'Save')
+        Start-Sleep -Milliseconds 1500
+    }
+    $saved = Get-ChildItem -LiteralPath $env.Dir -Recurse -Filter 'Python files*.ps1' -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $saved) { $ok = $false; $problem += ' no file was written' }
+    elseif (-not ((Get-Content -LiteralPath $saved.FullName -Raw) -match '@menu Search')) { $ok = $false; $problem += ' menu was not Search: ' + (Get-Content -LiteralPath $saved.FullName -Raw).Substring(0, 120) }
+    Stop-All
+    if ($ok) {
+        $other = Join-Path $Fixtures 'repo'
+        Set-Clipboard -Value 'untouched'
+        $arguments = 'menu "{0}" --settings "{1}" --data-dir "{2}" --tools git,code' -f $other, $env.Settings, $env.Dir
+        $proc = Start-Process -FilePath $Exe -ArgumentList $arguments -PassThru
+        $popup = Find-Popup 15000
+        if ($popup) {
+            Send-Keys $popup 'python files'
+            Snap $popup '10-roundtrip-popup'
+            Send-Keys $popup '{ENTER}'
+            $sw = [Diagnostics.Stopwatch]::StartNew()
+            while (-not $proc.HasExited -and $sw.ElapsedMilliseconds -lt 20000) { Start-Sleep -Milliseconds 200 }
+            $clip = Get-Clipboard -Raw
+            $ok = [bool]($clip -match 'main\.py')
+            $problem = 'clipboard after running from the popup: ' + $(if ($clip) { ($clip -split "`n" | Select-Object -First 3) -join ' | ' } else { '<empty>' })
+        }
+        else { $ok = $false; $problem = 'popup did not open' }
+    }
+    Add-Result 'save-action-roundtrip' $ok ('typed a command, saved it as Python files under Search, ran it from the popup on another folder. ' + $problem)
+}
+Stop-All
+
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 $failed = @($results | Where-Object { -not $_.Ok }).Count
 Write-Host ('{0} scenarios, {1} failed' -f $results.Count, $failed)

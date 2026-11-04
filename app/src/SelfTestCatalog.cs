@@ -423,5 +423,76 @@ namespace PSTools
             if (!d.Used["folder"].SequenceEqual(new[] { "copy.names.selected", "copy.tree.ascii" })) problems.Add("recently used must be most-recent-first and de-duplicated: " + string.Join(", ", d.Used["folder"].ToArray()));
             Report("Settings: v3 pins become v4 favorites, schema 4 round-trips", problems, "");
         }
+
+        static void CheckRiskScan()
+        {
+            var cases = new[]
+            {
+                new object[] { "Get-ChildItem -Recurse -Filter *.py | Select-Object Name, Length", Risk.Safe },
+                new object[] { "Get-Process | Sort-Object CPU -Descending | Select-Object -First 5", Risk.Safe },
+                new object[] { "echo \"Remove-Item is dangerous\"", Risk.Safe },
+                new object[] { "Write-Host 'rm -rf /'", Risk.Safe },
+                new object[] { "Set-Location C:\\x; Get-Date", Risk.Safe },
+                new object[] { "$g = New-Guid; $g.ToString()", Risk.Safe },
+                new object[] { "$o = New-Object System.Text.StringBuilder", Risk.Safe },
+                new object[] { "Get-Content a.txt 2>&1", Risk.Safe },
+                new object[] { "if ($a -gt 3) { 'big' }", Risk.Safe },
+                new object[] { "git status", Risk.Safe },
+                new object[] { "git log --oneline -n 5", Risk.Safe },
+                new object[] { "winget search git", Risk.Safe },
+                new object[] { "Remove-Item .\\x -Recurse -WhatIf", Risk.Safe },
+                new object[] { "dir /s /b", Risk.Safe },
+                new object[] { "Remove-Item C:\\temp\\a.txt", Risk.Destructive },
+                new object[] { "rm -r -fo .\\build", Risk.Destructive },
+                new object[] { "del /q *.tmp", Risk.Destructive },
+                new object[] { "Get-ChildItem *.log | Remove-Item", Risk.Destructive },
+                new object[] { "rd /s /q build", Risk.Destructive },
+                new object[] { "Clear-Content .\\log.txt", Risk.Destructive },
+                new object[] { "Format-Volume -DriveLetter E", Risk.Destructive },
+                new object[] { "format E: /fs:ntfs", Risk.Destructive },
+                new object[] { "Stop-Computer -Force", Risk.Destructive },
+                new object[] { "shutdown /s /t 0", Risk.Destructive },
+                new object[] { "Restart-Computer", Risk.Destructive },
+                new object[] { "reg delete HKCU\\Software\\X /f", Risk.Destructive },
+                new object[] { "Remove-ItemProperty -Path HKCU:\\Software\\X -Name Y", Risk.Destructive },
+                new object[] { "bcdedit /set testsigning on", Risk.Destructive },
+                new object[] { "cipher /w:C:\\", Risk.Destructive },
+                new object[] { "vssadmin delete shadows /all", Risk.Destructive },
+                new object[] { "takeown /f C:\\Windows\\x /r", Risk.Destructive },
+                new object[] { "Set-ExecutionPolicy Unrestricted", Risk.Destructive },
+                new object[] { "git clean -fdx", Risk.Destructive },
+                new object[] { "git reset --hard HEAD~3", Risk.Destructive },
+                new object[] { "git push --force origin main", Risk.Destructive },
+                new object[] { "Move-Item a.txt b.txt -Force", Risk.Destructive },
+                new object[] { "Copy-Item a b -Recurse -Force", Risk.Destructive },
+                new object[] { "Move-Item a.txt b.txt", Risk.Modifies },
+                new object[] { "Copy-Item a b", Risk.Modifies },
+                new object[] { "New-Item -ItemType Directory x", Risk.Modifies },
+                new object[] { "Set-Content a.txt 'hi'", Risk.Modifies },
+                new object[] { "Rename-Item a.txt b.txt", Risk.Modifies },
+                new object[] { "Get-Date > now.txt", Risk.Modifies },
+                new object[] { "Get-Date >> log.txt", Risk.Modifies },
+                new object[] { "Get-Process | Out-File procs.txt", Risk.Modifies },
+                new object[] { "Expand-Archive a.zip .", Risk.Modifies },
+                new object[] { "Compress-Archive -Path x -DestinationPath x.zip", Risk.Modifies },
+                new object[] { "mkdir newdir", Risk.Modifies },
+                new object[] { "robocopy a b /E", Risk.Modifies },
+                new object[] { "git commit -m 'x'", Risk.Modifies },
+                new object[] { "git pull", Risk.Modifies },
+                new object[] { "npm install", Risk.Modifies },
+                new object[] { "winget install Git.Git", Risk.Modifies },
+                new object[] { "Start-Process notepad -Verb RunAs", Risk.Modifies }
+            };
+            var problems = new List<string>();
+            foreach (var c in cases)
+            {
+                var r = RiskScan.Classify((string)c[0], ActionShell.PowerShell);
+                if (r.Risk != (Risk)c[1]) problems.Add("'" + c[0] + "' was " + r.Risk + ", expected " + c[1]);
+                else if (r.Risk != Risk.Safe && r.Reasons.Count == 0) problems.Add("'" + c[0] + "' has no reason");
+            }
+            var cmd = RiskScan.Classify("del /q *.tmp", ActionShell.Cmd);
+            if (cmd.Risk != Risk.Destructive) problems.Add("cmd del must be destructive");
+            Report("RiskScan: " + cases.Length + " commands classified", problems, "");
+        }
     }
 }
