@@ -353,7 +353,8 @@ else {
     Start-Sleep -Milliseconds 500
     Send-Keys $win '^{ENTER}'
     $status = Wait-Status $win 'Exit' 20000
-    $opened = Press-Button $win 'Save as action...'
+    Send-Keys $win '^s'
+    $opened = $true
     $dlg = Find-Window 'Save as action' 10000
     $ok = $true
     $problem = ''

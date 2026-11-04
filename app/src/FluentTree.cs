@@ -112,6 +112,7 @@ namespace PSTools
             int left = ShowGlyph ? Tok.S3 + UI.S(20) : Tok.S3;
             int h = Input.PreferredHeight;
             var want = new Rectangle(left, (Height - h) / 2, Math.Max(10, Width - left - Tok.S3), h);
+            if (Input.Multiline) want = new Rectangle(left, Tok.S2, Math.Max(10, Width - left - Tok.S3), Math.Max(10, Height - Tok.S2 * 2));
             if (Input.Bounds != want) Input.SetBounds(want.X, want.Y, want.Width, want.Height);
         }
 

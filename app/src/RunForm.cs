@@ -398,6 +398,7 @@ namespace PSTools
         {
             if (keyData == Keys.Escape && Running) { StopRun(); return true; }
             if (keyData == (Keys.Control | Keys.Enter)) { StartRun(); return true; }
+            if (keyData == (Keys.Control | Keys.S) && editor.Input.Text.Trim().Length > 0) { OpenSave(); return true; }
             return base.ProcessCmdKey(ref msg, keyData);
         }
     }

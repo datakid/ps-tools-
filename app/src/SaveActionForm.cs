@@ -191,7 +191,7 @@ namespace PSTools
             replacementFrom = from;
             if (from != null)
             {
-                suggestion.Show("Replace " + from + " with {dir} so it works anywhere?", false,
+                suggestion.Show("Use {dir} instead of " + FGfx.MiddleEllipsis(from, 24) + " so it works anywhere?", false,
                     new KeyValuePair<string, System.Action>("Replace", () => { string f; command.Input.Text = Generalize(command.Input.Text, dir, out f); }));
             }
             else suggestion.Hide2();
