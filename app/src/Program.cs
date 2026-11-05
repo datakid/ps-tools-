@@ -85,6 +85,13 @@ namespace PSTools
                 string path = Clean(args[1]);
                 if (args[0] == "open") { Application.Run(new MainForm(path)); return 0; }
                 if (args[0] == "menu" || args[0] == "menu-bg") return PowerMenuLauncher.Run(args[0] == "menu-bg", path);
+                if (args[0] == "run")
+                {
+                    string shellOpt = TestTools.Option(args, "--shell");
+                    if (shellOpt != null) RunHistory.LastShell = shellOpt;
+                    Application.Run(new RunForm(path, TestTools.Option(args, "--command") ?? "", "background"));
+                    return 0;
+                }
                 var spec = ActionCatalog.Current.Find(args[0]);
                 if (spec == null) { Msg("Unknown action: " + args[0]); return 1; }
                 Action a = spec.Legacy;

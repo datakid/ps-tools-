@@ -428,9 +428,36 @@ namespace PSTools
         {
             string text = search.Input.Text.Trim();
             if (text.Length == 0) return;
-            string dir = paths.Length > 0 ? paths[0] : Environment.CurrentDirectory;
-            ToRun = () => Program.Msg(Executor.RunText(text, System.IO.Directory.Exists(dir) ? dir : null));
+            OpenConsole(text);
+        }
+
+        string ContextName()
+        {
+            var c = query.Context;
+            return (c & ContextKind.File) != 0 && (c & ContextKind.Folder) == 0 ? "file" : (c & ContextKind.Drive) != 0 ? "drive" : (c & ContextKind.Folder) != 0 ? "folder" : "background";
+        }
+
+        string WorkFolderForConsole()
+        {
+            string p = paths.Length > 0 ? paths[0] : (string.IsNullOrEmpty(options.Summary) ? Environment.CurrentDirectory : options.Summary);
+            try { if (!System.IO.Directory.Exists(p)) p = System.IO.Path.GetDirectoryName(p) ?? Environment.CurrentDirectory; }
+            catch { }
+            return p;
+        }
+
+        void OpenConsole(string commandText)
+        {
+            string dir = WorkFolderForConsole();
+            string ctx = ContextName();
+            ToRun = () => Executor.ShowForm(new RunForm(dir, commandText, ctx));
             CloseMenu();
+        }
+
+        string ExpandedCommand(ActionSpec spec)
+        {
+            string code = spec.Legacy != null ? (spec.Legacy.Ps ?? "") : spec.Command;
+            try { return Placeholders.Expand(code, spec.Shell == ActionShell.Builtin ? ActionShell.PowerShell : spec.Shell, Executor.ContextFor(paths.Length == 0 ? new[] { WorkFolderForConsole() } : paths)); }
+            catch (PlaceholderException) { return code; }
         }
 
         void CloseMenu()
@@ -528,6 +555,8 @@ namespace PSTools
                 string code = spec.Legacy != null ? (spec.Legacy.Ps ?? "") : spec.Command;
                 var copy = menu.Items.Add("Copy PowerShell equivalent", null, (s, e) => Clip.Set(code));
                 copy.Enabled = code.Length > 0;
+                var console = menu.Items.Add("Open in Run console", null, (s, e) => OpenConsole(ExpandedCommand(spec)));
+                console.Enabled = code.Length > 0;
                 menu.Items.Add(new ToolStripSeparator());
                 bool fav = r.Favorite;
                 menu.Items.Add(fav ? "Remove from Explorer menu" : "Add to Explorer menu", null, (s, e) => ToggleFavorite());
@@ -554,21 +583,20 @@ namespace PSTools
 
         void DuplicateSpec(ActionSpec spec)
         {
-            try
+            string raw = spec.Legacy != null ? (spec.Legacy.Ps ?? "") : spec.Command;
+            string dir = WorkFolderForConsole();
+            string ctx = ContextName();
+            string title = spec.Title + " (copy)";
+            var shellKind = spec.Shell == ActionShell.Builtin ? ActionShell.PowerShell : spec.Shell;
+            ToRun = () =>
             {
-                string code = spec.Legacy != null ? (spec.Legacy.Ps ?? "") : spec.Command;
-                string dir = System.IO.Path.Combine(Journal.Dir, "actions", "My actions");
-                System.IO.Directory.CreateDirectory(dir);
-                string name = new string(spec.Title.Where(c => char.IsLetterOrDigit(c) || c == ' ' || c == '-').ToArray()).Trim();
-                if (name.Length == 0) name = spec.Id;
-                string file = System.IO.Path.Combine(dir, name + ".ps1");
-                string header = "<#\n@title " + spec.Title + " (copy)\n@description " + spec.Description + "\n@when " + string.Join(", ", SpecRules.ContextNames(spec.When).ToArray()) + "\n@output " + spec.Output.ToString().ToLowerInvariant() + "\n@risk " + spec.Risk.ToString().ToLowerInvariant() + "\n#>\n";
-                System.IO.File.WriteAllText(file, header + code + "\n", new System.Text.UTF8Encoding(true));
-                ActionCatalog.Reset();
-                Runner.Notify(null, "Saved " + name + ".ps1 in your actions folder", false);
-                try { Process.Start("explorer.exe", "/select,\"" + file + "\""); } catch { }
-            }
-            catch (Exception ex) { Program.Fail("Could not save the copy: " + ex.Message); }
+                using (var f = new SaveActionForm(raw, shellKind, dir, ctx))
+                {
+                    f.SetTitle(title);
+                    f.ShowDialog();
+                }
+            };
+            CloseMenu();
         }
 
         void ToggleDetails()

@@ -87,10 +87,18 @@ namespace PSTools
                 try { script = Placeholders.Expand(s.Command, s.Shell, ContextFor(batch, inputs)); }
                 catch (PlaceholderException ex) { Program.Fail(ex.Message); return; }
                 int code;
-                string text = Execute(s.Shell, script, WorkDir(batch), out code);
+                string text = Execute(s.Shell, script, WorkDir(batch), s.Output == ActionOutput.Grid && s.Shell != ActionShell.Cmd, out code);
                 if (output.Length > 0) output.AppendLine();
                 output.Append(text.TrimEnd());
                 if (code != 0) output.Append("\n(exit code " + code + ")");
+            }
+            if (s.Output == ActionOutput.Grid && s.Shell != ActionShell.Cmd)
+            {
+                string plain;
+                var table = RunEngine.ParseTable(output.ToString(), out plain);
+                if (table != null) { ShowForm(new ResultsForm(s.Title, table)); return; }
+                Program.Msg(plain ?? "");
+                return;
             }
             Deliver(s, output.ToString().Trim());
         }
@@ -115,62 +123,22 @@ namespace PSTools
             }
         }
 
+        public static void ShowForm(System.Windows.Forms.Form f)
+        {
+            if (System.Windows.Forms.Application.OpenForms.Count > 0) f.Show();
+            else System.Windows.Forms.Application.Run(f);
+        }
+
         public static string RunText(string script, string dir)
         {
             int code;
-            string text = Execute(ActionShell.PowerShell, script, dir, out code);
+            string text = RunEngine.RunSync(new RunRequest { Shell = ActionShell.PowerShell, Script = script, Dir = dir }, out code, TimeoutSeconds);
             return code == 0 ? text.TrimEnd() : text.TrimEnd() + "\n(exit code " + code + ")";
         }
 
-        static string Execute(ActionShell shell, string script, string dir, out int exitCode)
+        static string Execute(ActionShell shell, string script, string dir, bool asTable, out int exitCode)
         {
-            exitCode = 0;
-            string tempFile = null;
-            var psi = new ProcessStartInfo
-            {
-                UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true,
-                StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8
-            };
-            if (!string.IsNullOrEmpty(dir)) psi.WorkingDirectory = dir;
-            if (shell == ActionShell.Cmd)
-            {
-                tempFile = Path.Combine(Path.GetTempPath(), "pstools-" + Guid.NewGuid().ToString("N") + ".cmd");
-                File.WriteAllText(tempFile, "@echo off\r\n" + script.Replace("\r\n", "\n").Replace("\n", "\r\n") + "\r\n", Encoding.Default);
-                psi.FileName = "cmd.exe";
-                psi.Arguments = "/d /c \"" + tempFile + "\"";
-                psi.StandardOutputEncoding = Encoding.Default;
-                psi.StandardErrorEncoding = Encoding.Default;
-            }
-            else
-            {
-                string full = "$ProgressPreference='SilentlyContinue'; [Console]::OutputEncoding=[System.Text.Encoding]::UTF8; " + script;
-                psi.FileName = shell == ActionShell.Pwsh ? "pwsh.exe" : "powershell.exe";
-                psi.Arguments = "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand " + Convert.ToBase64String(Encoding.Unicode.GetBytes(full));
-            }
-            try
-            {
-                using (var p = Process.Start(psi))
-                {
-                    var err = new StringBuilder();
-                    p.ErrorDataReceived += (o, e) => { if (e.Data != null) err.AppendLine(e.Data); };
-                    p.BeginErrorReadLine();
-                    string stdout = p.StandardOutput.ReadToEnd();
-                    if (!p.WaitForExit(TimeoutSeconds * 1000)) { try { p.Kill(); } catch { } return stdout + "\n(stopped after " + TimeoutSeconds + " s)"; }
-                    p.WaitForExit();
-                    exitCode = p.ExitCode;
-                    string e2 = err.ToString().Trim();
-                    return e2.Length > 0 ? (stdout.Length > 0 ? stdout.TrimEnd() + "\n" : "") + e2 : stdout;
-                }
-            }
-            catch (Exception ex)
-            {
-                exitCode = -1;
-                return "Could not start " + psi.FileName + ": " + ex.Message;
-            }
-            finally
-            {
-                if (tempFile != null) { try { File.Delete(tempFile); } catch { } }
-            }
+            return RunEngine.RunSync(new RunRequest { Shell = shell, Script = script, Dir = dir, AsTable = asTable }, out exitCode, TimeoutSeconds);
         }
     }
 }

@@ -112,6 +112,7 @@ namespace PSTools
             int left = ShowGlyph ? Tok.S3 + UI.S(20) : Tok.S3;
             int h = Input.PreferredHeight;
             var want = new Rectangle(left, (Height - h) / 2, Math.Max(10, Width - left - Tok.S3), h);
+            if (Input.Multiline) want = new Rectangle(left, Tok.S2, Math.Max(10, Width - left - Tok.S3), Math.Max(10, Height - Tok.S2 * 2));
             if (Input.Bounds != want) Input.SetBounds(want.X, want.Y, want.Width, want.Height);
         }
 
@@ -562,6 +563,218 @@ namespace PSTools
                 }
             }
             using (var p = new Pen(Tok.Stroke)) g.DrawLine(p, 0, Height - 1, Width, Height - 1);
+        }
+    }
+
+    class FSegment : Control
+    {
+        public readonly List<string> Items = new List<string>();
+        public readonly HashSet<int> Disabled = new HashSet<int>();
+        int selected;
+        int hover = -1;
+        public event EventHandler SelectedChanged;
+
+        public FSegment()
+        {
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            Height = Tok.ButtonHeight;
+            TabStop = true;
+        }
+
+        public int SelectedIndex
+        {
+            get { return selected; }
+            set { if (value != selected) { selected = value; Invalidate(); if (SelectedChanged != null) SelectedChanged(this, EventArgs.Empty); } }
+        }
+
+        int Index(int x)
+        {
+            if (Items.Count == 0) return -1;
+            int i = x * Items.Count / Math.Max(1, Width);
+            return i >= 0 && i < Items.Count ? i : -1;
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e) { base.OnMouseMove(e); int i = Index(e.X); if (i != hover) { hover = i; Invalidate(); } }
+        protected override void OnMouseLeave(EventArgs e) { base.OnMouseLeave(e); hover = -1; Invalidate(); }
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+            int i = Index(e.X);
+            if (i >= 0 && !Disabled.Contains(i)) SelectedIndex = i;
+        }
+
+        protected override bool IsInputKey(Keys keyData) { return keyData == Keys.Left || keyData == Keys.Right || base.IsInputKey(keyData); }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            int d = e.KeyCode == Keys.Right ? 1 : e.KeyCode == Keys.Left ? -1 : 0;
+            if (d == 0) return;
+            int i = selected + d;
+            while (i >= 0 && i < Items.Count && Disabled.Contains(i)) i += d;
+            if (i >= 0 && i < Items.Count) SelectedIndex = i;
+        }
+
+        protected override void OnGotFocus(EventArgs e) { base.OnGotFocus(e); Invalidate(); }
+        protected override void OnLostFocus(EventArgs e) { base.OnLostFocus(e); Invalidate(); }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.Clear(Parent == null ? Tok.Window : Parent.BackColor);
+            var outer = new Rectangle(0, 0, Width - 1, Height - 1);
+            FGfx.FillRound(g, outer, Tok.RadiusSmall, Tok.Input);
+            FGfx.StrokeRound(g, outer, Tok.RadiusSmall, Focused ? Tok.Accent : Tok.InputStroke);
+            if (Items.Count == 0) return;
+            int w = Width / Items.Count;
+            for (int i = 0; i < Items.Count; i++)
+            {
+                var r = new Rectangle(i * w + 2, 2, w - 4 + (i == Items.Count - 1 ? Width - w * Items.Count : 0), Height - 5);
+                bool dis = Disabled.Contains(i);
+                if (i == selected) FGfx.FillRound(g, r, Tok.RadiusSmall - 1, Tok.Selected);
+                else if (i == hover && !dis) FGfx.FillRound(g, r, Tok.RadiusSmall - 1, Tok.Hover);
+                FGfx.Text(g, Items[i], Tok.Body, r, dis ? Tok.TextDisabled : Tok.Text, TextFormatFlags.NoPrefix | TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine);
+            }
+        }
+    }
+
+    class FInfoBar : Control
+    {
+        public readonly List<FButton> Buttons = new List<FButton>();
+        string message = "";
+        public bool Warning;
+
+        public FInfoBar()
+        {
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            SetStyle(ControlStyles.Selectable, false);
+            Visible = false;
+            Height = UI.S(44);
+        }
+
+        public string Message { get { return message; } set { message = value ?? ""; AccessibleName = message; Invalidate(); } }
+
+        public void Show(string text, bool warning, params KeyValuePair<string, System.Action>[] actions)
+        {
+            foreach (var b in Buttons) { Controls.Remove(b); b.Dispose(); }
+            Buttons.Clear();
+            Message = text;
+            Warning = warning;
+            foreach (var a in actions)
+            {
+                var action = a.Value;
+                var b = new FButton { Text = a.Key, Height = UI.S(28) };
+                b.Click += (s, e) => { if (action != null) action(); };
+                Buttons.Add(b);
+                Controls.Add(b);
+            }
+            Visible = true;
+            PerformLayout();
+            Invalidate();
+        }
+
+        public void Hide2()
+        {
+            Visible = false;
+        }
+
+        protected override void OnLayout(LayoutEventArgs e)
+        {
+            base.OnLayout(e);
+            int x = Width - Tok.S3;
+            for (int i = Buttons.Count - 1; i >= 0; i--)
+            {
+                var b = Buttons[i];
+                var size = b.GetPreferredSize(Size.Empty);
+                x -= size.Width;
+                b.SetBounds(x, (Height - UI.S(28)) / 2, size.Width, UI.S(28));
+                x -= Tok.S2;
+            }
+        }
+
+        protected override void OnSizeChanged(EventArgs e) { base.OnSizeChanged(e); PerformLayout(); }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.Clear(Parent == null ? Tok.Window : Parent.BackColor);
+            var r = new Rectangle(0, 0, Width - 1, Height - 1);
+            Color tint = Warning ? Tok.RiskModifies : Tok.Accent;
+            FGfx.FillRound(g, r, Tok.RadiusSmall, UI.Blend(Tok.Surface, tint, UI.Dark ? 0.16f : 0.10f));
+            FGfx.StrokeRound(g, r, Tok.RadiusSmall, UI.Blend(Tok.Stroke, tint, 0.5f));
+            using (var f = UI.Icons(11f))
+                TextRenderer.DrawText(g, Warning ? "\uE7BA" : "\uE946", f, new Rectangle(Tok.S3, 0, UI.S(22), Height), tint, TextFormatFlags.NoPrefix | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+            int right = Buttons.Count > 0 ? Buttons[0].Left : Width - Tok.S3;
+            FGfx.Text(g, message, Tok.Body, new Rectangle(Tok.S3 + UI.S(28), 0, Math.Max(10, right - Tok.S3 - UI.S(28) - Tok.S3), Height), Tok.Text, FGfx.Line);
+        }
+    }
+
+    class FConsole : RichTextBox
+    {
+        [System.Runtime.InteropServices.DllImport("uxtheme.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        static extern int SetWindowTheme(IntPtr hwnd, string app, string idList);
+
+        public int MaxLines = 20000;
+        public bool Trimmed;
+        int lineCount;
+
+        public FConsole()
+        {
+            Tag = "raw";
+            ReadOnly = true;
+            BorderStyle = BorderStyle.None;
+            DetectUrls = false;
+            WordWrap = true;
+            Font = Tok.Mono;
+            BackColor = Tok.Surface;
+            ForeColor = Tok.Text;
+            ScrollBars = RichTextBoxScrollBars.Both;
+            HideSelection = false;
+            AccessibleName = "Command output";
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            try { SetWindowTheme(Handle, UI.Dark ? "DarkMode_Explorer" : "Explorer", null); } catch { }
+        }
+
+        public void RefreshTheme()
+        {
+            BackColor = Tok.Surface;
+            ForeColor = Tok.Text;
+        }
+
+        public void AppendLine(string text, bool error)
+        {
+            SelectionStart = TextLength;
+            SelectionLength = 0;
+            SelectionColor = error ? Tok.RiskDestructive : Tok.Text;
+            AppendText(text + "\n");
+            lineCount++;
+            if (lineCount > MaxLines) Trim();
+            SelectionStart = TextLength;
+            ScrollToCaret();
+        }
+
+        void Trim()
+        {
+            int cut = GetFirstCharIndexFromLine(2000);
+            if (cut <= 0) return;
+            Select(0, cut);
+            ReadOnly = false;
+            SelectedText = Trimmed ? "" : "(older output trimmed)\n";
+            ReadOnly = true;
+            Trimmed = true;
+            lineCount -= 2000;
+        }
+
+        public void ClearAll()
+        {
+            Clear();
+            lineCount = 0;
+            Trimmed = false;
         }
     }
 }

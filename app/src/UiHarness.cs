@@ -115,6 +115,13 @@ namespace PSTools
             l.Add(new Scenario { Name = "popup-details", Build = () => Popup(new PowerMenuOptions { Details = true, Drill = new[] { "Copy", "Paths" } }) });
             l.Add(new Scenario { Name = "popup-200", Build = () => PopupMany() });
             l.Add(new Scenario { Name = "popup-input", Build = () => PopupInput() });
+            l.Add(new Scenario { Name = "run-idle", Build = () => RunScene(null, false, null) });
+            l.Add(new Scenario { Name = "run-output", Build = () => RunScene("Get-ChildItem -Recurse | Select-Object -First 30 | ForEach-Object { $_.FullName }", true, null) });
+            l.Add(new Scenario { Name = "run-error", Build = () => RunScene("Get-Item C:\\nope-does-not-exist", true, null) });
+            l.Add(new Scenario { Name = "run-risk", Build = () => RunScene("Remove-Item .\\x -Recurse", false, null) });
+            l.Add(new Scenario { Name = "run-modifies", Build = () => RunScene("Move-Item a.txt b.txt", false, "modifies") });
+            l.Add(new Scenario { Name = "run-history", Build = () => Show(new HistoryPicker()) });
+            l.Add(new Scenario { Name = "save-action", Build = () => SaveScene() });
             l.Add(new Scenario { Name = "popup-empty", Build = () => Popup(new PowerMenuOptions { InitialSearch = "zzqx" }) });
             l.Add(new Scenario { Name = "popup-many", Build = () => Popup(new PowerMenuOptions { InitialSearch = "e" }) });
             l.Add(new Scenario { Name = "dialog-info", Build = () => Show(Create<FDialog>("Explorer menu installed.\n\nWindows 11: right-click > Show more options.", "PS Tools", FDialog.Kind.Info, false)) });
@@ -166,6 +173,34 @@ namespace PSTools
             var pm = new PowerMenu(q, new PowerMenuOptions { Harness = true, Location = new Point(40, 40), Summary = @"C:\Users\demo\projects\app\src", InitialSearch = "" });
             pm.ShowInputsFor(spec);
             return pm;
+        }
+
+        static Form RunScene(string command, bool run, string preview)
+        {
+            string dir = WorkFolder();
+            var f = new RunForm(dir, command ?? "", "folder");
+            Show(f);
+            if (run)
+            {
+                f.Show();
+                f.StartRun();
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                while (f.Running && sw.ElapsedMilliseconds < 30000) { Application.DoEvents(); Thread.Sleep(50); }
+                for (int i = 0; i < 6; i++) { Application.DoEvents(); Thread.Sleep(50); }
+            }
+            else if (preview != null) f.StartRun();
+            return f;
+        }
+
+        static Form SaveScene()
+        {
+            string dir = WorkFolder();
+            string command = "Get-ChildItem -LiteralPath '" + dir + "' -Recurse -Filter *.py | Select-Object Name, Length";
+            var f = new SaveActionForm(command, ActionShell.PowerShell, dir, "folder");
+            f.SetTitle("Python files");
+            f.SetMenu("Search");
+            f.SetResult(2);
+            return Show(f);
         }
 
         static Form PopupMany()

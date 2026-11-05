@@ -423,5 +423,158 @@ namespace PSTools
             if (!d.Used["folder"].SequenceEqual(new[] { "copy.names.selected", "copy.tree.ascii" })) problems.Add("recently used must be most-recent-first and de-duplicated: " + string.Join(", ", d.Used["folder"].ToArray()));
             Report("Settings: v3 pins become v4 favorites, schema 4 round-trips", problems, "");
         }
+
+        static void CheckRiskScan()
+        {
+            var cases = new[]
+            {
+                new object[] { "Get-ChildItem -Recurse -Filter *.py | Select-Object Name, Length", Risk.Safe },
+                new object[] { "Get-Process | Sort-Object CPU -Descending | Select-Object -First 5", Risk.Safe },
+                new object[] { "echo \"Remove-Item is dangerous\"", Risk.Safe },
+                new object[] { "Write-Host 'rm -rf /'", Risk.Safe },
+                new object[] { "Set-Location C:\\x; Get-Date", Risk.Safe },
+                new object[] { "$g = New-Guid; $g.ToString()", Risk.Safe },
+                new object[] { "$o = New-Object System.Text.StringBuilder", Risk.Safe },
+                new object[] { "Get-Content a.txt 2>&1", Risk.Safe },
+                new object[] { "if ($a -gt 3) { 'big' }", Risk.Safe },
+                new object[] { "git status", Risk.Safe },
+                new object[] { "git log --oneline -n 5", Risk.Safe },
+                new object[] { "winget search git", Risk.Safe },
+                new object[] { "Remove-Item .\\x -Recurse -WhatIf", Risk.Safe },
+                new object[] { "dir /s /b", Risk.Safe },
+                new object[] { "Remove-Item C:\\temp\\a.txt", Risk.Destructive },
+                new object[] { "rm -r -fo .\\build", Risk.Destructive },
+                new object[] { "del /q *.tmp", Risk.Destructive },
+                new object[] { "Get-ChildItem *.log | Remove-Item", Risk.Destructive },
+                new object[] { "rd /s /q build", Risk.Destructive },
+                new object[] { "Clear-Content .\\log.txt", Risk.Destructive },
+                new object[] { "Format-Volume -DriveLetter E", Risk.Destructive },
+                new object[] { "format E: /fs:ntfs", Risk.Destructive },
+                new object[] { "Stop-Computer -Force", Risk.Destructive },
+                new object[] { "shutdown /s /t 0", Risk.Destructive },
+                new object[] { "Restart-Computer", Risk.Destructive },
+                new object[] { "reg delete HKCU\\Software\\X /f", Risk.Destructive },
+                new object[] { "Remove-ItemProperty -Path HKCU:\\Software\\X -Name Y", Risk.Destructive },
+                new object[] { "bcdedit /set testsigning on", Risk.Destructive },
+                new object[] { "cipher /w:C:\\", Risk.Destructive },
+                new object[] { "vssadmin delete shadows /all", Risk.Destructive },
+                new object[] { "takeown /f C:\\Windows\\x /r", Risk.Destructive },
+                new object[] { "Set-ExecutionPolicy Unrestricted", Risk.Destructive },
+                new object[] { "git clean -fdx", Risk.Destructive },
+                new object[] { "git reset --hard HEAD~3", Risk.Destructive },
+                new object[] { "git push --force origin main", Risk.Destructive },
+                new object[] { "Move-Item a.txt b.txt -Force", Risk.Destructive },
+                new object[] { "Copy-Item a b -Recurse -Force", Risk.Destructive },
+                new object[] { "Move-Item a.txt b.txt", Risk.Modifies },
+                new object[] { "Copy-Item a b", Risk.Modifies },
+                new object[] { "New-Item -ItemType Directory x", Risk.Modifies },
+                new object[] { "Set-Content a.txt 'hi'", Risk.Modifies },
+                new object[] { "Rename-Item a.txt b.txt", Risk.Modifies },
+                new object[] { "Get-Date > now.txt", Risk.Modifies },
+                new object[] { "Get-Date >> log.txt", Risk.Modifies },
+                new object[] { "Get-Process | Out-File procs.txt", Risk.Modifies },
+                new object[] { "Expand-Archive a.zip .", Risk.Modifies },
+                new object[] { "Compress-Archive -Path x -DestinationPath x.zip", Risk.Modifies },
+                new object[] { "mkdir newdir", Risk.Modifies },
+                new object[] { "robocopy a b /E", Risk.Modifies },
+                new object[] { "git commit -m 'x'", Risk.Modifies },
+                new object[] { "git pull", Risk.Modifies },
+                new object[] { "npm install", Risk.Modifies },
+                new object[] { "winget install Git.Git", Risk.Modifies },
+                new object[] { "Start-Process notepad -Verb RunAs", Risk.Modifies }
+            };
+            var problems = new List<string>();
+            foreach (var c in cases)
+            {
+                var r = RiskScan.Classify((string)c[0], ActionShell.PowerShell);
+                if (r.Risk != (Risk)c[1]) problems.Add("'" + c[0] + "' was " + r.Risk + ", expected " + c[1]);
+                else if (r.Risk != Risk.Safe && r.Reasons.Count == 0) problems.Add("'" + c[0] + "' has no reason");
+            }
+            var cmd = RiskScan.Classify("del /q *.tmp", ActionShell.Cmd);
+            if (cmd.Risk != Risk.Destructive) problems.Add("cmd del must be destructive");
+            Report("RiskScan: " + cases.Length + " commands classified", problems, "");
+        }
+
+        static void CheckRunTools()
+        {
+            var problems = new List<string>();
+            if (RunEngine.StripAnsi("\u001b[31mred\u001b[0m plain \u001b[1;32mgreen\u001b[0m") != "red plain green") problems.Add("ANSI colour codes must be stripped");
+
+            string text;
+            var t = RunEngine.ParseTable("##PST-JSON##\n[{\"Name\":\"a.py\",\"Length\":\"12\"},{\"Name\":\"b.py\",\"Extra\":\"x\"}]", out text);
+            if (t == null || t.Rows.Count != 2 || t.Columns.Length != 3) problems.Add("JSON table must have 2 rows and the union of 3 columns");
+            else if (t.Rows[1][1] != "" || t.Rows[1][2] != "x") problems.Add("missing cells must be empty");
+            var one = RunEngine.ParseTable("##PST-JSON##\n{\"FullName\":\"C:\\\\x\\\\a.txt\",\"Length\":\"1\"}", out text);
+            if (one == null || one.Rows.Count != 1 || one.PathColumn != 0) problems.Add("a single object must become one row and FullName must be the path column");
+            if (RunEngine.ParseTable("##PST-EMPTY##", out text) != null || text == null) problems.Add("empty marker must give a message");
+            if (RunEngine.ParseTable("##PST-TEXT##\nhello\nworld", out text) != null || text != "hello\nworld") problems.Add("text marker must give plain text");
+            if (RunEngine.ParseTable("just text", out text) != null || text != "just text") problems.Add("output without a marker must stay text");
+
+            var script = RunEngine.BuildScript(new RunRequest { Script = "Get-Date", Dir = "C:\\it's", Paths = new[] { "C:\\a b.txt" } });
+            if (!script.Contains("Set-Location -LiteralPath 'C:\\it''s'") || !script.Contains("$Paths = @('C:\\a b.txt')")) problems.Add("prelude must set location and $Paths with PowerShell quoting");
+            if (!script.Contains("Get-Date") || !script.Contains("-is [System.Management.Automation.ErrorRecord]")) problems.Add("script must wrap the command and convert errors");
+
+            string root = Path.Combine(Path.GetTempPath(), "pstools-hist-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                Directory.CreateDirectory(root);
+                File.WriteAllText(Path.Combine(root, "ConsoleHost_history.txt"), "Get-Date\nGet-ChildItem `\n  -Recurse\nGet-Date\n\nwinget list\n");
+                var imported = RunHistory.ImportPsReadLine(root);
+                if (imported.Count != 3) problems.Add("import must de-duplicate: got " + imported.Count);
+                else if (imported[0] != "winget list" || imported[1] != "Get-Date" || !imported[2].Contains("Get-ChildItem") || !imported[2].Contains("-Recurse")) problems.Add("import must be newest first and join continuation lines: " + string.Join(" | ", imported.ToArray()));
+                RunHistory.FileOverride = Path.Combine(root, "run-history.json");
+                RunHistory.Reset();
+                RunHistory.Add("Get-Date", "ps", "C:\\x", 0);
+                RunHistory.Add("dir", "cmd", "C:\\x", 1);
+                RunHistory.Add("Get-Date", "ps", "C:\\y", 0);
+                RunHistory.Reset();
+                var all = RunHistory.All;
+                if (all.Count != 2 || all[0].Command != "Get-Date" || all[0].Dir != "C:\\y") problems.Add("history must persist, de-duplicate and put the newest first");
+            }
+            catch (Exception ex) { problems.Add(ex.GetType().Name + ": " + ex.Message); }
+            finally
+            {
+                RunHistory.FileOverride = null;
+                RunHistory.Reset();
+                try { Directory.Delete(root, true); } catch { }
+            }
+
+            var sug = RunComplete.Suggest("Get-Chi", 7, null);
+            if (!sug.Contains("Get-ChildItem")) problems.Add("autocomplete must suggest Get-ChildItem for Get-Chi");
+            if (RunComplete.Suggest("g", 1, null).Count != 0) problems.Add("one character must not trigger suggestions");
+
+            string from;
+            string g = SaveActionForm.Generalize("Get-ChildItem -LiteralPath 'D:\\photos' -Recurse", "D:\\photos", out from);
+            if (g != "Get-ChildItem -LiteralPath {dir} -Recurse" || from != "D:\\photos") problems.Add("quoted folder must become {dir}: " + g);
+            g = SaveActionForm.Generalize("cd d:\\PHOTOS; dir", "D:\\photos", out from);
+            if (g != "cd {dir}; dir") problems.Add("bare folder match is case-insensitive: " + g);
+            g = SaveActionForm.Generalize("Get-Date", "D:\\photos", out from);
+            if (g != "Get-Date" || from != null) problems.Add("nothing to replace must leave the command alone");
+            Report("Run console: ANSI, table parsing, prelude, history import, autocomplete, generalization", problems, "");
+
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT) { Line("WARN", "Run console: real process runs", "skipped, needs Windows"); return; }
+            problems = new List<string>();
+            string previousDir = Journal.DirOverride;
+            string scratch = Path.Combine(Path.GetTempPath(), "pstools-run-" + Guid.NewGuid().ToString("N"));
+            Journal.DirOverride = scratch;
+            int code;
+            string outp = RunEngine.RunSync(new RunRequest { Script = "Write-Output 'hello-run'" }, out code, 60);
+            if (!outp.Contains("hello-run") || code != 0) problems.Add("echo gave '" + outp.Trim() + "' exit " + code);
+            outp = RunEngine.RunSync(new RunRequest { Script = "Get-Item C:\\nope-does-not-exist-pst" }, out code, 60);
+            if (outp.Contains("CLIXML") || !outp.Contains("Cannot find path") || code != 1) problems.Add("error must be plain text with exit 1, got exit " + code + ": " + outp.Trim());
+            RunEngine.RunSync(new RunRequest { Script = "exit 3" }, out code, 60);
+            if (code != 3) problems.Add("exit 3 must be honoured, got " + code);
+            outp = RunEngine.RunSync(new RunRequest { Shell = ActionShell.Cmd, Script = "echo hello-cmd & exit /b 4" }, out code, 60);
+            if (!outp.Contains("hello-cmd") || code != 4) problems.Add("cmd gave '" + outp.Trim() + "' exit " + code);
+            outp = RunEngine.RunSync(new RunRequest { Script = "Get-ChildItem -LiteralPath $env:windir -File | Select-Object -First 3 Name, Length", AsTable = true }, out code, 60);
+            var table = RunEngine.ParseTable(outp, out text);
+            if (table == null || table.Rows.Count != 3 || table.Columns.Length != 2) problems.Add("table run gave " + (table == null ? "text: " + (text ?? outp).Trim() : table.Rows.Count + " rows"));
+            outp = RunEngine.RunSync(new RunRequest { Script = "$a = 1", AsTable = true }, out code, 60);
+            RunEngine.ParseTable(outp, out text);
+            if (text == null || !text.Contains("nothing")) problems.Add("a command with no output must say so in table mode: " + outp.Trim());
+            Journal.DirOverride = previousDir;
+            try { Directory.Delete(scratch, true); } catch { }
+            Report("Run console: real PowerShell and cmd runs (output, errors, exit codes, table)", problems, "");
+        }
     }
 }

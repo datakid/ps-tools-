@@ -270,18 +270,23 @@ public static class UiLint
         return false;
     }
 
+    static bool IsFrame(Region r, Pic pic)
+    {
+        return r.MinX == 0 && r.MinY == 0 && r.MaxX == pic.W - 1 && r.MaxY == pic.H - 1 && r.Area < pic.W * pic.H / 10;
+    }
+
     static void LintPixels(LintReport rep, string image, string theme, List<Dictionary<string, object>> controls, Pic pic)
     {
         if (theme == "dark")
         {
             foreach (var r in Regions(pic, px => Lum(px) > 0.85, 400))
-                if (!Covered(r, controls, "allow-light"))
+                if (!Covered(r, controls, "allow-light") && !IsFrame(r, pic))
                     Add(rep, image, "dark-white-box", "light region " + (r.MaxX - r.MinX + 1) + "x" + (r.MaxY - r.MinY + 1) + " at " + r.MinX + "," + r.MinY + " (" + r.Area + " px) in a dark screenshot");
         }
         else
         {
             foreach (var r in Regions(pic, px => Lum(px) < 0.12, 400))
-                if (!Covered(r, controls, "allow-dark"))
+                if (!Covered(r, controls, "allow-dark") && !IsFrame(r, pic))
                     Add(rep, image, "light-dark-box", "dark region " + (r.MaxX - r.MinX + 1) + "x" + (r.MaxY - r.MinY + 1) + " at " + r.MinX + "," + r.MinY + " (" + r.Area + " px) in a light screenshot");
         }
         foreach (var r in Regions(pic, px => (px & 0xFFFFFF) == 0xF0F0F0 || (px & 0xFFFFFF) == 0xE1E1E1, 400))
