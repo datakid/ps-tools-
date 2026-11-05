@@ -1,2 +1,0 @@
-PS Tools is already installed or has data on this account. Run PSTools.exe --uninstall first, then run this check.
-exit code 2
