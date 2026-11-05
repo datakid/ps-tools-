@@ -2,6 +2,28 @@
 
 A single small native `PSTools.exe` (C# / WinForms on the .NET Framework that Windows already has). Real GUI, a curated Explorer right-click menu, no installer, no background process, no admin rights for the app itself.
 
+**Download:** https://github.com/datakid/ps-tools-/releases
+
+## What it does not do
+
+- It runs on Windows only. It uses WinForms, the registry and Explorer.
+- It has no installer and no background process. The app itself needs no administrator rights. Administrator actions show the exact script first and need UAC.
+- The Explorer menu is static. Suggestions for the current folder show only in the window and in the Ctrl+K palette.
+- Undo covers actions that change files: moves, renames, new folders, pasted and downloaded files, zips, extractions, converted images, links, timestamps, attributes and text rewrites. The history keeps the last 10 operations and at most 1 GB of backups.
+- Deletions use the Recycle Bin, except force delete and build-folder delete, which say so.
+- Recipes can only chain actions that finish without opening a window or asking a question. Result lists, clipboard-paste actions, administrator actions and the System module are not offered as steps.
+- Saving recipes fails if the exe sits in a protected folder such as Program Files. Move it somewhere you can write to.
+
+## Privacy
+
+Nothing is sent anywhere. The app only reads your theme and accent colour from the registry, and the registry keys and folders it writes are listed under Footprint / clean uninstall.
+
+## Built with
+
+- C# 5 and WinForms on the .NET Framework 4 that Windows already has. `app\build.cmd` compiles it with the `csc.exe` from that framework. No SDK is needed.
+- References only framework assemblies: System, System.Core, System.Drawing, System.Windows.Forms, Microsoft.VisualBasic, System.Web.Extensions, System.IO.Compression and System.IO.Compression.FileSystem. No NuGet packages.
+- Everything is drawn in code. No images, fonts or runtime files ship with it besides `commands.json`.
+
 ## Build (Windows, no SDK)
 ```
 cd app
