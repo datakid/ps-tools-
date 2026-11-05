@@ -16,7 +16,7 @@ A single small native `PSTools.exe` (C# / WinForms on the .NET Framework that Wi
 
 ## Privacy
 
-Nothing is sent anywhere. The app only reads your theme and accent colour from the registry, and the registry keys and folders it writes are listed under Footprint / clean uninstall.
+The app's own code makes one kind of network request: the download-link action, which fetches the address you copied. The local server action serves a folder on localhost only. The app reads your theme and accent colour from the registry. The registry keys and folders it writes are listed under Footprint / clean uninstall.
 
 ## Built with
 
