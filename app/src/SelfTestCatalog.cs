@@ -554,6 +554,9 @@ namespace PSTools
 
             if (Environment.OSVersion.Platform != PlatformID.Win32NT) { Line("WARN", "Run console: real process runs", "skipped, needs Windows"); return; }
             problems = new List<string>();
+            string previousDir = Journal.DirOverride;
+            string scratch = Path.Combine(Path.GetTempPath(), "pstools-run-" + Guid.NewGuid().ToString("N"));
+            Journal.DirOverride = scratch;
             int code;
             string outp = RunEngine.RunSync(new RunRequest { Script = "Write-Output 'hello-run'" }, out code, 60);
             if (!outp.Contains("hello-run") || code != 0) problems.Add("echo gave '" + outp.Trim() + "' exit " + code);
@@ -569,6 +572,8 @@ namespace PSTools
             outp = RunEngine.RunSync(new RunRequest { Script = "$a = 1", AsTable = true }, out code, 60);
             RunEngine.ParseTable(outp, out text);
             if (text == null || !text.Contains("nothing")) problems.Add("a command with no output must say so in table mode: " + outp.Trim());
+            Journal.DirOverride = previousDir;
+            try { Directory.Delete(scratch, true); } catch { }
             Report("Run console: real PowerShell and cmd runs (output, errors, exit codes, table)", problems, "");
         }
     }
