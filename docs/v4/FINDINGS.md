@@ -80,3 +80,25 @@ UI Automation scenarios, menu snapshot, cheat sheet checks, startup timing probe
 - **Row menu:** Run, Run with options, Copy PowerShell equivalent, Add/Remove from Explorer menu, Hide from menu, Edit (user scripts) or Duplicate as my action. "Open in Run console" is added in Phase 3.
 - **Menu verbs:** `menu "%1"` for file/folder/drive, `menu-bg "%V"` for folder background, `open "%1"` for the app.
 - **Local check:** menu/tree goldens are generated with Mono on Linux and match the Windows output byte for byte, so they can be regenerated without a Windows machine.
+
+## Phase 3
+
+### Measured on windows-latest
+- **Real process runs** (selftest `Run console: real PowerShell and cmd runs`, ~5 s total): `Write-Output` round trip, a failing command (plain-text error, exit 1), `exit 3` honoured, cmd `exit /b 4`, a table run returning 3 rows x 2 columns, and a no-output table run reporting "nothing". Typical PowerShell 5.1 start to exit for a one-line command is 0.35-0.5 s in the scenarios (`Exit 0 · 0.4 s`); cmd 0.04 s.
+- **Idle-input banner:** appears about 12 s after the last output of a silent, CPU-idle process (10 s of silence plus the 1 s check tick). `Start-Sleep -Seconds 40` triggers it; `Esc` stops the run.
+- **Stop:** `taskkill /T /F` on the process tree, status "Stopped" within the scenario's 10 s window (observed under 2 s).
+
+### Bugs found by looking at the screens
+- With redirected output, `powershell.exe -EncodedCommand` serialises the error stream as CLIXML (`#< CLIXML <Objs ...>`), even with `-OutputFormat Text`. The script now merges the error stream inside a wrapper and writes each error record as plain text to stderr, remembering that something failed so the exit code stays 1.
+- A multi-line `TextBox` inside `FSearchBox` was laid out as a one-line box, which collapsed the command editor to a single visible character; multi-line mode now fills the box.
+
+### Decisions and deviations
+- **Names:** the plan's `Launch.Stream`/`KillTree` live in `RunEngine` (start, stream, stop, sync run, table parser), `RiskScan` is its own class, and the standalone window is `RunForm`. The Run console is a standalone window opened from the Power menu (empty-search link, row menu "Open in Run console") and `PSTools.exe run "<dir>"`; embedding it as a main-window page happens with the Phase 6 shell rework.
+- **Objects wrapper:** `Show as table` runs the command again with `AsTable` (JSON via `ConvertTo-Json -Depth 2`, first 5000 objects, values stringified, dates as `yyyy-MM-dd HH:mm:ss`). Only the first run of a command is recorded in history.
+- **Confirm UX:** `modifies` shows an inline bar with Run / Run once / Cancel (Run remembers that exact command and shell); `destructive` always shows a modal with the command, the reasons and the working folder. `-WhatIf` downgrades to safe. The scanner is a heuristic (55 commands in the selftest); quoted text is ignored, aliases (`rm`, `del`, `ri`) are covered.
+- **Autocomplete** is a small built-in command list plus history first words plus folder entries for path-like tokens; the generated `cheatsheet.json` command list replaces the built-in list in Phase 5.
+- **Save as action:** defaults to Folder + Inside a folder (background) so an action saved from the console shows up when right-clicking a folder, not only its empty space. A literal copy of the working folder in the command is offered as `{dir}`. Ids come from menu and title (`user.search-python-files`), duplicates get a numeric suffix. The file is a `.ps1`/`.cmd` with the header block from the plan, written to `%LOCALAPPDATA%\PSTools\actions\<menu>\`.
+- **History import** reads `ConsoleHost_history.txt` files from the PSReadLine folder (newest first, backtick continuation lines joined, duplicates dropped).
+- **Lint calibration:** the pixel lint no longer reports the black DWM frame ring around a captured window as a dark region (a region touching all four image edges and under 10 percent of the image). This removed 16 false positives from the v3 baseline numbers (`light-dark-box` 17 to 1); no other rule changed. Run console and Save as action screens add 0 findings.
+- **UI Automation notes:** owned modal dialogs appear under their owner window in the UIA tree, not as top-level windows; a label and its ComboBox can share a name, so lookups filter by control type; combos are driven through `ValuePattern` and `ExpandCollapsePattern`.
+- **Selftest isolation:** tests that start real processes redirect the data folder to a temp folder (the footprint check caught an earlier leak into `%LOCALAPPDATA%\PSTools`).
