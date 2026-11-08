@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -565,6 +566,51 @@ namespace PSTools
 
     static class Clip
     {
+        public static Image GetImage()
+        {
+            if (TestSink.Active) return TestSink.ClipboardImageIn.Length > 0 && System.IO.File.Exists(TestSink.ClipboardImageIn) ? new Bitmap(TestSink.ClipboardImageIn) : null;
+            try { return Clipboard.ContainsImage() ? Clipboard.GetImage() : null; }
+            catch { return null; }
+        }
+
+        public static void SetFiles(IEnumerable<string> files)
+        {
+            var list = files.ToList();
+            if (TestSink.Active) { TestSink.Clips.Add("[files] " + string.Join("; ", list.Select(f => System.IO.Path.GetFileName(f)).ToArray())); return; }
+            var sc = new System.Collections.Specialized.StringCollection();
+            sc.AddRange(list.ToArray());
+            Clipboard.SetFileDropList(sc);
+        }
+
+        public static void SetImageFile(string file, out int width, out int height)
+        {
+            using (var src = Image.FromFile(file))
+            using (var bmp = new Bitmap(src))
+            {
+                width = bmp.Width;
+                height = bmp.Height;
+                if (TestSink.Active) { TestSink.Clips.Add("[image] " + width + "x" + height); return; }
+                var data = new DataObject();
+                data.SetData(DataFormats.Bitmap, true, bmp);
+                var png = new System.IO.MemoryStream();
+                bmp.Save(png, System.Drawing.Imaging.ImageFormat.Png);
+                data.SetData("PNG", false, png);
+                Clipboard.SetDataObject(data, true);
+            }
+        }
+
+        public static List<string> Files()
+        {
+            if (TestSink.Active) return new List<string>(TestSink.ClipboardFilesIn);
+            try
+            {
+                var l = new List<string>();
+                if (Clipboard.ContainsFileDropList()) foreach (string f in Clipboard.GetFileDropList()) l.Add(f);
+                return l;
+            }
+            catch { return new List<string>(); }
+        }
+
         public static string Text()
         {
             if (TestSink.Active) return TestSink.ClipboardIn;

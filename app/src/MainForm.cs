@@ -488,6 +488,7 @@ namespace PSTools
         void OpenPalette()
         {
             var q = PowerMenuLauncher.QueryFor(ContextKind.Background, new string[0]);
+            q.BackgroundFolder = Path0;
             var opt = PowerMenuLauncher.Options(Path0, "background");
             opt.Location = new Point(Left + (Width - UI.S(420)) / 2, Top + Math.Max(24, Height / 8));
             var pm = new PowerMenu(q, opt);

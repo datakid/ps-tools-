@@ -34,6 +34,7 @@ namespace PSTools
     class Action
     {
         public string Id, Label, Group, Hint, Confirm, AppliesTo;
+        public string V4Menu, V4Title;
         public string Ps, PsNone;
         public Tier Tier = Tier.Instant;
         public Target Targets = Target.Dirs;

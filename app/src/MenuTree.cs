@@ -39,6 +39,7 @@ namespace PSTools
         public Func<string, bool> HasTool;
         public Func<string, bool> IsDirectory;
         public bool SelectionKindsKnown;
+        public string BackgroundFolder;
     }
 
     static class Tools
@@ -134,6 +135,24 @@ namespace PSTools
                         string ext = (System.IO.Path.GetExtension(p) ?? "").TrimStart('.').ToLowerInvariant();
                         if (!s.MatchExt.Contains(ext)) return false;
                     }
+                }
+            }
+            if (s.MatchHas.Count > 0)
+            {
+                var dirs = new List<string>();
+                var isDirTest = DirTest(q);
+                if (q.Paths != null && q.Paths.Length > 0) foreach (var p in q.Paths) { if (isDirTest(p)) dirs.Add(p); }
+                else if (!string.IsNullOrEmpty(q.BackgroundFolder)) dirs.Add(q.BackgroundFolder);
+                if (dirs.Count == 0) return false;
+                foreach (var d in dirs)
+                {
+                    bool any = false;
+                    foreach (var f in s.MatchHas)
+                    {
+                        try { if (System.IO.File.Exists(System.IO.Path.Combine(d, f))) { any = true; break; } }
+                        catch { }
+                    }
+                    if (!any) return false;
                 }
             }
             var has = q.HasTool ?? Tools.Has;

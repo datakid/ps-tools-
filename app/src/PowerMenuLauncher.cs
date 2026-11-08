@@ -39,6 +39,7 @@ namespace PSTools
             var ctx = MenuTree.ContextFor(paths, background);
             if (ctx == ContextKind.None) ctx = ContextKind.Folder;
             var q = QueryFor(ctx, paths);
+            if (background) q.BackgroundFolder = path;
             string summary = background ? path : null;
             var pm = new PowerMenu(q, Options(summary, SpecRules.ContextName(ctx == (ContextKind.File | ContextKind.Folder) ? ContextKind.File : ctx)));
             Application.Run(pm);

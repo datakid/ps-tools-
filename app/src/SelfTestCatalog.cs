@@ -84,7 +84,7 @@ namespace PSTools
             {
                 var s = cat.Find(id);
                 if (s == null) problems.Add(id + " does not resolve");
-                else if (s.Legacy == null) problems.Add(id + " has no built-in implementation");
+                else if (s.Legacy == null && s.Source != SpecSource.Shipped) problems.Add(id + " has no implementation");
                 else if (s.Id.StartsWith("legacy.")) problems.Add(id + " has no assigned v4 id");
             }
             if (cat.LegacyFallbacks > 0) problems.Add(cat.LegacyFallbacks + " built-ins fell back to legacy.* ids");
@@ -283,7 +283,7 @@ namespace PSTools
             if (names.Count == 0 || names[0] != "Section:Favorites") problems.Add("Favorites must be the first node, got " + (names.Count == 0 ? "nothing" : names[0]));
             int copyAt = names.IndexOf("Folder:Copy"), pasteAt = names.IndexOf("Folder:Paste & New"), searchAt = names.IndexOf("Folder:Search");
             if (copyAt < 0 || pasteAt < copyAt || searchAt < pasteAt) problems.Add("canonical folder order broken: " + string.Join(", ", names.ToArray()));
-            if (!names.Contains("Action:Rename: Batch rename...")) problems.Add("a folder with one action must be inlined as 'Folder: Action'");
+            if (!names.Contains("Action:Clean up: Remove empty folders")) problems.Add("a folder with one action must be inlined as 'Folder: Action'");
             var allIds = new List<string>();
             Collect(folder.Where(n => n.Kind != NodeKind.Section).ToList(), allIds);
             if (allIds.GroupBy(x => x).Any(g => g.Count() > 1)) problems.Add("an action appears twice in the folder part: " + string.Join(", ", allIds.GroupBy(x => x).Where(g => g.Count() > 1).Select(g => g.Key).ToArray()));

@@ -23,6 +23,7 @@ namespace PSTools
             l.AddRange(DiskModule());
             l.AddRange(SystemModule());
             l.AddRange(MapActions());
+            l.AddRange(PowerActions.All());
             l.AddRange(RecipeActions(l));
             l.AddRange(PinnedModule());
             PsCatalog.Apply(l);

@@ -200,7 +200,8 @@ namespace PSTools
                 else
                 {
                     var row = V3Map.Find(a.Id);
-                    if (row != null) { s.Id = row[1]; s.Menu = row[2]; s.Title = row[3]; }
+                    if (a.V4Menu != null) { s.Id = a.Id; s.Menu = a.V4Menu; s.Title = a.V4Title ?? a.Label; s.Aliases.Clear(); }
+                    else if (row != null) { s.Id = row[1]; s.Menu = row[2]; s.Title = row[3]; }
                     else
                     {
                         LegacyFallbacks++;
@@ -296,6 +297,7 @@ namespace PSTools
                 var m = (Dictionary<string, object>)v;
                 s.MatchExt = Strings(m, "ext").Select(x => x.TrimStart('.').ToLowerInvariant()).ToList();
                 if (Str(m, "kind") != null) { s.MatchKind = Enum<MatchKind>(Str(m, "kind"), out ok); if (!ok) { error = "match.kind must be file, folder or any"; return null; } }
+                s.MatchHas = Strings(m, "has");
                 int n;
                 if (Str(m, "min") != null && int.TryParse(Str(m, "min"), out n)) s.MatchMin = n;
                 if (Str(m, "max") != null && int.TryParse(Str(m, "max"), out n)) s.MatchMax = n;

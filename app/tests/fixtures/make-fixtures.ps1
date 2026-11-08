@@ -59,6 +59,10 @@ try {
 }
 catch { Write-Host ("long path fixture skipped: " + $_.Exception.Message) }
 
+Write-Text (Join-Path $names 'UPPER.TXT') "upper`n"
+Write-Text (Join-Path $Out 'wrap\inner\a.txt') "a`n"
+Write-Text (Join-Path $Out 'wrap\inner\b.txt') "b`n"
+
 $images = Join-Path $Out 'images'
 New-Item -ItemType Directory -Path $images | Out-Null
 function New-Picture([string]$path, [int]$w, [int]$h, [string]$colorName, [string]$format) {
@@ -151,6 +155,14 @@ New-Item -ItemType Directory -Path $text | Out-Null
 [IO.File]::WriteAllText((Join-Path $text 'bom.txt'), "one`ntwo`n", (New-Object System.Text.UTF8Encoding($true)))
 [IO.File]::WriteAllText((Join-Path $text 'utf16.txt'), "one`ntwo`n", [Text.Encoding]::Unicode)
 
+Set-Content -LiteralPath (Join-Path $text 'downloaded.txt') -Value "downloaded`n" -Encoding UTF8
+Set-Content -LiteralPath (Join-Path $text 'downloaded.txt') -Stream Zone.Identifier -Value "[ZoneTransfer]`r`nZoneId=3`r`nHostUrl=https://example.com/file.zip`r`nReferrerUrl=https://example.com/"
+$tarSrc = Join-Path $Out '_tar\t'
+Write-Text (Join-Path $tarSrc 'x.txt') "tar`n"
+$tar = Get-Command tar.exe -ErrorAction SilentlyContinue
+if ($tar) { & tar.exe -czf (Join-Path $zipDir 'sample.tar.gz') -C (Join-Path $Out '_tar') t 2>&1 | Out-Null }
+Remove-Item -LiteralPath (Join-Path $Out '_tar') -Recurse -Force -ErrorAction SilentlyContinue
+
 $T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '
 $L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '
 $V = [string][char]0x2502 + '   '
@@ -167,7 +179,7 @@ $tree = @(
 [IO.File]::WriteAllText((Join-Path $Out 'clip-tree.txt'), $tree + "`n", $utf8)
 
 Get-ChildItem -LiteralPath $Out -Recurse -Force | Where-Object { $_.FullName -notmatch '\\\.git(\\|$)' } | ForEach-Object {
-    try { $_.LastWriteTime = $stamp } catch { }
+    try { $_.CreationTime = $stamp; $_.LastWriteTime = $stamp } catch { }
 }
 
 Write-Host ("Fixtures created in " + $Out)
