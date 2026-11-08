@@ -1,0 +1,12 @@
+[table]
+Total 2.1 KB
+Folder	Size	Files	Path
+bin	2.0 KB	1	<FX>\tree-basic\bin
+src	47 B	2	<FX>\tree-basic\src
+docs	26 B	1	<FX>\tree-basic\docs
+node_modules	20 B	1	<FX>\tree-basic\node_modules
+.hidden	7 B	1	<FX>\tree-basic\.hidden
+empty	0 B	0	<FX>\tree-basic\empty
+(files here)	0 B		<FX>\tree-basic
+[dialog]
+Total 2.1 KB

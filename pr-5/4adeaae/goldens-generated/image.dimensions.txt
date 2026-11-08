@@ -1,0 +1,5 @@
+[clipboard]
+1200x800
+640x480
+[toast]
+Copied 2 lines from Copy dimensions

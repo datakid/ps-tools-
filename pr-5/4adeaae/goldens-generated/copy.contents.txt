@@ -1,0 +1,5 @@
+[clipboard]
+def add(a, b):
+    return a + b
+[toast]
+Copied contents of 1 file

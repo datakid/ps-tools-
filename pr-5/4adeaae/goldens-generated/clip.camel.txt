@@ -1,0 +1,5 @@
+[clipboard]
+helloWorldFoo
+fooBar
+[toast]
+Converted to camelCase

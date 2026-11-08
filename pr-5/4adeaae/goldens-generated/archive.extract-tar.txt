@@ -1,0 +1,6 @@
+[toast]
+Extracted to sample
+[dialog]
+ASK: Run "Extract (tar/7z/gz)"?
+
+It may change files.

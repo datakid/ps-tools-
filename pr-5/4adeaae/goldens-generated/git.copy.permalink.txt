@@ -1,0 +1,4 @@
+[clipboard]
+https://github.com/example/repo/blob/212afbc906fd9b99c48b4c58eec0fe069ad8ac8d/README.md
+[toast]
+Copied 1 line from Permalink to this file

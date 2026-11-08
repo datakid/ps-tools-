@@ -1,0 +1,9 @@
+[clipboard]
+.hidden\secret.txt
+bin\out.dll
+docs\readme.md
+node_modules\pkg\index.js
+src\app\main.py
+src\app\util.py
+[toast]
+Copied 6 lines from All file paths (relative)
