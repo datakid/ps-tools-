@@ -1,0 +1,11 @@
+Fixtures created in D:\a\_temp\fx
+  dups
+  images
+  names
+  repo
+  text
+  tree-basic
+  wrap
+  zip
+  clip-tree.txt
+exit code 0

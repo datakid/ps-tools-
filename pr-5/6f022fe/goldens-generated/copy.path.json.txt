@@ -1,0 +1,4 @@
+[clipboard]
+<FX>\\names\\O'Brien.txt
+[toast]
+Copied 1 line from Path escaped (\\)

@@ -1,0 +1,6 @@
+[toast]
+Moved 5 files.
+[dialog]
+ASK: Sort the files in
+<FX>\text
+into Images / Videos / Audio / Documents / Archives / Code / Other?

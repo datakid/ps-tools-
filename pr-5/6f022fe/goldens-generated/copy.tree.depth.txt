@@ -1,0 +1,14 @@
+[clipboard]
+tree-basic/
+├── bin/
+│   └── out.dll
+├── docs/
+│   └── readme.md
+├── empty/
+├── node_modules/
+│   └── pkg/
+└── src/
+    ├── app/
+    └── lib/
+[toast]
+<truncated>
