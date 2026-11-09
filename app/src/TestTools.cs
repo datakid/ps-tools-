@@ -159,6 +159,15 @@ namespace PSTools
             }
             foreach (var d in Directory.GetDirectories(from))
                 CopyTree(d, Path.Combine(to, Path.GetFileName(d)));
+            try
+            {
+                var info = new DirectoryInfo(from);
+                var target = new DirectoryInfo(to);
+                target.CreationTime = info.CreationTime;
+                target.LastWriteTime = info.LastWriteTime;
+                target.Attributes = info.Attributes;
+            }
+            catch { }
         }
 
         class Outcome
