@@ -60,7 +60,7 @@ jobs:
           exit $LASTEXITCODE
       - name: Coverage gate (POWER_ACTIONS.md)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        shell: pwsh
+        shell: powershell
         run: |
           app\tests\ci\run-logged.ps1 -Script app\tests\coverage-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Doc = 'docs\v4\POWER_ACTIONS.md'; Tests = 'app\tests\action-tests.json' } -Log app\out\logs\coverage.txt
           exit $LASTEXITCODE

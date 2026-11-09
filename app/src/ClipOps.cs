@@ -32,7 +32,7 @@ namespace PSTools
                 if (sb.Length > 0)
                 {
                     char p = s[i - 1];
-                    bool boundary = (char.IsLower(p) && char.IsUpper(c)) || (char.IsUpper(p) && char.IsUpper(c) && i + 1 < s.Length && char.IsLower(s[i + 1])) || (char.IsDigit(p) != char.IsDigit(c) && char.IsLetterOrDigit(p));
+                    bool boundary = (char.IsLower(p) && char.IsUpper(c)) || (char.IsUpper(p) && char.IsUpper(c) && i + 1 < s.Length && char.IsLower(s[i + 1]));
                     if (boundary) { words.Add(sb.ToString()); sb.Length = 0; }
                 }
                 sb.Append(c);

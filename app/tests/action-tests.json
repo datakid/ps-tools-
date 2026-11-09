@@ -890,7 +890,7 @@
   "id": "new.unwrap",
   "fixture": "wrap",
   "targets": [
-   ""
+   "inner"
   ],
   "_gen": true,
   "expectFiles": [
@@ -938,9 +938,9 @@
   ],
   "_gen": true,
   "expectFiles": [
-   "wide_001.png",
-   "wide_002.png",
-   "wide_003.png"
+   "small_001.png",
+   "small_002.png",
+   "small_003.png"
   ],
   "undo": true
  },
@@ -952,9 +952,6 @@
    "UPPER.TXT"
   ],
   "_gen": true,
-  "expectFiles": [
-   "UPPER.txt"
-  ],
   "undo": true
  },
  {

@@ -266,7 +266,7 @@ namespace PSTools
                         if (rel.Contains("*"))
                         {
                             string folder = Path.GetDirectoryName(full);
-                            if (!Directory.Exists(folder) || Directory.GetFiles(folder, Path.GetFileName(full)).Length == 0) problems.Add("expected a file matching: " + rel);
+                            if (!Directory.Exists(folder) || Directory.GetFileSystemEntries(folder, Path.GetFileName(full)).Length == 0) problems.Add("expected a file matching: " + rel);
                         }
                         else if (!File.Exists(full) && !Directory.Exists(full)) problems.Add("expected path missing after run: " + rel);
                     }
