@@ -1,6 +1,0 @@
-[toast]
-Moved 1 items up and removed the folder.
-[dialog]
-ASK: Move everything inside
-<FX>\wrap
-up one level and remove the empty folder?

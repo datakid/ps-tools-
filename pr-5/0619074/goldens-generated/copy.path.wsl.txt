@@ -1,0 +1,4 @@
+[clipboard]
+/mnt/c/Users/runneradmin/AppData/Local/Temp/pstools-test-e9264f17288842b1a568aa66c6774308/names/O'Brien.txt
+[toast]
+<truncated>

@@ -1,9 +1,0 @@
-EXCEPTION: coverage-check.ps1: D:\a\ps-tools-\ps-tools-\app\tests\ci\run-logged.ps1:15
-Line |
-  15 |      & $Script @Params *>&1 | ForEach-Object {
-     |      ~~~~~~~~~~~~~~~~~~~~~~
-     | Could not load type 'System.Web.UI.WebResourceAttribute' from assembly 'System.Web, Version=4.0.0.0,
-     | Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
-
-
-exit code 1

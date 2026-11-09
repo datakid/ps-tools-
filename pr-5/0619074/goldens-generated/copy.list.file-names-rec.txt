@@ -1,0 +1,8 @@
+[clipboard]
+out.dll
+readme.md
+index.js
+main.py
+util.py
+[toast]
+Copied 5 lines from All file names (recursive)

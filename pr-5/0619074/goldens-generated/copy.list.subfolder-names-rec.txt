@@ -1,0 +1,11 @@
+[clipboard]
+app
+bin
+docs
+empty
+lib
+node_modules
+pkg
+src
+[toast]
+Copied 8 lines from All subfolder names (recursive)

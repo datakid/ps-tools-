@@ -1,0 +1,166 @@
+PASS  copy-name.file                        93 ms
+PASS  copy-name.multi                        7 ms
+PASS  copy-path-quoted.dir                   8 ms
+PASS  copy-path-fwd.awkward                  5 ms
+PASS  copy-parent.file                       7 ms
+PASS  copy-sha256.file                       9 ms
+PASS  copy-contents.file                     7 ms
+PASS  copy-names.dir                         7 ms
+PASS  copy-tree.dir                        349 ms
+PASS  copy-dirs-rel.dir                    328 ms
+PASS  copy-size.dir                          9 ms
+PASS  folder-sizes.dir                      15 ms
+PASS  new-folder-clip.undo                  13 ms
+PASS  copy-path-quoted.v4id                  6 ms
+PASS  copy-tree.v4id                       328 ms
+PASS  new-folder-clip.v4id                   7 ms
+PASS  copy.tree.ascii                      313 ms
+PASS  copy.tree.ascii-plain                306 ms
+PASS  copy.tree.folders                    314 ms
+PASS  copy.tree.sizes                      353 ms
+PASS  copy.tree.markdown                   315 ms
+PASS  copy.tree.nested-list                298 ms
+PASS  copy.tree.json                       278 ms
+PASS  copy.list.subfolder-names            268 ms
+PASS  copy.list.subfolder-names-rec        289 ms
+PASS  copy.list.subfolder-paths              9 ms
+PASS  copy.list.subfolder-paths-rel        292 ms
+PASS  copy.list.file-names-rec             438 ms
+PASS  copy.list.file-paths-rel             287 ms
+PASS  copy.list.file-paths-abs             292 ms
+PASS  copy.list.csv                        298 ms
+PASS  copy.list.json                       299 ms
+PASS  copy.list.ext-summary                314 ms
+PASS  copy.list.count                      301 ms
+PASS  copy.path.cd                           6 ms
+PASS  copy.ai.folder                       416 ms
+PASS  copy.size                              7 ms
+PASS  search.large                           9 ms
+PASS  search.recent                          7 ms
+PASS  search.empty                         319 ms
+PASS  search.long-paths                      7 ms
+PASS  inspect.sizes                          7 ms
+PASS  inspect.types                          9 ms
+PASS  inspect.env-path                     232 ms
+PASS  copy.path.quoted                       7 ms
+PASS  copy.tree.depth                      317 ms
+PASS  copy.tree.gitignore                  394 ms
+PASS  copy.list.by-ext                     290 ms
+PASS  copy.names.selected                    8 ms
+PASS  copy.names.stem                        7 ms
+PASS  copy.path                            215 ms
+PASS  copy.path.fwd                          6 ms
+PASS  copy.path.json                       216 ms
+PASS  copy.path.ps                         218 ms
+FAIL  copy.path.wsl                         33 ms
+      output differs from golden
+      --- expected
+      [clipboard]
+      /mnt/c/Users/runneradmin/AppData/Local/Temp/pstools-test-ab6e7f5a9cfd40a0a2447e3006a061e7/names/O'Brien.txt
+      [toast]
+      <truncated>
+      --- actual
+      [clipboard]
+      /mnt/c/Users/runneradmin/AppData/Local/Temp/pstools-test-7d4a61098862442d964a9b5fb057554b/names/O'Brien.txt
+      [toast]
+      <truncated>
+      
+PASS  copy.path.uri                          5 ms
+PASS  copy.path.parent                       5 ms
+PASS  copy.path.rel-git                    329 ms
+PASS  copy.path.rel-marked                 239 ms
+PASS  copy.ai.files                        310 ms
+PASS  copy.contents                          7 ms
+PASS  copy.contents.fenced                 235 ms
+PASS  copy.datauri                           3 ms
+PASS  copy.hash.verify                       4 ms
+PASS  git.copy.permalink                   445 ms
+PASS  git.copy.branch                      313 ms
+PASS  git.copy.last-commit                 313 ms
+PASS  git.copy.remote                      327 ms
+PASS  git.status.repos                     125 ms
+PASS  search.text                          335 ms
+PASS  search.duplicates                      8 ms
+PASS  inspect.locking                      366 ms
+PASS  inspect.origin                       259 ms
+FAIL  inspect.facts                        301 ms
+      output differs from golden
+      --- expected
+      [table]
+      8 rows
+      Fact	Value
+      Name	crlf.txt
+      Size	17 B (17 bytes)
+      Encoding	UTF-8
+      Line endings	CRLF
+      Lines	3
+      Created	2026-11-09 11:31:26
+      Modified	2026-01-15 10:30:00
+      SHA-256	9fc4c6bdc7e5374b75e38fa9e1097577399bb74f1ccc33b1712d53a26d02c09a
+      --- actual
+      [table]
+      8 rows
+      Fact	Value
+      Name	crlf.txt
+      Size	17 B (17 bytes)
+      Encoding	UTF-8
+      Line endings	CRLF
+      Lines	3
+      Created	2026-11-09 21:12:54
+      Modified	2026-01-15 10:30:00
+      SHA-256	9fc4c6bdc7e5374b75e38fa9e1097577399bb74f1ccc33b1712d53a26d02c09a
+      
+PASS  compare.with-marked                   10 ms
+PASS  compare.two-selected                 299 ms
+PASS  compare.hash-selected                248 ms
+PASS  new.from-clip-tree                    13 ms
+PASS  new.paste-image                        9 ms
+PASS  new.paste-text                         8 ms
+PASS  new.paste-text.csv                     7 ms
+PASS  new.paste-shortcut                    32 ms
+PASS  new.paste-hardlink                     8 ms
+PASS  new.paste-junction                    20 ms
+PASS  new.folder-from-clip                  27 ms
+PASS  new.dated-folder                       8 ms
+PASS  new.file                               9 ms
+PASS  new.group-selected                     9 ms
+PASS  new.unwrap                             6 ms
+PASS  new.snapshot                          12 ms
+PASS  rename.date-prefix                     6 ms
+PASS  rename.number                          6 ms
+PASS  rename.ext-lower                       6 ms
+PASS  rename.lower                           6 ms
+PASS  rename.kebab                           7 ms
+PASS  rename.snake                           6 ms
+PASS  rename.title                           8 ms
+PASS  organize.flatten                      11 ms
+PASS  organize.by-type                       9 ms
+PASS  organize.by-date                       5 ms
+PASS  archive.zip-smart                     19 ms
+PASS  archive.zip-gitignore                353 ms
+PASS  archive.extract                        5 ms
+PASS  archive.extract-tar                  237 ms
+PASS  archive.list                         308 ms
+PASS  image.dimensions                     251 ms
+PASS  clip.sort                             54 ms
+PASS  clip.unique                            8 ms
+PASS  clip.trim                             21 ms
+PASS  clip.remove-blank                      7 ms
+PASS  clip.json-pretty                      29 ms
+PASS  clip.json-minify                      10 ms
+PASS  clip.base64-encode                     6 ms
+PASS  clip.base64-decode                     7 ms
+PASS  clip.url-encode                        9 ms
+PASS  clip.url-decode                        6 ms
+PASS  clip.lower                             7 ms
+PASS  clip.upper                             8 ms
+PASS  clip.kebab                             7 ms
+PASS  clip.snake                             6 ms
+PASS  clip.camel                             7 ms
+PASS  clip.paths-fwd                         7 ms
+PASS  clip.quote-lines                       8 ms
+PASS  clip.to-ps-array                       7 ms
+PASS  clip.count                             6 ms
+PASS  clip.guid                              6 ms
+PASS  clip.timestamp                         6 ms
+125 passed, 2 failed, 0 skipped

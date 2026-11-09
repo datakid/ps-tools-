@@ -1,0 +1,28 @@
+doc ids: 125 table + 162 in prose; catalog: 317 actions; tests: 1
+MISSING test:   clip.sort
+MISSING test:   clip.unique
+MISSING test:   clip.trim
+MISSING test:   clip.remove-blank
+MISSING test:   clip.json-pretty
+MISSING test:   clip.json-minify
+MISSING test:   clip.base64-encode
+MISSING test:   clip.base64-decode
+MISSING test:   clip.url-encode
+MISSING test:   clip.url-decode
+MISSING test:   clip.lower
+MISSING test:   clip.upper
+MISSING test:   clip.kebab
+MISSING test:   clip.snake
+MISSING test:   clip.camel
+MISSING test:   clip.paths-fwd
+MISSING test:   clip.quote-lines
+MISSING test:   clip.to-ps-array
+MISSING test:   clip.guid
+MISSING test:   clip.timestamp
+MISSING test:   clip.count
+MISSING test:   rename.lower
+MISSING test:   rename.kebab
+MISSING test:   rename.snake
+MISSING test:   rename.title
+0 ids without an action, 25 test-required ids without a test
+exit code 1

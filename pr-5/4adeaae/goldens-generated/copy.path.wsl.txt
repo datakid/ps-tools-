@@ -1,4 +1,0 @@
-[clipboard]
-/mnt/c/Users/runneradmin/AppData/Local/Temp/pstools-test-49d5d7d748634fe3b69eee2092aeb3ad/names/O'Brien.txt
-[toast]
-<truncated>
