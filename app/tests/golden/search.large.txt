@@ -1,0 +1,11 @@
+[table]
+6 largest files
+	Name	Size	Modified	Path
+	out.dll	2.0 KB	2026-01-15 10:30	<FX>\tree-basic\bin\out.dll
+	util.py	32 B	2026-01-15 10:30	<FX>\tree-basic\src\app\util.py
+	readme.md	26 B	2026-01-15 10:30	<FX>\tree-basic\docs\readme.md
+	index.js	20 B	2026-01-15 10:30	<FX>\tree-basic\node_modules\pkg\index.js
+	main.py	15 B	2026-01-15 10:30	<FX>\tree-basic\src\app\main.py
+	secret.txt	7 B	2026-01-15 10:30	<FX>\tree-basic\.hidden\secret.txt
+[dialog]
+6 largest files

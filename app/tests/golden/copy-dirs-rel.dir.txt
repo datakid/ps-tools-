@@ -1,5 +1,4 @@
 [clipboard]
-.hidden
 bin
 docs
 empty
@@ -9,4 +8,4 @@ src
 src\app
 src\lib
 [toast]
-Copied 9 lines
+Copied 8 lines from All subfolder paths (relative)

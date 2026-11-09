@@ -32,11 +32,11 @@ $clipKeys = @('sort','unique','trim','remove-blank','json-pretty','json-minify',
 foreach ($k in $clipKeys) { $testIds.Add('clip.' + $k) }
 $testIds.Add('rename.lower'); $testIds.Add('rename.kebab'); $testIds.Add('rename.snake'); $testIds.Add('rename.title')
 
-$missing = @(($tableIds + $prose) | Select-Object -Unique | Where-Object { -not $known.ContainsKey($_) })
+$missing = @(($tableIds + $prose) | Where-Object { $_ } | Select-Object -Unique | Where-Object { -not $known.ContainsKey($_) })
 $tests = $ser.DeserializeObject([IO.File]::ReadAllText($Tests))
 $tested = @{}
-foreach ($t in $tests) { if ($known.ContainsKey($t['id'])) { $tested[$known[$t['id']]] = $true } }
-$untested = @($testIds | Select-Object -Unique | Where-Object { $known.ContainsKey($_) -and -not $tested.ContainsKey($known[$_]) })
+foreach ($t in $tests) { $tid = [string]$t['id']; if ($tid -and $known.ContainsKey($tid)) { $tested[$known[$tid]] = $true } }
+$untested = @($testIds | Where-Object { $_ } | Select-Object -Unique | Where-Object { $known.ContainsKey($_) -and -not $tested.ContainsKey($known[$_]) })
 
 Write-Host ('doc ids: {0} table + {1} in prose; catalog: {2} actions; tests: {3}' -f $tableIds.Count, @($prose).Count, $catalog['count'], @($tests).Count)
 foreach ($m in $missing) { Write-Host ('MISSING action: ' + $m) }

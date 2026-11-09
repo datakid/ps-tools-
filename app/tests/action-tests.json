@@ -908,7 +908,7 @@
   ],
   "_gen": true,
   "expectFiles": [
-   "../src_20??-??-??*"
+   "src_20??-??-??*"
   ],
   "golden": false
  },
