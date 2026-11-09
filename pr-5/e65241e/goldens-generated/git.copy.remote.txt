@@ -1,0 +1,4 @@
+[clipboard]
+https://github.com/example/repo.git
+[toast]
+Copied 1 line from Remote URL

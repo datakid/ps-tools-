@@ -1,0 +1,6 @@
+[table]
+3 rows
+Fact	Value
+Zone	Internet
+Downloaded from	https://example.com/file.zip
+Referrer	https://example.com/

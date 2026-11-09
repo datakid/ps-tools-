@@ -1,0 +1,10 @@
+[table]
+5 file types
+Extension	Files	Size
+.dll	1	2.0 KB
+.py	2	47 B
+.md	1	26 B
+.js	1	20 B
+.txt	1	7 B
+[dialog]
+5 file types

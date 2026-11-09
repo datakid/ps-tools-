@@ -1,0 +1,4 @@
+[clipboard]
+data:text/plain;base64,b25lCnR3bwp0aHJlZQo=
+[toast]
+Copied data URI (14 B)

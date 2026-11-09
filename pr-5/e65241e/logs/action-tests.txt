@@ -1,0 +1,340 @@
+PASS  copy-name.file                        99 ms
+PASS  copy-name.multi                        7 ms
+PASS  copy-path-quoted.dir                   6 ms
+PASS  copy-path-fwd.awkward                  5 ms
+PASS  copy-parent.file                       7 ms
+PASS  copy-sha256.file                       9 ms
+PASS  copy-contents.file                     7 ms
+PASS  copy-names.dir                         7 ms
+FAIL  copy-tree.dir                        342 ms
+      output differs from golden
+      --- expected
+      [clipboard]
+      tree-basic/
+      ├── .hidden/
+      │   └── secret.txt
+      ├── bin/
+      │   └── out.dll
+      ├── docs/
+      │   └── readme.md
+      ├── empty/
+      ├── node_modules/
+      │   └── pkg/
+      │       └── index.js
+      └── src/
+          ├── app/
+          │   ├── main.py
+          │   └── util.py
+          └── lib/
+      [toast]
+      Copied 16 lines
+      --- actual
+      [clipboard]
+      tree-basic/
+      ├── bin/
+      │   └── out.dll
+      ├── docs/
+      │   └── readme.md
+      ├── empty/
+      ├── node_modules/
+      │   └── pkg/
+      │       └── index.js
+      └── src/
+          ├── app/
+          │   ├── main.py
+          │   └── util.py
+          └── lib/
+      [toast]
+      Copied 14 lines from Tree (ASCII)
+      
+FAIL  copy-dirs-rel.dir                    301 ms
+      output differs from golden
+      --- expected
+      [clipboard]
+      .hidden
+      bin
+      docs
+      empty
+      node_modules
+      node_modules\pkg
+      src
+      src\app
+      src\lib
+      [toast]
+      Copied 9 lines
+      --- actual
+      [clipboard]
+      bin
+      docs
+      empty
+      node_modules
+      node_modules\pkg
+      src
+      src\app
+      src\lib
+      [toast]
+      Copied 8 lines from All subfolder paths (relative)
+      
+PASS  copy-size.dir                         10 ms
+PASS  folder-sizes.dir                      15 ms
+PASS  new-folder-clip.undo                  13 ms
+PASS  copy-path-quoted.v4id                  6 ms
+FAIL  copy-tree.v4id                       321 ms
+      output differs from golden
+      --- expected
+      [clipboard]
+      tree-basic/
+      ├── .hidden/
+      │   └── secret.txt
+      ├── bin/
+      │   └── out.dll
+      ├── docs/
+      │   └── readme.md
+      ├── empty/
+      ├── node_modules/
+      │   └── pkg/
+      │       └── index.js
+      └── src/
+          ├── app/
+          │   ├── main.py
+          │   └── util.py
+          └── lib/
+      [toast]
+      Copied 16 lines
+      --- actual
+      [clipboard]
+      tree-basic/
+      ├── bin/
+      │   └── out.dll
+      ├── docs/
+      │   └── readme.md
+      ├── empty/
+      ├── node_modules/
+      │   └── pkg/
+      │       └── index.js
+      └── src/
+          ├── app/
+          │   ├── main.py
+          │   └── util.py
+          └── lib/
+      [toast]
+      Copied 14 lines from Tree (ASCII)
+      
+PASS  new-folder-clip.v4id                   7 ms
+FAIL  copy.tree.ascii                      335 ms
+      golden missing: copy.tree.ascii.txt
+FAIL  copy.tree.ascii-plain                350 ms
+      golden missing: copy.tree.ascii-plain.txt
+FAIL  copy.tree.folders                    322 ms
+      golden missing: copy.tree.folders.txt
+FAIL  copy.tree.sizes                      343 ms
+      golden missing: copy.tree.sizes.txt
+FAIL  copy.tree.markdown                   321 ms
+      golden missing: copy.tree.markdown.txt
+FAIL  copy.tree.nested-list                304 ms
+      golden missing: copy.tree.nested-list.txt
+FAIL  copy.tree.json                       307 ms
+      golden missing: copy.tree.json.txt
+FAIL  copy.list.subfolder-names            272 ms
+      golden missing: copy.list.subfolder-names.txt
+FAIL  copy.list.subfolder-names-rec        303 ms
+      golden missing: copy.list.subfolder-names-rec.txt
+FAIL  copy.list.subfolder-paths             13 ms
+      golden missing: copy.list.subfolder-paths.txt
+FAIL  copy.list.subfolder-paths-rel        285 ms
+      golden missing: copy.list.subfolder-paths-rel.txt
+FAIL  copy.list.file-names-rec             287 ms
+      golden missing: copy.list.file-names-rec.txt
+FAIL  copy.list.file-paths-rel             334 ms
+      golden missing: copy.list.file-paths-rel.txt
+FAIL  copy.list.file-paths-abs             303 ms
+      golden missing: copy.list.file-paths-abs.txt
+FAIL  copy.list.csv                        311 ms
+      golden missing: copy.list.csv.txt
+FAIL  copy.list.json                       319 ms
+      golden missing: copy.list.json.txt
+FAIL  copy.list.ext-summary                319 ms
+      golden missing: copy.list.ext-summary.txt
+FAIL  copy.list.count                      330 ms
+      golden missing: copy.list.count.txt
+FAIL  copy.path.cd                           7 ms
+      golden missing: copy.path.cd.txt
+FAIL  copy.ai.folder                       437 ms
+      golden missing: copy.ai.folder.txt
+FAIL  copy.size                              7 ms
+      golden missing: copy.size.txt
+FAIL  search.large                           9 ms
+      golden missing: search.large.txt
+FAIL  search.recent                         12 ms
+      golden missing: search.recent.txt
+FAIL  search.empty                         583 ms
+      golden missing: search.empty.txt
+FAIL  search.long-paths                      8 ms
+      golden missing: search.long-paths.txt
+FAIL  inspect.sizes                          9 ms
+      golden missing: inspect.sizes.txt
+FAIL  inspect.types                         10 ms
+      golden missing: inspect.types.txt
+FAIL  inspect.env-path                     240 ms
+      golden missing: inspect.env-path.txt
+FAIL  copy.path.quoted                       7 ms
+      golden missing: copy.path.quoted.txt
+FAIL  copy.tree.depth                      322 ms
+      golden missing: copy.tree.depth.txt
+FAIL  copy.tree.gitignore                  420 ms
+      golden missing: copy.tree.gitignore.txt
+FAIL  copy.list.by-ext                     311 ms
+      golden missing: copy.list.by-ext.txt
+FAIL  copy.names.selected                  970 ms
+      golden missing: copy.names.selected.txt
+FAIL  copy.names.stem                        6 ms
+      golden missing: copy.names.stem.txt
+FAIL  copy.path                            220 ms
+      golden missing: copy.path.txt
+FAIL  copy.path.fwd                          5 ms
+      golden missing: copy.path.fwd.txt
+FAIL  copy.path.json                       214 ms
+      golden missing: copy.path.json.txt
+FAIL  copy.path.ps                         218 ms
+      golden missing: copy.path.ps.txt
+FAIL  copy.path.wsl                          6 ms
+      golden missing: copy.path.wsl.txt
+FAIL  copy.path.uri                          5 ms
+      golden missing: copy.path.uri.txt
+FAIL  copy.path.parent                       5 ms
+      golden missing: copy.path.parent.txt
+FAIL  copy.path.rel-git                    331 ms
+      golden missing: copy.path.rel-git.txt
+FAIL  copy.path.rel-marked                 265 ms
+      golden missing: copy.path.rel-marked.txt
+FAIL  copy.ai.files                        320 ms
+      golden missing: copy.ai.files.txt
+FAIL  copy.contents                         31 ms
+      golden missing: copy.contents.txt
+FAIL  copy.contents.fenced                 233 ms
+      golden missing: copy.contents.fenced.txt
+FAIL  copy.datauri                           3 ms
+      golden missing: copy.datauri.txt
+FAIL  copy.hash.verify                       4 ms
+      golden missing: copy.hash.verify.txt
+FAIL  git.copy.permalink                   425 ms
+      golden missing: git.copy.permalink.txt
+FAIL  git.copy.branch                      343 ms
+      golden missing: git.copy.branch.txt
+FAIL  git.copy.last-commit                 341 ms
+      golden missing: git.copy.last-commit.txt
+FAIL  git.copy.remote                      340 ms
+      golden missing: git.copy.remote.txt
+FAIL  git.status.repos                     126 ms
+      golden missing: git.status.repos.txt
+FAIL  search.text                          373 ms
+      golden missing: search.text.txt
+FAIL  search.duplicates                      9 ms
+      golden missing: search.duplicates.txt
+FAIL  inspect.locking                      389 ms
+      golden missing: inspect.locking.txt
+FAIL  inspect.origin                       335 ms
+      golden missing: inspect.origin.txt
+FAIL  inspect.facts                        309 ms
+      golden missing: inspect.facts.txt
+FAIL  compare.with-marked                   10 ms
+      golden missing: compare.with-marked.txt
+FAIL  compare.two-selected                 305 ms
+      golden missing: compare.two-selected.txt
+FAIL  compare.hash-selected                249 ms
+      golden missing: compare.hash-selected.txt
+FAIL  new.from-clip-tree                    13 ms
+      golden missing: new.from-clip-tree.txt
+PASS  new.paste-image                        9 ms
+PASS  new.paste-text                         8 ms
+PASS  new.paste-text.csv                     7 ms
+FAIL  new.paste-shortcut                    34 ms
+      golden missing: new.paste-shortcut.txt
+FAIL  new.paste-hardlink                     7 ms
+      golden missing: new.paste-hardlink.txt
+FAIL  new.paste-junction                    20 ms
+      golden missing: new.paste-junction.txt
+FAIL  new.folder-from-clip                   7 ms
+      golden missing: new.folder-from-clip.txt
+PASS  new.dated-folder                       7 ms
+FAIL  new.file                               8 ms
+      golden missing: new.file.txt
+FAIL  new.group-selected                     8 ms
+      golden missing: new.group-selected.txt
+FAIL  new.unwrap                             6 ms
+      golden missing: new.unwrap.txt
+FAIL  new.snapshot                           9 ms
+      expected a file matching: ../src_20??-??-??*
+FAIL  rename.date-prefix                     6 ms
+      golden missing: rename.date-prefix.txt
+FAIL  rename.number                          7 ms
+      golden missing: rename.number.txt
+FAIL  rename.ext-lower                       6 ms
+      golden missing: rename.ext-lower.txt
+FAIL  rename.lower                          10 ms
+      golden missing: rename.lower.txt
+FAIL  rename.kebab                           7 ms
+      golden missing: rename.kebab.txt
+FAIL  rename.snake                           6 ms
+      golden missing: rename.snake.txt
+FAIL  rename.title                           6 ms
+      golden missing: rename.title.txt
+FAIL  organize.flatten                      11 ms
+      golden missing: organize.flatten.txt
+FAIL  organize.by-type                       9 ms
+      golden missing: organize.by-type.txt
+FAIL  organize.by-date                       5 ms
+      golden missing: organize.by-date.txt
+FAIL  archive.zip-smart                     14 ms
+      golden missing: archive.zip-smart.txt
+FAIL  archive.zip-gitignore                354 ms
+      golden missing: archive.zip-gitignore.txt
+FAIL  archive.extract                        6 ms
+      golden missing: archive.extract.txt
+FAIL  archive.extract-tar                  241 ms
+      golden missing: archive.extract-tar.txt
+FAIL  archive.list                         281 ms
+      golden missing: archive.list.txt
+FAIL  image.dimensions                     240 ms
+      golden missing: image.dimensions.txt
+FAIL  clip.sort                              9 ms
+      golden missing: clip.sort.txt
+FAIL  clip.unique                            6 ms
+      golden missing: clip.unique.txt
+FAIL  clip.trim                              6 ms
+      golden missing: clip.trim.txt
+FAIL  clip.remove-blank                      6 ms
+      golden missing: clip.remove-blank.txt
+FAIL  clip.json-pretty                       8 ms
+      golden missing: clip.json-pretty.txt
+FAIL  clip.json-minify                       6 ms
+      golden missing: clip.json-minify.txt
+FAIL  clip.base64-encode                     6 ms
+      golden missing: clip.base64-encode.txt
+FAIL  clip.base64-decode                     6 ms
+      golden missing: clip.base64-decode.txt
+FAIL  clip.url-encode                       20 ms
+      golden missing: clip.url-encode.txt
+FAIL  clip.url-decode                        6 ms
+      golden missing: clip.url-decode.txt
+FAIL  clip.lower                             6 ms
+      golden missing: clip.lower.txt
+FAIL  clip.upper                             6 ms
+      golden missing: clip.upper.txt
+FAIL  clip.kebab                             6 ms
+      golden missing: clip.kebab.txt
+FAIL  clip.snake                             6 ms
+      golden missing: clip.snake.txt
+FAIL  clip.camel                             6 ms
+      golden missing: clip.camel.txt
+FAIL  clip.paths-fwd                        20 ms
+      golden missing: clip.paths-fwd.txt
+FAIL  clip.quote-lines                       9 ms
+      golden missing: clip.quote-lines.txt
+FAIL  clip.to-ps-array                       7 ms
+      golden missing: clip.to-ps-array.txt
+FAIL  clip.count                            11 ms
+      golden missing: clip.count.txt
+PASS  clip.guid                              6 ms
+PASS  clip.timestamp                         5 ms
+19 passed, 108 failed, 0 skipped

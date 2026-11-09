@@ -1,0 +1,11 @@
+[clipboard]
+<FX>\tree-basic\bin
+<FX>\tree-basic\docs
+<FX>\tree-basic\empty
+<FX>\tree-basic\node_modules
+<FX>\tree-basic\node_modules\pkg
+<FX>\tree-basic\src
+<FX>\tree-basic\src\app
+<FX>\tree-basic\src\lib
+[toast]
+Copied 8 lines

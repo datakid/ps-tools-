@@ -1,0 +1,8 @@
+PASS menu-dump.txt
+PASS tree-folder.txt
+PASS tree-background.txt
+PASS tree-file-image.txt
+PASS tree-file-multi.txt
+PASS tree-drive.txt
+PASS tree-folder-notools.txt
+exit code 0

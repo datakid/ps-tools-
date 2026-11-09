@@ -1,0 +1,4 @@
+[clipboard]
+<FX>\names
+[toast]
+<truncated>

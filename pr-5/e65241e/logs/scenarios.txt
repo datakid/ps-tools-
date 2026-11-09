@@ -1,0 +1,34 @@
+PASS  popup-perf  median 355 ms, runs: 776, 358, 346, 334, 355
+PASS  popup-search-run  typed "ta", Enter; clipboard starts with: tree-basic/
+PASS  popup-recent-recorded  settings file lists the action as recently used
+PASS  popup-escape-clears-search  first Esc clears the text and keeps the popup open
+PASS  popup-escape-closes  second Esc closes the popup and the process exits
+PASS  popup-favorite-toggle  Ctrl+D on the Size row added it to the favorites in the settings file
+PASS  popup-background-opens  menu-bg opens the popup
+PASS  popup-rows-exposed  rows are visible to UI Automation: Tree (ASCII), Path (quoted), Path (quoted), Tree (ASCII), 
+Zip (skip build folders), Paste image as PNG
+PASS  popup-drill  drilled Copy > Tree with the keyboard: Folder structure..., Tree (ASCII), Tree (plain ASCII), Tree 
+(respect .gitignore), Tree as JSON, Tree as Markdown, Tree as nested list, Tree to depth..., Tree with sizes, Tree, 
+folders only
+PASS  popup-back  Backspace with an empty search box goes up one level: For AI, Git, Lists, Names, Paths
+PASS  popup-multi-1  1 processes started in 12 ms, popup visible after 365 ms, popup lists 1 items, popups open: 1
+PASS  popup-multi-20  20 processes started in 48 ms, popup visible after 826 ms, popup lists 20 items, popups open: 1
+PASS  popup-multi-200  200 processes started in 254 ms, popup visible after 4059 ms, popup lists 200 items, popups 
+open: 1
+PASS  run-echo  status: ● Exit 0 · 0.23 s; output has hello-pst: True
+PASS  run-error  status: ● Exit 1 · 0.29 s; plain error text: True
+PASS  run-cmd  status: ● Exit 0 · 0.03 s
+PASS  run-stop  while running: Running 0.3 s; after Esc: Stopped
+PASS  run-idle-banner  banner appeared after 11977 ms of silence and an idle process
+PASS  run-table  Show as table opens a result window with the rows
+combo Menu location: ControlType.ComboBox class=WindowsForms10.COMBOBOX.app.0.34f5582_r6_ad1
+   child: ControlType.Edit name=Menu location class=Edit
+   child: ControlType.List name=Menu location class=ComboLBox
+   child: ControlType.Button name=Drop Down Button class=
+combo Result: ControlType.ComboBox class=WindowsForms10.COMBOBOX.app.0.34f5582_r6_ad1
+   child: ControlType.List name=Result class=ComboLBox
+   child: ControlType.Button name=Drop Down Button class=
+PASS  save-action-roundtrip  typed a command, saved it as Python files under Search, ran it from the popup on another 
+folder. clipboard after running from the popup: Name    Length | ----    ------ | main.py     14
+20 scenarios, 0 failed
+exit code 0

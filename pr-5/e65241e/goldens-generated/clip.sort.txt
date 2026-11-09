@@ -1,0 +1,6 @@
+[clipboard]
+Apple
+banana
+cherry
+[toast]
+Sorted 3 lines

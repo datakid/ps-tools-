@@ -1,0 +1,4 @@
+[clipboard]
+@('a','O''Brien','c')
+[toast]
+Made a PowerShell array of 3 items
