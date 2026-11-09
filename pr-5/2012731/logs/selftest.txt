@@ -1,0 +1,37 @@
+PASS  actions: Id, Label, Group and Hint are filled in  -  145 actions
+PASS  actions: ids are unique  -  145 ids
+PASS  actions: every Group exists in Modules.All  -  16 modules
+PASS  presets: every referenced id exists  -  4 presets
+PASS  default pins: ids exist and fit their context  -  18 pins in 4 contexts
+PASS  suggestions: every rule maps to an existing id  -  12 ids
+PASS  suggestions: counts, caps and time limit  -  6 pictures, 1 zip, 312 items, repos, time cap
+PASS  ps: every menu action has Ps or PsNone  -  90 with a command, 42 with a reason
+PASS  settings: v3 parse and serialize round trip  -  56 lines
+PASS  settings: v2 file migrates without losing enabled actions or pins  -  29 enabled, 7 old favorites
+PASS  settings: pin limit, move, unpin and enable rules  -  12 pins per context
+PASS  menu plan: Minimal preset in all four contexts  -  top-level entries: folder 4+1, background 7+1, file 4, drive 4+1
+PASS  menu plan: Everyday preset in all four contexts  -  top-level entries: folder 10+1, background 12+1, file 10, drive 9+1
+PASS  menu plan: Developer preset in all four contexts  -  top-level entries: folder 11+1, background 14+1, file 11, drive 11+1
+PASS  menu plan: Everything preset in all four contexts  -  top-level entries: folder 15+1, background 19+1, file 12, drive 14+1
+PASS  Catalog: shipped, library and built-in entries are valid  -  317 actions
+PASS  Catalog: ids unique, every alias resolves back
+PASS  Catalog: titles and descriptions of shipped entries
+PASS  Catalog: commands.json converted (hidden from popup, Library/<category>)
+PASS  Catalog: recipes become Recipes/<name> nodes with the old alias
+PASS  Catalog: every v3 action id resolves to a v4 id  -  108 ids
+PASS  Placeholders: quoting matrix (PowerShell, back-compat, cmd, tokens)  -  15 values x 3 shells
+PASS  Script headers: ps1 and cmd parsing
+PASS  Catalog: user folder (structure = menu, headers, problems, override)
+PASS  Catalog: hidden and overrides from settings
+PASS  Catalog: load time  -  18 ms for 317 actions
+PASS  MenuTree: sections, order, inlining, filtering, requires, extended
+PASS  MenuTree: search ranking (initials, prefix, keywords, library)
+PASS  MenuTree: search time  -  0.7 ms per keystroke over 317 actions
+PASS  MenuTree: build time  -  0.2 ms per build, 317 actions in the catalog
+PASS  Explorer menu: v4 registry layout (power menu, favorites, caps, filters)
+PASS  Settings: v3 pins become v4 favorites, schema 4 round-trips
+PASS  RiskScan: 54 commands classified
+PASS  Run console: ANSI, table parsing, prelude, history import, autocomplete, generalization
+PASS  Run console: real PowerShell and cmd runs (output, errors, exit codes, table)
+
+35 passed, 0 failed, 0 warnings in 5399 ms

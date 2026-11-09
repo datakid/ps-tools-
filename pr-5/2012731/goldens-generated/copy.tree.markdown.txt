@@ -1,0 +1,21 @@
+[clipboard]
+```text
+tree-basic/
+├── .hidden/
+│   └── secret.txt
+├── bin/
+│   └── out.dll
+├── docs/
+│   └── readme.md
+├── empty/
+├── node_modules/
+│   └── pkg/
+│       └── index.js
+└── src/
+    ├── app/
+    │   ├── main.py
+    │   └── util.py
+    └── lib/
+```
+[toast]
+Copied 18 lines from Tree as Markdown

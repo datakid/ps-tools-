@@ -1,0 +1,4 @@
+[clipboard]
+{"name":"tree-basic","type":"folder","children":[{"name":".hidden","type":"folder","children":[{"name":"secret.txt","type":"file","size":7}]},{"name":"bin","type":"folder","children":[{"name":"out.dll","type":"file","size":2048}]},{"name":"docs","type":"folder","children":[{"name":"readme.md","type":"file","size":26}]},{"name":"empty","type":"folder","children":[]},{"name":"node_modules","type":"folder","children":[{"name":"pkg","type":"folder","children":[{"name":"index.js","type":"file","size":20}]}]},{"name":"src","type":"folder","children":[{"name":"app","type":"folder","children":[{"name":"main.py","type":"file","size":15},{"name":"util.py","type":"file","size":32}]},{"name":"lib","type":"folder","children":[]}]}]}
+[toast]
+Copied 1 line from Tree as JSON
