@@ -128,6 +128,8 @@ namespace PSTools
                 text = text.Replace(root, "<FX>");
                 text = text.Replace(root.Replace('\\', '/'), "<FX>");
                 text = text.Replace(root.Replace("\\", "\\\\"), "<FX>");
+                if (root.Length > 3 && root[1] == ':')
+                    text = text.Replace("/mnt/" + char.ToLowerInvariant(root[0]) + root.Substring(2).Replace('\\', '/'), "<FX>");
             }
             var lines = text.Split('\n').Select(l => l.TrimEnd()).ToList();
             return string.Join("\n", lines).TrimEnd('\n') + "\n";
@@ -155,7 +157,11 @@ namespace PSTools
             foreach (var f in Directory.GetFiles(from))
             {
                 string dest = Path.Combine(to, Path.GetFileName(f));
-                if (dest.Length < 250) File.Copy(f, dest, true);
+                if (dest.Length < 250)
+                {
+                    File.Copy(f, dest, true);
+                    try { File.SetCreationTime(dest, File.GetCreationTime(f)); File.SetLastWriteTime(dest, File.GetLastWriteTime(f)); } catch { }
+                }
             }
             foreach (var d in Directory.GetDirectories(from))
                 CopyTree(d, Path.Combine(to, Path.GetFileName(d)));

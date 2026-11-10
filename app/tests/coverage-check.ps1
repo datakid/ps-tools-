@@ -33,12 +33,12 @@ foreach ($k in $clipKeys) { $testIds.Add('clip.' + $k) }
 $testIds.Add('rename.lower'); $testIds.Add('rename.kebab'); $testIds.Add('rename.snake'); $testIds.Add('rename.title')
 
 $missing = @(($tableIds + $prose) | Where-Object { $_ } | Select-Object -Unique | Where-Object { -not $known.ContainsKey($_) })
-$tests = $ser.DeserializeObject([IO.File]::ReadAllText($Tests))
+$specs = $ser.DeserializeObject([IO.File]::ReadAllText($Tests))
 $tested = @{}
-foreach ($t in $tests) { $tid = [string]$t['id']; if ($tid -and $known.ContainsKey($tid)) { $tested[$known[$tid]] = $true } }
+foreach ($t in $specs) { $tid = [string]$t['id']; if ($tid -and $known.ContainsKey($tid)) { $tested[$known[$tid]] = $true } }
 $untested = @($testIds | Where-Object { $_ } | Select-Object -Unique | Where-Object { $known.ContainsKey($_) -and -not $tested.ContainsKey($known[$_]) })
 
-Write-Host ('doc ids: {0} table + {1} in prose; catalog: {2} actions; tests: {3}' -f $tableIds.Count, @($prose).Count, $catalog['count'], @($tests).Count)
+Write-Host ('doc ids: {0} table + {1} in prose; catalog: {2} actions; tests: {3}' -f $tableIds.Count, @($prose).Count, $catalog['count'], @($specs).Count)
 foreach ($m in $missing) { Write-Host ('MISSING action: ' + $m) }
 foreach ($u in $untested) { Write-Host ('MISSING test:   ' + $u) }
 Write-Host ('{0} ids without an action, {1} test-required ids without a test' -f $missing.Count, $untested.Count)
