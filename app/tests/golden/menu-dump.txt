@@ -35,7 +35,7 @@ HKCU\Software\Classes\Directory\shell\PSTools\shell\14inspect.space-map
 HKCU\Software\Classes\Directory\shell\PSTools\shell\14inspect.space-map\command
   (default) = "<EXE>" inspect.space-map "%1"
 HKCU\Software\Classes\Directory\shell\PSTools\shell\15search.here
-  MUIVerb = Search here...
+  MUIVerb = Search here…
   MultiSelectModel = Player
 HKCU\Software\Classes\Directory\shell\PSTools\shell\15search.here\command
   (default) = "<EXE>" search.here "%1"
@@ -91,7 +91,7 @@ HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\14inspect.space-m
 HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\14inspect.space-map\command
   (default) = "<EXE>" inspect.space-map "%V"
 HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\15search.here
-  MUIVerb = Search here...
+  MUIVerb = Search here…
   MultiSelectModel = Player
 HKCU\Software\Classes\Directory\Background\shell\PSTools\shell\15search.here\command
   (default) = "<EXE>" search.here "%V"
@@ -147,7 +147,7 @@ HKCU\Software\Classes\Drive\shell\PSTools\shell\14inspect.space-map
 HKCU\Software\Classes\Drive\shell\PSTools\shell\14inspect.space-map\command
   (default) = "<EXE>" inspect.space-map "%1"
 HKCU\Software\Classes\Drive\shell\PSTools\shell\15search.here
-  MUIVerb = Search here...
+  MUIVerb = Search here…
   MultiSelectModel = Player
 HKCU\Software\Classes\Drive\shell\PSTools\shell\15search.here\command
   (default) = "<EXE>" search.here "%1"

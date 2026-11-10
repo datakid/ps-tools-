@@ -112,7 +112,7 @@ namespace PSTools
             foreach (var r in RenameActions()) yield return r;
             foreach (var r in NewActions()) yield return r;
 
-            yield return Make("organize.by-date", "Organize", "Sort files into month folders", "Moves the files in this folder into yyyy-MM folders by the date the picture was taken, or the last change date.",
+            yield return Make("organize.by-date", "Organize", "Sort into folders by month", "Moves the files in this folder into yyyy-MM folders by the date the picture was taken, or the last change date.",
                 Target.Dirs, false, Tier.Confirm, true, (paths, c) =>
                 {
                     var j = new Journal("Sort files by month in " + paths[0]);
@@ -216,14 +216,14 @@ namespace PSTools
                 yield return Make("rename." + def.Key, "Rename", def.Title, def.Hint, Target.File | Target.Folder, true, Tier.Confirm, true,
                     (paths, c) => RenameWith(paths, "Rename to " + def.Title, (name, dir) => StemExt(name, dir, def.F)));
             }
-            yield return Make("rename.date-prefix", "Rename", "Add date prefix", "Puts the date in front of each file name, like 2026-01-15 name.jpg. Pictures use the date they were taken.", Target.File, true, Tier.Confirm, true,
+            yield return Make("rename.date-prefix", "Rename", "Prefix with date taken/modified", "Puts the date in front of each file name, like 2026-01-15 name.jpg. Pictures use the date they were taken.", Target.File, true, Tier.Confirm, true,
                 (paths, c) => RenameWith(paths, "Add date prefix", (name, dir) =>
                 {
                     if (Regex.IsMatch(name, "^\\d{4}-\\d{2}-\\d{2}[ _-]")) return name;
                     string full = paths.FirstOrDefault(x => Path.GetFileName(x) == name) ?? name;
                     return TakenDate(full).ToString("yyyy-MM-dd") + " " + name;
                 }));
-            yield return Make("rename.number", "Rename", "Number files in order", "Renames the selected files name_001.ext, name_002.ext... in the order Explorer sorts them. The name comes from the first file.", Target.File, true, Tier.Confirm, true,
+            yield return Make("rename.number", "Rename", "Number sequentially", "Renames the selected files name_001.ext, name_002.ext... in the order Explorer sorts them. The name comes from the first file.", Target.File, true, Tier.Confirm, true,
                 (paths, c) =>
                 {
                     var ordered = paths.OrderBy(Path.GetFileName, Comparer<string>.Create(NaturalCompare)).ToList();
@@ -250,7 +250,7 @@ namespace PSTools
 
         static IEnumerable<Action> NewActions()
         {
-            yield return Make("new.file", "Paste & New", "New file...", "Creates an empty file with the name you type. Without an extension it becomes .txt.", Target.Dirs, false, Tier.Instant, true, (paths, c) =>
+            yield return Make("new.file", "Paste & New", "New file…", "Creates an empty file with the name you type. Without an extension it becomes .txt.", Target.Dirs, false, Tier.Instant, true, (paths, c) =>
             {
                 string name = Ask("Name of the new file (for example notes.md)", "New file.txt").Trim();
                 if (name.Length == 0) return new Result { Summary = "No name was given." };
@@ -294,7 +294,7 @@ namespace PSTools
                         if (p.ExitCode != 0) throw new InvalidOperationException(err.Trim());
                     }
                 }));
-            yield return Make("new.from-clip-tree", "Paste & New", "Create from copied tree", "Turns a folder tree copied as text (box-drawing, plain ASCII or an indented list) into real folders and empty files here. You see the list first.", Target.Dirs, false, Tier.Instant, true, (paths, c) =>
+            yield return Make("new.from-clip-tree", "Paste & New", "Folders from clipboard tree", "Turns a folder tree copied as text (box-drawing, plain ASCII or an indented list) into real folders and empty files here. You see the list first.", Target.Dirs, false, Tier.Instant, true, (paths, c) =>
                 FromTree(paths[0], Clip.Text()));
         }
 

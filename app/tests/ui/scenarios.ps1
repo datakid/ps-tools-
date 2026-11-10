@@ -472,6 +472,167 @@ else {
 }
 Stop-All
 
+
+function Snap-Screen([string]$name) {
+    try {
+        $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+        $bmp = New-Object System.Drawing.Bitmap($b.Width, $b.Height)
+        $g = [System.Drawing.Graphics]::FromImage($bmp)
+        $g.CopyFromScreen($b.X, $b.Y, 0, 0, $bmp.Size)
+        $g.Dispose()
+        $bmp.Save((Join-Path $Out ('scenario-' + $name + '.png')), [System.Drawing.Imaging.ImageFormat]::Png)
+        $bmp.Dispose()
+    } catch { Write-Host ('screen snapshot failed: ' + $_.Exception.Message) }
+}
+
+function Wait-Exit($proc, [int]$ms) {
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while (-not $proc.HasExited -and $sw.ElapsedMilliseconds -lt $ms) { Start-Sleep -Milliseconds 150 }
+}
+
+$env = New-Env 'demo'
+$treeBasic = Join-Path $Fixtures 'tree-basic'
+
+Set-Clipboard -Value 'untouched'
+$proc = Start-Process -FilePath $Exe -ArgumentList ('menu "{0}" --settings "{1}" --data-dir "{2}" --tools git,code' -f $treeBasic, $env.Settings, $env.Dir) -PassThru
+$popup = Find-Popup 15000
+if ($popup) {
+    Send-Keys $popup 'ta'
+    Send-Keys $popup '{ENTER}'
+    Wait-Exit $proc 20000
+    $clip = Get-Clipboard -Raw
+    $ok1 = [bool]($clip -match 'tree-basic/' -and $clip -match 'main\.py')
+    $p2 = Start-Run $env 'ps' 'Get-Clipboard' $treeBasic
+    $win = Find-Window 'PS Tools Run console' 15000
+    if ($win) {
+        Start-Sleep -Milliseconds 500
+        Send-Keys $win '^{ENTER}'
+        $st = Wait-Status $win 'Exit' 20000
+        $out = Get-OutputText $win
+        Snap $win '11-demo1-tree-in-console'
+        $ok1 = $ok1 -and ($out -match 'main\.py')
+    }
+    Add-Result 'demo-1-tree-to-console' $ok1 'ta + Enter copies the tree, the Run console shows it back'
+}
+else { Add-Result 'demo-1-tree-to-console' $false 'popup did not appear' }
+Stop-All
+
+Set-Clipboard -Value 'untouched'
+$proc = Start-Process -FilePath $Exe -ArgumentList ('menu "{0}" --settings "{1}" --data-dir "{2}" --tools git,code' -f $treeBasic, $env.Settings, $env.Dir) -PassThru
+$popup = Find-Popup 15000
+if ($popup) {
+    Send-Keys $popup 'for ai'
+    Snap $popup '12-demo2-popup'
+    Send-Keys $popup '{ENTER}'
+    Start-Sleep -Milliseconds 2200
+    Snap-Screen '12b-demo2-toast'
+    Wait-Exit $proc 25000
+    $clip = Get-Clipboard -Raw
+    Add-Result 'demo-2-copy-for-ai' ([bool]($clip -match '^# tree-basic' -and $clip -match '### src/app/main.py')) 'for ai + Enter copies the folder as an AI prompt, toast screenshot saved'
+}
+else { Add-Result 'demo-2-copy-for-ai' $false 'popup did not appear' }
+Stop-All
+
+$emptyDir = Join-Path $work 'empty-target'
+New-Item -ItemType Directory -Path $emptyDir | Out-Null
+$treeText = [IO.File]::ReadAllText((Join-Path $Fixtures 'clip-tree.txt'), [Text.Encoding]::UTF8)
+Set-Clipboard -Value $treeText
+$proc = Start-Process -FilePath $Exe -ArgumentList ('menu-bg "{0}" --settings "{1}" --data-dir "{2}" --tools git,code' -f $emptyDir, $env.Settings, $env.Dir) -PassThru
+$popup = Find-Popup 15000
+if ($popup) {
+    Send-Keys $popup 'folders from'
+    Snap $popup '13-demo3-popup'
+    Send-Keys $popup '{ENTER}'
+    $dlg = Find-Window 'PS Tools' 10000
+    $created = $false
+    if ($dlg) {
+        Start-Sleep -Milliseconds 500
+        Snap $dlg '13b-demo3-preview'
+        Send-Keys $dlg '{ENTER}'
+        Wait-Exit $proc 20000
+        $created = Test-Path -LiteralPath (Join-Path $emptyDir 'sample\src\util\helpers.py')
+    }
+    $same = $false
+    if ($created) {
+        Set-Clipboard -Value 'untouched'
+        $p3 = Start-Process -FilePath $Exe -ArgumentList ('copy.tree.ascii "{0}" --data-dir "{1}"' -f (Join-Path $emptyDir 'sample'), $env.Dir) -PassThru
+        Wait-Exit $p3 30000
+        $after = (Get-Clipboard -Raw)
+        $same = ((($after -replace "`r`n", "`n").TrimEnd()) -eq (($treeText -replace "`r`n", "`n").TrimEnd()))
+    }
+    Add-Result 'demo-3-folders-from-clipboard' ($created -and $same) ('preview dialog found: ' + [bool]$dlg + '; tree created: ' + $created + '; copying the new tree gives the original text: ' + $same)
+}
+else { Add-Result 'demo-3-folders-from-clipboard' $false 'popup did not appear' }
+Stop-All
+
+$lockFile = Join-Path $Fixtures 'names\a&b.txt'
+$fs = [IO.File]::Open($lockFile, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::Read)
+try {
+    $proc = Start-Process -FilePath $Exe -ArgumentList ('menu "{0}" --settings "{1}" --data-dir "{2}" --tools git,code' -f $lockFile, $env.Settings, $env.Dir) -PassThru
+    $popup = Find-Popup 15000
+    if ($popup) {
+        Send-Keys $popup 'locking'
+        Send-Keys $popup '{ENTER}'
+        $res = Find-Window 'Who is locking this?' 30000
+        if ($res) { Start-Sleep -Milliseconds 800; Snap $res '14-demo4-locking' }
+        Add-Result 'demo-4-locking' ([bool]$res) ('a result window listing the process holding the file: ' + [bool]$res)
+    }
+    else { Add-Result 'demo-4-locking' $false 'popup did not appear' }
+}
+finally { $fs.Dispose() }
+Stop-All
+
+$repoFile = Join-Path $Fixtures 'repo\src\app\main.py'
+Set-Clipboard -Value 'untouched'
+$proc = Start-Process -FilePath $Exe -ArgumentList ('menu "{0}" --settings "{1}" --data-dir "{2}"' -f $repoFile, $env.Settings, $env.Dir) -PassThru
+$popup = Find-Popup 15000
+if ($popup) {
+    Send-Keys $popup 'permalink'
+    Send-Keys $popup '{ENTER}'
+    Wait-Exit $proc 25000
+    $clip = (Get-Clipboard -Raw).Trim()
+    Add-Result 'demo-5-permalink' ($clip -match '^https://github\.com/example/repo/blob/[0-9a-f]{40}/src/app/main\.py$') ('clipboard: ' + $clip)
+}
+else { Add-Result 'demo-5-permalink' $false 'popup did not appear' }
+Stop-All
+
+$env2 = New-Env 'demo6'
+$cmd6 = 'Get-ChildItem -Recurse -File | Group-Object Extension | Select-Object Name, Count'
+$p6 = Start-Run $env2 'ps' $cmd6 $treeBasic
+$win = Find-Window 'PS Tools Run console' 15000
+if (-not $win) { Add-Result 'demo-6-count-by-extension' $false 'Run console did not open' }
+else {
+    Start-Sleep -Milliseconds 500
+    [void](Click-Button $win 'Show as table')
+    $table = Find-Window 'Result of: Get-ChildItem -Recurse -File | Group-Object Extension | Select-Object Name, Count' 20000
+    if (-not $table) { $table = Find-Window 'Result of: Get-ChildItem -Recurse -File | Group-Object Extension | Select-Object Name, ...' 2000 }
+    if ($table) { Snap $table '15-demo6-table' }
+    Send-Keys $win '^s'
+    $dlg = Find-Dialog $win 'Save as action' 10000
+    $ok6 = $false
+    if ($dlg) {
+        $titleBox = Find-Named $dlg 'Action title' ([System.Windows.Automation.ControlType]::Edit)
+        if ($titleBox) { $titleBox.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue('Count by extension') }
+        [void](Set-Combo $dlg 'Menu location' 'Inspect')
+        [void](Set-Combo $dlg 'Result' 'Show as a table')
+        Start-Sleep -Milliseconds 300
+        Snap $dlg '15b-demo6-save'
+        [void](Click-Button $dlg 'Save')
+        Start-Sleep -Milliseconds 1500
+        Stop-All
+        $proc = Start-Process -FilePath $Exe -ArgumentList ('menu "{0}" --settings "{1}" --data-dir "{2}" --tools git,code' -f $treeBasic, $env2.Settings, $env2.Dir) -PassThru
+        $popup = Find-Popup 15000
+        if ($popup) {
+            Send-Keys $popup 'count by'
+            Send-Keys $popup '{ENTER}'
+            $t2 = Find-Window 'Count by extension' 30000
+            if ($t2) { Snap $t2 '15c-demo6-saved-table'; $ok6 = $true }
+        }
+    }
+    Add-Result 'demo-6-count-by-extension' $ok6 'table from the Run console, saved as Count by extension in Inspect, run again from the popup'
+}
+Stop-All
+
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 $failed = @($results | Where-Object { -not $_.Ok }).Count
 Write-Host ('{0} scenarios, {1} failed' -f $results.Count, $failed)

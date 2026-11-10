@@ -4,7 +4,7 @@
   - Zip (skip build folders)  (archive.zip-smart)  [modifies]
   - Paste image as PNG  (new.paste-image)  [modifies]
   - Folder space map  (inspect.space-map)
-  - Search here...  (search.here)
+  - Search here…  (search.here)
   - Windows PowerShell here  (open.ps)
   - Paste text as file  (new.paste-text)  [modifies]
   - Branch name  (git.copy.branch)
@@ -24,7 +24,7 @@
     - All subfolder names (recursive)  (copy.list.subfolder-names-rec)
     - All subfolder paths (relative)  (copy.list.subfolder-paths-rel)
     - Count files and folders  (copy.list.count)
-    - File paths of type...  (copy.list.by-ext)
+    - File paths of type…  (copy.list.by-ext)
     - File types summary  (copy.list.ext-summary)
     - Listing as CSV  (copy.list.csv)
     - Listing as JSON  (copy.list.json)
@@ -44,14 +44,14 @@
     - cd command for this folder  (copy.path.cd)
     - Path  (copy.path)
   + Tree/
-    - Folder structure...  (copy.tree.window)
+    - Folder structure…  (copy.tree.window)
     - Tree (ASCII)  (copy.tree.ascii)
     - Tree (plain ASCII)  (copy.tree.ascii-plain)
     - Tree (respect .gitignore)  (copy.tree.gitignore)
     - Tree as JSON  (copy.tree.json)
     - Tree as Markdown  (copy.tree.markdown)
     - Tree as nested list  (copy.tree.nested-list)
-    - Tree to depth...  (copy.tree.depth)
+    - Tree to depth…  (copy.tree.depth)
     - Tree with sizes  (copy.tree.sizes)
     - Tree, folders only  (copy.tree.folders)
   - Size  (copy.size)
@@ -60,23 +60,23 @@
   - Paste image as PNG  (new.paste-image)  [modifies]
   - Paste text as file  (new.paste-text)  [modifies]
   - Folder named from clipboard  (new.folder-from-clip)  [modifies]
-  - New dated folder  (new.dated-folder)  [modifies]
-  - Snapshot copy with date  (new.snapshot)  [modifies]
-  - New file...  (new.file)  [modifies]
+  - Dated folder  (new.dated-folder)  [modifies]
+  - Dated snapshot copy  (new.snapshot)  [modifies]
+  - New file…  (new.file)  [modifies]
   - Paste as shortcut  (new.paste-shortcut)  [modifies]
   - Paste as hard link  (new.paste-hardlink)  [modifies]
   - Paste as symbolic link  (new.paste-symlink)  [modifies]
   - Paste as junction  (new.paste-junction)  [modifies]
-  - Create from copied tree  (new.from-clip-tree)  [modifies]
+  - Folders from clipboard tree  (new.from-clip-tree)  [modifies]
 + Search/
   - Duplicate files  (search.duplicates)
-  - Search here...  (search.here)
+  - Search here…  (search.here)
   - Largest files  (search.large)
   - Recently changed files  (search.recent)
   - Long paths  (search.long-paths)
   - Empty folders  (search.empty)
-  - Files changed between...  (search.by-date)
-  - Find text in files...  (search.text)
+  - Files changed between…  (search.by-date)
+  - Find text in files…  (search.text)
 + Open/
   - Git Bash here  (open.gitbash)
   - Run console here  (open.run-console)
@@ -84,30 +84,30 @@
   - Windows PowerShell here  (open.ps)
   - Command Prompt here  (open.cmd)
   - WSL here  (open.wsl)
-  - VS Code  (open.vscode)
-- Rename: Batch rename...  (rename.batch)  [modifies]
+  - Open in VS Code  (open.vscode)
+- Rename: Batch rename…  (rename.batch)  [modifies]
 + Organize/
-  - Flatten tree (copy)  (organize.flatten)  [modifies]
+  - Flatten  (organize.flatten)  [modifies]
   - Flatten tree (move here)  (organize.flatten-move)  [modifies]
   - Sort by extension  (organize.by-ext)  [modifies]
   - Sort by month  (organize.by-month)  [modifies]
-  - Sort by kind  (organize.by-type)  [modifies]
-  - Sort files into month folders  (organize.by-date)  [modifies]
+  - Sort into folders by type  (organize.by-type)  [modifies]
+  - Sort into folders by month  (organize.by-date)  [modifies]
 - Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
 + Inspect/
   - Subfolder sizes  (inspect.sizes)
   - File types  (inspect.types)
   - Folder space map  (inspect.space-map)
   - Export inventory.csv  (inspect.inventory)  [modifies]
-- Compare: Compare with marked folder  (compare.with-marked)
+- Compare: Compare with marked  (compare.with-marked)
 + Dev/
-  - Free port...  (dev.port-kill)  [destructive]
-  - Serve folder on localhost...  (dev.serve)
+  - Free port…  (dev.port-kill)  [destructive]
+  - Serve folder on localhost  (dev.serve)
   - Find removable build folders  (dev.clean-build)  [destructive]
 + Git/
   - Fetch all repos below  (git.fetch.repos)
   - Open repo in browser  (git.open.web)
-  - Status of all repos below  (git.status.repos)
+  - Git status of all repos below  (git.status.repos)
   - Pull all repos below  (git.pull.repos)  [modifies]
 + Links/
   - Junction to marked here  (links.junction)  [modifies]

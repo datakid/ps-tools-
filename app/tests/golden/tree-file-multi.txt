@@ -30,21 +30,21 @@
     - Path relative to repo root  (copy.path.rel-git)
   - Size  (copy.size)
   - Copy as file for pasting  (copy.file.clipboard)
-- Paste & New: Move into new folder...  (new.group-selected)  [modifies]
-- Open: Notepad  (open.notepad)
+- Paste & New: Move selection into new folder  (new.group-selected)  [modifies]
+- Open: Open in Notepad  (open.notepad)
 + Rename/
   - lower case names  (rename.lower)  [modifies]
   - kebab-case names  (rename.kebab)  [modifies]
   - snake_case names  (rename.snake)  [modifies]
   - Title Case Names  (rename.title)  [modifies]
-  - Add date prefix  (rename.date-prefix)  [modifies]
-  - Number files in order  (rename.number)  [modifies]
+  - Prefix with date taken/modified  (rename.date-prefix)  [modifies]
+  - Number sequentially  (rename.number)  [modifies]
   - Lower-case extensions  (rename.ext-lower)  [modifies]
 - Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
 + Compare/
   - Are these identical?  (compare.hash-selected)
   - Compare the two selected  (compare.two-selected)
-  - Mark for link or compare  (compare.mark)
+  - Mark for compare  (compare.mark)
 + Fix/
   + Attributes/
     - Hide  (fix.attr.hide)  [modifies]

@@ -115,7 +115,7 @@
   },
   {
    "id": "copy.tree.depth",
-   "title": "Tree to depth...",
+   "title": "Tree to depth…",
    "menu": "Copy/Tree",
    "when": [
     "folder",
@@ -340,7 +340,7 @@
   },
   {
    "id": "copy.list.by-ext",
-   "title": "File paths of type...",
+   "title": "File paths of type…",
    "menu": "Copy/Lists",
    "when": [
     "folder",
@@ -741,7 +741,7 @@
   },
   {
    "id": "search.text",
-   "title": "Find text in files...",
+   "title": "Find text in files…",
    "menu": "Search",
    "when": [
     "folder",
@@ -793,7 +793,7 @@
   },
   {
    "id": "search.by-date",
-   "title": "Files changed between...",
+   "title": "Files changed between…",
    "menu": "Search",
    "when": [
     "folder",
@@ -936,7 +936,7 @@
   },
   {
    "id": "open.with-default-editor",
-   "title": "Edit with...",
+   "title": "Edit with…",
    "menu": "Open",
    "when": [
     "file"
@@ -1374,7 +1374,7 @@
   },
   {
    "id": "dev.port-kill",
-   "title": "Free port...",
+   "title": "Free port…",
    "menu": "Dev",
    "when": [
     "background"

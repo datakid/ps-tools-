@@ -47,22 +47,22 @@
   - Size  (copy.size)
   - Copy image to clipboard  (copy.image.clipboard)
   - Copy as file for pasting  (copy.file.clipboard)
-- Paste & New: Move into new folder...  (new.group-selected)  [modifies]
+- Paste & New: Move selection into new folder  (new.group-selected)  [modifies]
 + Open/
-  - Edit with...  (open.with-default-editor)
+  - Edit with…  (open.with-default-editor)
   - Run console here  (open.run-console)
   - Terminal here  (open.terminal)
   - Windows PowerShell here  (open.ps)
   - Command Prompt here  (open.cmd)
-  - VS Code  (open.vscode)
-  - Notepad  (open.notepad)
+  - Open in VS Code  (open.vscode)
+  - Open in Notepad  (open.notepad)
 + Rename/
   - lower case names  (rename.lower)  [modifies]
   - kebab-case names  (rename.kebab)  [modifies]
   - snake_case names  (rename.snake)  [modifies]
   - Title Case Names  (rename.title)  [modifies]
-  - Add date prefix  (rename.date-prefix)  [modifies]
-  - Number files in order  (rename.number)  [modifies]
+  - Prefix with date taken/modified  (rename.date-prefix)  [modifies]
+  - Number sequentially  (rename.number)  [modifies]
   - Lower-case extensions  (rename.ext-lower)  [modifies]
 - Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
 + Image/
@@ -77,7 +77,7 @@
   - File facts  (inspect.facts)
   - Where did this come from?  (inspect.origin)
   - Who is locking this?  (inspect.locking)
-- Compare: Mark for link or compare  (compare.mark)
+- Compare: Mark for compare  (compare.mark)
 + Git/
   - History of this file  (git.log.file)
   - Open repo in browser  (git.open.web)
