@@ -144,3 +144,7 @@ app/tools/snippet-check.ps1
 - **New action:** add a `new Action { Id, Group, Label, Hint, Targets, Run }` to a module list. It appears in the GUI and on the Menu page. Set `Tier.Confirm` plus `Confirm` text for anything that changes files; set `Multi` to receive every selected item; set `Fast` for instant clipboard-style actions; set `AppliesTo` (an Explorer query such as `Modules.ZipQuery`) to show it only for matching files; set `Extended` to show it only with Shift+right-click; add its id to `DefaultPins.For` in `Model.cs` to pin it at the top of a context by default; add its PowerShell equivalent (or the reason there is none) to `PsCatalog.cs`, which `--selftest` and `app\tools\snippet-check.ps1` verify. Journal anything that creates or changes files so Undo works. To include it in a preset, add its id to the lists in `Presets` in `Model.cs`.
 - **New recipe:** use Manage recipes, or edit `recipes.json` (`{ "recipes": [ { "id", "name", "description", "menu", "steps": [ "<action-id>", ... ] } ] }`). Action ids are the `Id` values in the module lists.
 - **New snippet:** edit `commands.json` (use `{path}` for the folder), then run or pin it from the library window.
+
+## License
+
+MIT. See `LICENSE`.
