@@ -1,5 +1,0 @@
-[clipboard]
-src\app\main.py
-src\app\util.py
-[toast]
-<truncated>
