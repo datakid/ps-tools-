@@ -1289,7 +1289,7 @@
   },
   {
    "id": "media.gif",
-   "title": "Video to GIF (first 10 s)",
+   "title": "Video → GIF (first 10 s)",
    "menu": "Media",
    "when": [
     "file"

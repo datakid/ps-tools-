@@ -171,9 +171,9 @@ $tree = @(
     ($T + 'docs/')
     ($V + $L + 'guide.md')
     ($T + 'src/')
-    ($V + $T + 'main.py')
-    ($V + $L + 'util/')
-    ($V + '    ' + $L + 'helpers.py')
+    ($V + $T + 'util/')
+    ($V + $V + $L + 'helpers.py')
+    ($V + $L + 'main.py')
     ($L + 'README.md')
 ) -join "`n"
 [IO.File]::WriteAllText((Join-Path $Out 'clip-tree.txt'), $tree + "`n", $utf8)

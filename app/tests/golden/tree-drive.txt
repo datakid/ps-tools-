@@ -87,4 +87,4 @@
   - Local IP addresses  (system.ip-local)
   - Public IP address  (system.ip-public)
   - Uptime  (system.uptime)
-- Library: Command library...  (library.browse)
+- Library: Command library…  (library.browse)

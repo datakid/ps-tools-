@@ -42,7 +42,7 @@ namespace PSTools
             new[] { "paste-text", "new.paste-text", "Paste & New", "Paste text as file" },
             new[] { "snapshot", "new.snapshot", "Paste & New", "Dated snapshot copy" },
             new[] { "unwrap", "new.unwrap", "Paste & New", "Unwrap folder" },
-            new[] { "undo-history", "system.undo-history", "System", "Undo history..." },
+            new[] { "undo-history", "system.undo-history", "System", "Undo history\u2026" },
             new[] { "undo-last", "system.undo-last", "System", "Undo last action" },
             new[] { "unzip-here", "archive.extract", "Archive", "Extract here (smart)" },
             new[] { "zip-smart", "archive.zip-smart", "Archive", "Zip (skip build folders)" },
@@ -68,7 +68,7 @@ namespace PSTools
             new[] { "by-type", "inspect.types", "Inspect", "File types" },
             new[] { "space-map", "inspect.space-map", "Inspect", "Folder space map" },
             new[] { "inventory", "inspect.inventory", "Inspect", "Export inventory.csv" },
-            new[] { "port-who", "inspect.port", "Inspect", "What is using port…" },
+            new[] { "port-who", "inspect.port", "Inspect", "What is using port\u2026" },
             new[] { "attr-hide", "fix.attr.hide", "Fix/Attributes", "Hide" },
             new[] { "attr-unhide", "fix.attr.unhide", "Fix/Attributes", "Unhide" },
             new[] { "attr-ro-off", "fix.attr.readonly-off", "Fix/Attributes", "Clear read-only" },
@@ -107,14 +107,14 @@ namespace PSTools
             new[] { "power-requests", "system.power-requests", "System", "What keeps the PC awake" },
             new[] { "reset-network", "system.network-reset", "System", "Reset network stack" },
             new[] { "restart-explorer", "system.restart-explorer", "System", "Restart Explorer" },
-            new[] { "setup-guide", "system.setup-guide", "System", "Setup guide..." },
+            new[] { "setup-guide", "system.setup-guide", "System", "Setup guide\u2026" },
             new[] { "sfc-scan", "system.sfc-scan", "System", "System file check" },
             new[] { "toggle-classic", "system.classic-menu", "System", "Toggle classic right-click menu" },
             new[] { "toggle-ext", "system.toggle-ext", "System", "Toggle file extensions" },
             new[] { "toggle-hidden", "system.toggle-hidden", "System", "Toggle hidden files" },
-            new[] { "update-all", "system.update-all", "System", "Update everything..." },
-            new[] { "library", "library.browse", "Library", "Command library..." },
-            new[] { "recipes-manage", "recipes.manage", "Recipes", "Manage recipes..." }
+            new[] { "update-all", "system.update-all", "System", "Update everything\u2026" },
+            new[] { "library", "library.browse", "Library", "Command library\u2026" },
+            new[] { "recipes-manage", "recipes.manage", "Recipes", "Manage recipes\u2026" }
         };
 
         public static readonly HashSet<string> Destructive = new HashSet<string>

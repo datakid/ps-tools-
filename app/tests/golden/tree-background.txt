@@ -143,11 +143,11 @@
   - Count lines, words, characters  (clip.count)
 + System/
   - Undo last action  (system.undo-last)
-  - Undo history...  (system.undo-history)
+  - Undo history…  (system.undo-history)
   - Local IP addresses  (system.ip-local)
   - Public IP address  (system.ip-public)
   - Uptime  (system.uptime)
   - Toggle hidden files  (system.toggle-hidden)
   - Toggle file extensions  (system.toggle-ext)
   - Toggle classic right-click menu  (system.classic-menu)
-- Library: Command library...  (library.browse)
+- Library: Command library…  (library.browse)
