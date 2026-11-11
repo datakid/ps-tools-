@@ -8,7 +8,7 @@ sample/
   docs/
     guide.md
   src/
-    main.py
     util/
       helpers.py
+    main.py
   README.md

@@ -11,4 +11,4 @@ tree-basic/
     ├── app/
     └── lib/
 [toast]
-<truncated>
+Copied 11 lines from Tree to depth…
