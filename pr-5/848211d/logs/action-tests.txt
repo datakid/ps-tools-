@@ -1,0 +1,206 @@
+PASS  copy-name.file                       159 ms
+PASS  copy-name.multi                       25 ms
+PASS  copy-path-quoted.dir                 112 ms
+PASS  copy-path-fwd.awkward                  8 ms
+PASS  copy-parent.file                      31 ms
+PASS  copy-sha256.file                      43 ms
+PASS  copy-contents.file                    57 ms
+PASS  copy-names.dir                       112 ms
+PASS  copy-tree.dir                        554 ms
+PASS  copy-dirs-rel.dir                    469 ms
+PASS  copy-size.dir                         15 ms
+PASS  folder-sizes.dir                      30 ms
+PASS  new-folder-clip.undo                  23 ms
+PASS  copy-path-quoted.v4id                 10 ms
+PASS  copy-tree.v4id                       518 ms
+PASS  new-folder-clip.v4id                  11 ms
+PASS  copy.tree.ascii                      513 ms
+PASS  copy.tree.ascii-plain                489 ms
+PASS  copy.tree.folders                    488 ms
+PASS  copy.tree.sizes                      556 ms
+PASS  copy.tree.markdown                   503 ms
+PASS  copy.tree.nested-list                471 ms
+PASS  copy.tree.json                       425 ms
+PASS  copy.list.subfolder-names            409 ms
+PASS  copy.list.subfolder-names-rec        457 ms
+PASS  copy.list.subfolder-paths             15 ms
+PASS  copy.list.subfolder-paths-rel        439 ms
+PASS  copy.list.file-names-rec             432 ms
+PASS  copy.list.file-paths-rel             452 ms
+PASS  copy.list.file-paths-abs             440 ms
+PASS  copy.list.csv                        465 ms
+PASS  copy.list.json                       470 ms
+PASS  copy.list.ext-summary                486 ms
+PASS  copy.list.count                      468 ms
+PASS  copy.path.cd                          13 ms
+PASS  copy.ai.folder                       654 ms
+PASS  copy.size                             12 ms
+PASS  search.large                          15 ms
+PASS  search.recent                         13 ms
+PASS  search.empty                         508 ms
+PASS  search.long-paths                     12 ms
+PASS  inspect.sizes                         12 ms
+PASS  inspect.types                         15 ms
+PASS  inspect.env-path                     361 ms
+PASS  copy.path.quoted                      12 ms
+FAIL  copy.tree.depth                      464 ms
+      output differs from golden
+      --- expected
+      [clipboard]
+      tree-basic/
+      ├── bin/
+      │   └── out.dll
+      ├── docs/
+      │   └── readme.md
+      ├── empty/
+      ├── node_modules/
+      │   └── pkg/
+      └── src/
+          ├── app/
+          └── lib/
+      [toast]
+      <truncated>
+      --- actual
+      [clipboard]
+      tree-basic/
+      ├── bin/
+      │   └── out.dll
+      ├── docs/
+      │   └── readme.md
+      ├── empty/
+      ├── node_modules/
+      │   └── pkg/
+      └── src/
+          ├── app/
+          └── lib/
+      [toast]
+      Copied 11 lines from Tree to depth…
+      
+PASS  copy.tree.gitignore                  618 ms
+FAIL  copy.list.by-ext                     446 ms
+      output differs from golden
+      --- expected
+      [clipboard]
+      src\app\main.py
+      src\app\util.py
+      [toast]
+      <truncated>
+      --- actual
+      [clipboard]
+      src\app\main.py
+      src\app\util.py
+      [toast]
+      Copied 2 lines from File paths of type…
+      
+PASS  copy.names.selected                   11 ms
+PASS  copy.names.stem                       10 ms
+PASS  copy.path                            304 ms
+PASS  copy.path.fwd                          8 ms
+PASS  copy.path.json                       299 ms
+PASS  copy.path.ps                         310 ms
+PASS  copy.path.wsl                          9 ms
+PASS  copy.path.uri                          9 ms
+PASS  copy.path.parent                       8 ms
+PASS  copy.path.rel-git                    510 ms
+PASS  copy.path.rel-marked                 342 ms
+PASS  copy.ai.files                        473 ms
+PASS  copy.contents                         11 ms
+PASS  copy.contents.fenced                 333 ms
+PASS  copy.datauri                           6 ms
+PASS  copy.hash.verify                       7 ms
+PASS  git.copy.permalink                   616 ms
+PASS  git.copy.branch                      467 ms
+PASS  git.copy.last-commit                 535 ms
+PASS  git.copy.remote                      470 ms
+PASS  git.status.repos                     367 ms
+PASS  search.text                          519 ms
+PASS  search.duplicates                     13 ms
+PASS  inspect.locking                      552 ms
+PASS  inspect.origin                       400 ms
+PASS  inspect.facts                        458 ms
+PASS  compare.with-marked                   15 ms
+PASS  compare.two-selected                 451 ms
+PASS  compare.hash-selected                370 ms
+FAIL  new.from-clip-tree                    21 ms
+      output differs from golden
+      --- expected
+      [toast]
+      Created 4 folders and 4 files.
+      [dialog]
+      ASK: Create 4 folders and 4 empty files in
+      <FX>\tree-basic ?
+      
+      sample/
+        docs/
+          guide.md
+        src/
+          main.py
+          util/
+            helpers.py
+        README.md
+      --- actual
+      [toast]
+      Created 4 folders and 4 files.
+      [dialog]
+      ASK: Create 4 folders and 4 empty files in
+      <FX>\tree-basic ?
+      
+      sample/
+        docs/
+          guide.md
+        src/
+          util/
+            helpers.py
+          main.py
+        README.md
+      
+PASS  new.paste-image                       16 ms
+PASS  new.paste-text                        13 ms
+PASS  new.paste-text.csv                    13 ms
+PASS  new.paste-shortcut                    59 ms
+PASS  new.paste-hardlink                    13 ms
+PASS  new.paste-junction                    33 ms
+PASS  new.folder-from-clip                  13 ms
+PASS  new.dated-folder                      12 ms
+PASS  new.file                              14 ms
+PASS  new.group-selected                    13 ms
+PASS  new.unwrap                            12 ms
+PASS  new.snapshot                          22 ms
+PASS  rename.date-prefix                    11 ms
+PASS  rename.number                         11 ms
+PASS  rename.ext-lower                      13 ms
+PASS  rename.lower                          13 ms
+PASS  rename.kebab                          13 ms
+PASS  rename.snake                          10 ms
+PASS  rename.title                          11 ms
+PASS  organize.flatten                      17 ms
+PASS  organize.by-type                      11 ms
+PASS  organize.by-date                      10 ms
+PASS  archive.zip-smart                     21 ms
+PASS  archive.zip-gitignore                562 ms
+PASS  archive.extract                       10 ms
+PASS  archive.extract-tar                  324 ms
+PASS  archive.list                         416 ms
+PASS  image.dimensions                     375 ms
+PASS  clip.sort                             15 ms
+PASS  clip.unique                           10 ms
+PASS  clip.trim                             10 ms
+PASS  clip.remove-blank                     10 ms
+PASS  clip.json-pretty                      13 ms
+PASS  clip.json-minify                      10 ms
+PASS  clip.base64-encode                    10 ms
+PASS  clip.base64-decode                    10 ms
+PASS  clip.url-encode                       10 ms
+PASS  clip.url-decode                       10 ms
+PASS  clip.lower                            10 ms
+PASS  clip.upper                            10 ms
+PASS  clip.kebab                            10 ms
+PASS  clip.snake                            10 ms
+PASS  clip.camel                            11 ms
+PASS  clip.paths-fwd                        10 ms
+PASS  clip.quote-lines                      10 ms
+PASS  clip.to-ps-array                      21 ms
+PASS  clip.count                            17 ms
+PASS  clip.guid                             21 ms
+PASS  clip.timestamp                        10 ms
+124 passed, 3 failed, 0 skipped
