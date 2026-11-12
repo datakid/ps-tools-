@@ -508,9 +508,9 @@ if ($popup) {
         Start-Sleep -Milliseconds 500
         Send-Keys $win '^{ENTER}'
         $st = Wait-Status $win 'Exit' 20000
-        $out = Get-OutputText $win
+        $runText = Get-OutputText $win
         Snap $win '11-demo1-tree-in-console'
-        $ok1 = $ok1 -and ($out -match 'main\.py')
+        $ok1 = $ok1 -and ($runText -match 'main\.py')
     }
     Add-Result 'demo-1-tree-to-console' $ok1 'ta + Enter copies the tree, the Run console shows it back'
 }
