@@ -4,15 +4,30 @@
   - Zip (skip build folders)  (archive.zip-smart)  [modifies]
   - Paste image as PNG  (new.paste-image)  [modifies]
   - Folder space map  (inspect.space-map)
-  - Search here...  (search.here)
+  - Search here…  (search.here)
   - Windows PowerShell here  (open.ps)
   - Paste text as file  (new.paste-text)  [modifies]
   - Branch name  (git.copy.branch)
 + Copy/
+  - For AI: Copy folder for AI  (copy.ai.folder)
+  + Git/
+    - Branch name  (git.copy.branch)
+    - Last commit (hash + message)  (git.copy.last-commit)
+    - Remote URL  (git.copy.remote)
   + Lists/
     - Names of items inside  (copy.list.names-inside)
     - All subfolder paths  (copy.list.subfolder-paths)
+    - All file names (recursive)  (copy.list.file-names-rec)
+    - All file paths (absolute)  (copy.list.file-paths-abs)
+    - All file paths (relative)  (copy.list.file-paths-rel)
+    - All subfolder names  (copy.list.subfolder-names)
+    - All subfolder names (recursive)  (copy.list.subfolder-names-rec)
     - All subfolder paths (relative)  (copy.list.subfolder-paths-rel)
+    - Count files and folders  (copy.list.count)
+    - File paths of type…  (copy.list.by-ext)
+    - File types summary  (copy.list.ext-summary)
+    - Listing as CSV  (copy.list.csv)
+    - Listing as JSON  (copy.list.json)
   + Names/
     - Names of selected  (copy.names.selected)
     - Names without extension  (copy.names.stem)
@@ -27,66 +42,112 @@
     - UNC / network path  (copy.path.unc)
     - Markdown link  (copy.path.markdown-link)
     - cd command for this folder  (copy.path.cd)
-    - Paths as JSON array  (copy.path.json-array)
+    - Path  (copy.path)
   + Tree/
-    - Tree, folders only  (copy.tree.folders)
+    - Folder structure…  (copy.tree.window)
     - Tree (ASCII)  (copy.tree.ascii)
-    - Folder structure...  (copy.tree.window)
+    - Tree (plain ASCII)  (copy.tree.ascii-plain)
+    - Tree (respect .gitignore)  (copy.tree.gitignore)
+    - Tree as JSON  (copy.tree.json)
+    - Tree as Markdown  (copy.tree.markdown)
+    - Tree as nested list  (copy.tree.nested-list)
+    - Tree to depth…  (copy.tree.depth)
+    - Tree with sizes  (copy.tree.sizes)
+    - Tree, folders only  (copy.tree.folders)
   - Size  (copy.size)
 + Paste & New/
   - Download link from clipboard  (new.download-clip)  [modifies]
   - Paste image as PNG  (new.paste-image)  [modifies]
   - Paste text as file  (new.paste-text)  [modifies]
   - Folder named from clipboard  (new.folder-from-clip)  [modifies]
-  - New dated folder  (new.dated-folder)  [modifies]
-  - Snapshot copy with date  (new.snapshot)  [modifies]
+  - Dated folder  (new.dated-folder)  [modifies]
+  - Dated snapshot copy  (new.snapshot)  [modifies]
+  - New file…  (new.file)  [modifies]
+  - Paste as shortcut  (new.paste-shortcut)  [modifies]
+  - Paste as hard link  (new.paste-hardlink)  [modifies]
+  - Paste as symbolic link  (new.paste-symlink)  [modifies]
+  - Paste as junction  (new.paste-junction)  [modifies]
+  - Folders from clipboard tree  (new.from-clip-tree)  [modifies]
 + Search/
   - Duplicate files  (search.duplicates)
-  - Search here...  (search.here)
+  - Search here…  (search.here)
   - Largest files  (search.large)
   - Recently changed files  (search.recent)
   - Long paths  (search.long-paths)
+  - Empty folders  (search.empty)
+  - Files changed between…  (search.by-date)
+  - Find text in files…  (search.text)
 + Open/
+  - Git Bash here  (open.gitbash)
+  - Run console here  (open.run-console)
+  - Terminal here  (open.terminal)
   - Windows PowerShell here  (open.ps)
   - Command Prompt here  (open.cmd)
   - WSL here  (open.wsl)
-  - VS Code  (open.vscode)
-- Rename: Batch rename...  (rename.batch)  [modifies]
+  - Open in VS Code  (open.vscode)
+- Rename: Batch rename…  (rename.batch)  [modifies]
 + Organize/
-  - Flatten tree (copy)  (organize.flatten-copy)  [modifies]
+  - Flatten  (organize.flatten)  [modifies]
   - Flatten tree (move here)  (organize.flatten-move)  [modifies]
   - Sort by extension  (organize.by-ext)  [modifies]
   - Sort by month  (organize.by-month)  [modifies]
-  - Sort by kind  (organize.by-type)  [modifies]
+  - Sort into folders by type  (organize.by-type)  [modifies]
+  - Sort into folders by month  (organize.by-date)  [modifies]
 - Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
 + Inspect/
   - Subfolder sizes  (inspect.sizes)
   - File types  (inspect.types)
   - Folder space map  (inspect.space-map)
   - Export inventory.csv  (inspect.inventory)  [modifies]
-- Compare: Compare with marked folder  (compare.with-marked)
+- Compare: Compare with marked  (compare.with-marked)
 + Dev/
-  - Serve folder on localhost...  (dev.serve)
+  - Free port…  (dev.port-kill)  [destructive]
+  - Serve folder on localhost  (dev.serve)
   - Find removable build folders  (dev.clean-build)  [destructive]
 + Git/
-  - Branch name  (git.copy.branch)
-  - Status of all repos below  (git.status.repos)
+  - Fetch all repos below  (git.fetch.repos)
+  - Open repo in browser  (git.open.web)
+  - Git status of all repos below  (git.status.repos)
   - Pull all repos below  (git.pull.repos)  [modifies]
 + Links/
   - Junction to marked here  (links.junction)  [modifies]
   - Symbolic link to marked here  (links.symlink)  [modifies]
   - Hard link to marked here  (links.hard)  [modifies]
-- Clean up: Remove empty folders  (clean.empty-folders)  [destructive]
+- Clean up: Remove empty folders  (clean.empty-folders-delete)  [destructive]
 + Fix/
   + Compression/
     - Compress folder (NTFS)  (disk.compress)  [modifies]
     - Uncompress folder  (disk.uncompress)  [modifies]
   - Unblock all files below  (fix.unblock-recursive)  [modifies]
++ Clipboard/
+  - Sort lines  (clip.sort)
+  - Remove duplicate lines  (clip.unique)
+  - Trim each line  (clip.trim)
+  - Remove blank lines  (clip.remove-blank)
+  - Format JSON  (clip.json-pretty)
+  - Minify JSON  (clip.json-minify)
+  - Base64 encode  (clip.base64-encode)
+  - Base64 decode  (clip.base64-decode)
+  - URL encode  (clip.url-encode)
+  - URL decode  (clip.url-decode)
+  - lower case  (clip.lower)
+  - UPPER CASE  (clip.upper)
+  - kebab-case  (clip.kebab)
+  - snake_case  (clip.snake)
+  - camelCase  (clip.camel)
+  - Slashes: \ to /  (clip.paths-fwd)
+  - Quote lines: 'a', 'b'  (clip.quote-lines)
+  - Lines to PowerShell array  (clip.to-ps-array)
+  - New GUID  (clip.guid)
+  - Timestamp (ISO)  (clip.timestamp)
+  - Count lines, words, characters  (clip.count)
 + System/
   - Undo last action  (system.undo-last)
-  - Undo history...  (system.undo-history)
+  - Undo history…  (system.undo-history)
   - Local IP addresses  (system.ip-local)
+  - Public IP address  (system.ip-public)
+  - Uptime  (system.uptime)
   - Toggle hidden files  (system.toggle-hidden)
-  - Toggle file extensions  (system.toggle-extensions)
-  - Toggle classic right-click menu  (system.toggle-classic)
-- Library: Command library...  (library.browse)
+  - Toggle file extensions  (system.toggle-ext)
+  - Toggle classic right-click menu  (system.classic-menu)
+- Library: Command library…  (library.browse)

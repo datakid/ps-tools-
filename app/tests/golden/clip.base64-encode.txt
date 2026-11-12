@@ -1,0 +1,4 @@
+[clipboard]
+aGVsbG8=
+[toast]
+Encoded as Base64

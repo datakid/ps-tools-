@@ -1,141 +1,1324 @@
 [
-  {
-    "name": "copy-name.file",
-    "id": "copy-name",
-    "fixture": "tree-basic",
-    "targets": [
-      "src/app/main.py"
-    ]
-  },
-  {
-    "name": "copy-name.multi",
-    "id": "copy-name",
-    "fixture": "tree-basic",
-    "targets": [
-      "src/app/main.py",
-      "src/app/util.py"
-    ]
-  },
-  {
-    "name": "copy-path-quoted.dir",
-    "id": "copy-path-quoted",
-    "fixture": "tree-basic",
-    "targets": [
-      "src"
-    ]
-  },
-  {
-    "name": "copy-path-fwd.awkward",
-    "id": "copy-path-fwd",
-    "fixture": "names",
-    "targets": [
-      "a&b.txt"
-    ]
-  },
-  {
-    "name": "copy-parent.file",
-    "id": "copy-parent",
-    "fixture": "tree-basic",
-    "targets": [
-      "docs/readme.md"
-    ]
-  },
-  {
-    "name": "copy-sha256.file",
-    "id": "copy-sha256",
-    "fixture": "tree-basic",
-    "targets": [
-      "src/app/main.py"
-    ]
-  },
-  {
-    "name": "copy-contents.file",
-    "id": "copy-contents",
-    "fixture": "tree-basic",
-    "targets": [
-      "src/app/util.py"
-    ]
-  },
-  {
-    "name": "copy-names.dir",
-    "id": "copy-names",
-    "fixture": "tree-basic",
-    "targets": [
-      ""
-    ]
-  },
-  {
-    "name": "copy-tree.dir",
-    "id": "copy-tree",
-    "fixture": "tree-basic",
-    "targets": [
-      ""
-    ]
-  },
-  {
-    "name": "copy-dirs-rel.dir",
-    "id": "copy-dirs-rel",
-    "fixture": "tree-basic",
-    "targets": [
-      ""
-    ]
-  },
-  {
-    "name": "copy-size.dir",
-    "id": "copy-size",
-    "fixture": "tree-basic",
-    "targets": [
-      ""
-    ]
-  },
-  {
-    "name": "folder-sizes.dir",
-    "id": "folder-sizes",
-    "fixture": "tree-basic",
-    "targets": [
-      ""
-    ]
-  },
-  {
-    "name": "new-folder-clip.undo",
-    "id": "new-folder-clip",
-    "fixture": "tree-basic",
-    "targets": [
-      ""
-    ],
-    "clipboard": "My new folder",
-    "expectFiles": [
-      "My new folder"
-    ],
-    "undo": true
-  },
-  {
-    "name": "copy-path-quoted.v4id",
-    "id": "copy.path.quoted",
-    "fixture": "tree-basic",
-    "targets": [
-      "src"
-    ]
-  },
-  {
-    "name": "copy-tree.v4id",
-    "id": "copy.tree.ascii",
-    "fixture": "tree-basic",
-    "targets": [
-      ""
-    ]
-  },
-  {
-    "name": "new-folder-clip.v4id",
-    "id": "new.folder-from-clip",
-    "fixture": "tree-basic",
-    "targets": [
-      ""
-    ],
-    "clipboard": "My new folder",
-    "expectFiles": [
-      "My new folder"
-    ],
-    "undo": true
+ {
+  "name": "copy-name.file",
+  "id": "copy-name",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/main.py"
+  ]
+ },
+ {
+  "name": "copy-name.multi",
+  "id": "copy-name",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/main.py",
+   "src/app/util.py"
+  ]
+ },
+ {
+  "name": "copy-path-quoted.dir",
+  "id": "copy-path-quoted",
+  "fixture": "tree-basic",
+  "targets": [
+   "src"
+  ]
+ },
+ {
+  "name": "copy-path-fwd.awkward",
+  "id": "copy-path-fwd",
+  "fixture": "names",
+  "targets": [
+   "a&b.txt"
+  ]
+ },
+ {
+  "name": "copy-parent.file",
+  "id": "copy-parent",
+  "fixture": "tree-basic",
+  "targets": [
+   "docs/readme.md"
+  ]
+ },
+ {
+  "name": "copy-sha256.file",
+  "id": "copy-sha256",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/main.py"
+  ]
+ },
+ {
+  "name": "copy-contents.file",
+  "id": "copy-contents",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/util.py"
+  ]
+ },
+ {
+  "name": "copy-names.dir",
+  "id": "copy-names",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ]
+ },
+ {
+  "name": "copy-tree.dir",
+  "id": "copy-tree",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ]
+ },
+ {
+  "name": "copy-dirs-rel.dir",
+  "id": "copy-dirs-rel",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ]
+ },
+ {
+  "name": "copy-size.dir",
+  "id": "copy-size",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ]
+ },
+ {
+  "name": "folder-sizes.dir",
+  "id": "folder-sizes",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ]
+ },
+ {
+  "name": "new-folder-clip.undo",
+  "id": "new-folder-clip",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "clipboard": "My new folder",
+  "expectFiles": [
+   "My new folder"
+  ],
+  "undo": true
+ },
+ {
+  "name": "copy-path-quoted.v4id",
+  "id": "copy.path.quoted",
+  "fixture": "tree-basic",
+  "targets": [
+   "src"
+  ]
+ },
+ {
+  "name": "copy-tree.v4id",
+  "id": "copy.tree.ascii",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ]
+ },
+ {
+  "name": "new-folder-clip.v4id",
+  "id": "new.folder-from-clip",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "clipboard": "My new folder",
+  "expectFiles": [
+   "My new folder"
+  ],
+  "undo": true
+ },
+ {
+  "name": "copy.tree.ascii",
+  "id": "copy.tree.ascii",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.tree.ascii-plain",
+  "id": "copy.tree.ascii-plain",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.tree.folders",
+  "id": "copy.tree.folders",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.tree.sizes",
+  "id": "copy.tree.sizes",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.tree.markdown",
+  "id": "copy.tree.markdown",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.tree.nested-list",
+  "id": "copy.tree.nested-list",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.tree.json",
+  "id": "copy.tree.json",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.subfolder-names",
+  "id": "copy.list.subfolder-names",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.subfolder-names-rec",
+  "id": "copy.list.subfolder-names-rec",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.subfolder-paths",
+  "id": "copy.list.subfolder-paths",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.subfolder-paths-rel",
+  "id": "copy.list.subfolder-paths-rel",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.file-names-rec",
+  "id": "copy.list.file-names-rec",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.file-paths-rel",
+  "id": "copy.list.file-paths-rel",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.file-paths-abs",
+  "id": "copy.list.file-paths-abs",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.csv",
+  "id": "copy.list.csv",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.json",
+  "id": "copy.list.json",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.ext-summary",
+  "id": "copy.list.ext-summary",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.list.count",
+  "id": "copy.list.count",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.cd",
+  "id": "copy.path.cd",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.ai.folder",
+  "id": "copy.ai.folder",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.size",
+  "id": "copy.size",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "search.large",
+  "id": "search.large",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "search.recent",
+  "id": "search.recent",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "search.empty",
+  "id": "search.empty",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "search.long-paths",
+  "id": "search.long-paths",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "inspect.sizes",
+  "id": "inspect.sizes",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "inspect.types",
+  "id": "inspect.types",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "inspect.env-path",
+  "id": "inspect.env-path",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.quoted",
+  "id": "copy.path.quoted",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.tree.depth",
+  "id": "copy.tree.depth",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "inputs": {
+   "depth": "2"
   }
+ },
+ {
+  "name": "copy.tree.gitignore",
+  "id": "copy.tree.gitignore",
+  "fixture": "repo",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "skipUnless": "git"
+ },
+ {
+  "name": "copy.list.by-ext",
+  "id": "copy.list.by-ext",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "inputs": {
+   "ext": "py"
+  }
+ },
+ {
+  "name": "copy.names.selected",
+  "id": "copy.names.selected",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/main.py",
+   "src/app/util.py"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.names.stem",
+  "id": "copy.names.stem",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/main.py"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path",
+  "id": "copy.path",
+  "fixture": "names",
+  "targets": [
+   "O'Brien.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.fwd",
+  "id": "copy.path.fwd",
+  "fixture": "names",
+  "targets": [
+   "O'Brien.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.json",
+  "id": "copy.path.json",
+  "fixture": "names",
+  "targets": [
+   "O'Brien.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.ps",
+  "id": "copy.path.ps",
+  "fixture": "names",
+  "targets": [
+   "O'Brien.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.wsl",
+  "id": "copy.path.wsl",
+  "fixture": "names",
+  "targets": [
+   "O'Brien.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.uri",
+  "id": "copy.path.uri",
+  "fixture": "names",
+  "targets": [
+   "O'Brien.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.parent",
+  "id": "copy.path.parent",
+  "fixture": "names",
+  "targets": [
+   "O'Brien.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.path.rel-git",
+  "id": "copy.path.rel-git",
+  "fixture": "repo",
+  "targets": [
+   "src/app/main.py"
+  ],
+  "_gen": true,
+  "skipUnless": "git"
+ },
+ {
+  "name": "copy.path.rel-marked",
+  "id": "copy.path.rel-marked",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/main.py"
+  ],
+  "_gen": true,
+  "marks": [
+   ""
+  ]
+ },
+ {
+  "name": "copy.ai.files",
+  "id": "copy.ai.files",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/main.py",
+   "src/app/util.py"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.contents",
+  "id": "copy.contents",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/util.py"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.contents.fenced",
+  "id": "copy.contents.fenced",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/app/util.py"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.datauri",
+  "id": "copy.datauri",
+  "fixture": "text",
+  "targets": [
+   "lf.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "copy.hash.verify",
+  "id": "copy.hash.verify",
+  "fixture": "text",
+  "targets": [
+   "lf.txt"
+  ],
+  "_gen": true,
+  "clipboard": "b6285c57e8797db5d4c51c80d6f11938afda9b11c6a003549709189e9b4b92a2"
+ },
+ {
+  "name": "git.copy.permalink",
+  "id": "git.copy.permalink",
+  "fixture": "repo",
+  "targets": [
+   "README.md"
+  ],
+  "_gen": true,
+  "skipUnless": "git"
+ },
+ {
+  "name": "git.copy.branch",
+  "id": "git.copy.branch",
+  "fixture": "repo",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "skipUnless": "git"
+ },
+ {
+  "name": "git.copy.last-commit",
+  "id": "git.copy.last-commit",
+  "fixture": "repo",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "skipUnless": "git"
+ },
+ {
+  "name": "git.copy.remote",
+  "id": "git.copy.remote",
+  "fixture": "repo",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "skipUnless": "git"
+ },
+ {
+  "name": "git.status.repos",
+  "id": "git.status.repos",
+  "fixture": "repo",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "skipUnless": "git"
+ },
+ {
+  "name": "search.text",
+  "id": "search.text",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "inputs": {
+   "pattern": "hello",
+   "regex": "false"
+  }
+ },
+ {
+  "name": "search.duplicates",
+  "id": "search.duplicates",
+  "fixture": "dups",
+  "targets": [
+   ""
+  ],
+  "_gen": true
+ },
+ {
+  "name": "inspect.locking",
+  "id": "inspect.locking",
+  "fixture": "names",
+  "targets": [
+   "a&b.txt"
+  ],
+  "_gen": true,
+  "lock": "a&b.txt"
+ },
+ {
+  "name": "inspect.origin",
+  "id": "inspect.origin",
+  "fixture": "text",
+  "targets": [
+   "downloaded.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "inspect.facts",
+  "id": "inspect.facts",
+  "fixture": "text",
+  "targets": [
+   "crlf.txt"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "compare.with-marked",
+  "id": "compare.with-marked",
+  "fixture": "tree-basic",
+  "targets": [
+   "docs"
+  ],
+  "_gen": true,
+  "marks": [
+   "src"
+  ]
+ },
+ {
+  "name": "compare.two-selected",
+  "id": "compare.two-selected",
+  "fixture": "tree-basic",
+  "targets": [
+   "src",
+   "docs"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "compare.hash-selected",
+  "id": "compare.hash-selected",
+  "fixture": "dups",
+  "targets": [
+   "a.bin",
+   "a-copy.bin",
+   "b.bin"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "new.from-clip-tree",
+  "id": "new.from-clip-tree",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboardFile": "clip-tree.txt",
+  "expectFiles": [
+   "sample/docs/guide.md",
+   "sample/src/main.py",
+   "sample/src/util/helpers.py",
+   "sample/README.md"
+  ],
+  "undo": true
+ },
+ {
+  "name": "new.paste-image",
+  "id": "new.paste-image",
+  "fixture": "images",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboardImage": "small.png",
+  "expectFiles": [
+   "clip-*.png"
+  ],
+  "golden": false,
+  "undo": true
+ },
+ {
+  "name": "new.paste-text",
+  "id": "new.paste-text",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "{\"a\": 1}",
+  "expectFiles": [
+   "clip-*.json"
+  ],
+  "golden": false,
+  "undo": true
+ },
+ {
+  "name": "new.paste-text.csv",
+  "id": "new.paste-text",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "a,b\n1,2\n3,4",
+  "expectFiles": [
+   "clip-*.csv"
+  ],
+  "golden": false,
+  "undo": true
+ },
+ {
+  "name": "new.paste-shortcut",
+  "id": "new.paste-shortcut",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboardFiles": [
+   "docs/readme.md"
+  ],
+  "expectFiles": [
+   "readme.md.lnk"
+  ],
+  "undo": true
+ },
+ {
+  "name": "new.paste-hardlink",
+  "id": "new.paste-hardlink",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboardFiles": [
+   "bin/out.dll"
+  ],
+  "expectFiles": [
+   "out.dll"
+  ],
+  "undo": true
+ },
+ {
+  "name": "new.paste-junction",
+  "id": "new.paste-junction",
+  "fixture": "tree-basic",
+  "targets": [
+   "src/lib"
+  ],
+  "_gen": true,
+  "clipboardFiles": [
+   "docs"
+  ],
+  "expectFiles": [
+   "src/lib/docs"
+  ],
+  "undo": true
+ },
+ {
+  "name": "new.folder-from-clip",
+  "id": "new.folder-from-clip",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "Brand new",
+  "expectFiles": [
+   "Brand new"
+  ],
+  "undo": true
+ },
+ {
+  "name": "new.dated-folder",
+  "id": "new.dated-folder",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "20??-??-??*"
+  ],
+  "golden": false,
+  "undo": true
+ },
+ {
+  "name": "new.file",
+  "id": "new.file",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "input": "notes.md",
+  "expectFiles": [
+   "notes.md"
+  ],
+  "undo": true
+ },
+ {
+  "name": "new.group-selected",
+  "id": "new.group-selected",
+  "fixture": "names",
+  "targets": [
+   "a&b.txt",
+   "O'Brien.txt"
+  ],
+  "_gen": true,
+  "input": "Grouped",
+  "expectFiles": [
+   "Grouped/a&b.txt",
+   "Grouped/O'Brien.txt"
+  ],
+  "undo": true
+ },
+ {
+  "name": "new.unwrap",
+  "id": "new.unwrap",
+  "fixture": "wrap",
+  "targets": [
+   "inner"
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "a.txt",
+   "b.txt"
+  ],
+  "undo": true
+ },
+ {
+  "name": "new.snapshot",
+  "id": "new.snapshot",
+  "fixture": "tree-basic",
+  "targets": [
+   "src"
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "src_20??-??-??*"
+  ],
+  "golden": false
+ },
+ {
+  "name": "rename.date-prefix",
+  "id": "rename.date-prefix",
+  "fixture": "images",
+  "targets": [
+   "wide.png",
+   "photo.jpg"
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "2026-01-15 wide.png",
+   "2025-06-01 photo.jpg"
+  ],
+  "undo": true
+ },
+ {
+  "name": "rename.number",
+  "id": "rename.number",
+  "fixture": "images",
+  "targets": [
+   "wide.png",
+   "small.png",
+   "tiny.png"
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "small_001.png",
+   "small_002.png",
+   "small_003.png"
+  ],
+  "undo": true
+ },
+ {
+  "name": "rename.ext-lower",
+  "id": "rename.ext-lower",
+  "fixture": "names",
+  "targets": [
+   "UPPER.TXT"
+  ],
+  "_gen": true,
+  "undo": true
+ },
+ {
+  "name": "rename.lower",
+  "id": "rename.lower",
+  "fixture": "names",
+  "targets": [
+   "UPPER.TXT"
+  ],
+  "_gen": true,
+  "undo": true
+ },
+ {
+  "name": "rename.kebab",
+  "id": "rename.kebab",
+  "fixture": "names",
+  "targets": [
+   "O'Brien.txt",
+   "100% done.txt",
+   "a&b.txt",
+   "[draft] v1.txt"
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "o-brien.txt",
+   "100-done.txt",
+   "a-b.txt",
+   "draft-v1.txt"
+  ],
+  "undo": true
+ },
+ {
+  "name": "rename.snake",
+  "id": "rename.snake",
+  "fixture": "names",
+  "targets": [
+   "[draft] v1.txt"
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "draft_v1.txt"
+  ],
+  "undo": true
+ },
+ {
+  "name": "rename.title",
+  "id": "rename.title",
+  "fixture": "names",
+  "targets": [
+   "[draft] v1.txt"
+  ],
+  "_gen": true,
+  "undo": true
+ },
+ {
+  "name": "organize.flatten",
+  "id": "organize.flatten",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "../tree-basic-flat/main.py"
+  ]
+ },
+ {
+  "name": "organize.by-type",
+  "id": "organize.by-type",
+  "fixture": "text",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "undo": true
+ },
+ {
+  "name": "organize.by-date",
+  "id": "organize.by-date",
+  "fixture": "images",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "2026-01/wide.png",
+   "2025-06/photo.jpg"
+  ],
+  "undo": true
+ },
+ {
+  "name": "archive.zip-smart",
+  "id": "archive.zip-smart",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "../tree-basic.zip"
+  ]
+ },
+ {
+  "name": "archive.zip-gitignore",
+  "id": "archive.zip-gitignore",
+  "fixture": "repo",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "../repo.zip"
+  ],
+  "skipUnless": "git"
+ },
+ {
+  "name": "archive.extract",
+  "id": "archive.extract",
+  "fixture": "zip",
+  "targets": [
+   "one-top.zip"
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "proj/a.txt"
+  ],
+  "undo": true
+ },
+ {
+  "name": "archive.extract-tar",
+  "id": "archive.extract-tar",
+  "fixture": "zip",
+  "targets": [
+   "sample.tar.gz"
+  ],
+  "_gen": true,
+  "expectFiles": [
+   "sample/t/x.txt"
+  ]
+ },
+ {
+  "name": "archive.list",
+  "id": "archive.list",
+  "fixture": "zip",
+  "targets": [
+   "one-top.zip"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "image.dimensions",
+  "id": "image.dimensions",
+  "fixture": "images",
+  "targets": [
+   "wide.png",
+   "small.png"
+  ],
+  "_gen": true
+ },
+ {
+  "name": "clip.sort",
+  "id": "clip.sort",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "banana\nApple\ncherry"
+ },
+ {
+  "name": "clip.unique",
+  "id": "clip.unique",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "a\nb\na\nc\nb"
+ },
+ {
+  "name": "clip.trim",
+  "id": "clip.trim",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "  a  \n\tb\t"
+ },
+ {
+  "name": "clip.remove-blank",
+  "id": "clip.remove-blank",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "a\n\n \nb"
+ },
+ {
+  "name": "clip.json-pretty",
+  "id": "clip.json-pretty",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "{\"a\":1,\"b\":[1,2,{\"c\":null}]}"
+ },
+ {
+  "name": "clip.json-minify",
+  "id": "clip.json-minify",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "{ \"a\" : 1,\n \"b\" : [ 1, 2 ] }"
+ },
+ {
+  "name": "clip.base64-encode",
+  "id": "clip.base64-encode",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "hello"
+ },
+ {
+  "name": "clip.base64-decode",
+  "id": "clip.base64-decode",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "aGVsbG8="
+ },
+ {
+  "name": "clip.url-encode",
+  "id": "clip.url-encode",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "a b&c=d/é"
+ },
+ {
+  "name": "clip.url-decode",
+  "id": "clip.url-decode",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "a%20b%26c%3Dd"
+ },
+ {
+  "name": "clip.lower",
+  "id": "clip.lower",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "MiXeD"
+ },
+ {
+  "name": "clip.upper",
+  "id": "clip.upper",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "MiXeD"
+ },
+ {
+  "name": "clip.kebab",
+  "id": "clip.kebab",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "Hello World_foo\nfooBarBaz"
+ },
+ {
+  "name": "clip.snake",
+  "id": "clip.snake",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "Hello World-foo\nfooBarBaz"
+ },
+ {
+  "name": "clip.camel",
+  "id": "clip.camel",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "hello world_foo\nFOO-bar"
+ },
+ {
+  "name": "clip.paths-fwd",
+  "id": "clip.paths-fwd",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "C:\\a\\b\\c.txt"
+ },
+ {
+  "name": "clip.quote-lines",
+  "id": "clip.quote-lines",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "a\nO'Brien\nc"
+ },
+ {
+  "name": "clip.to-ps-array",
+  "id": "clip.to-ps-array",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "a\nO'Brien\nc"
+ },
+ {
+  "name": "clip.count",
+  "id": "clip.count",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "clipboard": "one two\nthree"
+ },
+ {
+  "name": "clip.guid",
+  "id": "clip.guid",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "golden": false
+ },
+ {
+  "name": "clip.timestamp",
+  "id": "clip.timestamp",
+  "fixture": "tree-basic",
+  "targets": [
+   ""
+  ],
+  "_gen": true,
+  "golden": false
+ }
 ]

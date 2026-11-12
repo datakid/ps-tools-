@@ -3,6 +3,7 @@
   - Zip (skip build folders)  (archive.zip-smart)  [modifies]
 + Copy/
   - Contents: File contents  (copy.contents)
+  - For AI: Copy selected files for AI  (copy.ai.files)
   + Hash/
     - SHA-256  (copy.hash.sha256)
     - SHA-1  (copy.hash.sha1)
@@ -21,12 +22,29 @@
     - UNC / network path  (copy.path.unc)
     - Markdown link  (copy.path.markdown-link)
     - cd command for this folder  (copy.path.cd)
-    - Paths as JSON array  (copy.path.json-array)
+    - 8.3 short path  (copy.path.short)
+    - Path  (copy.path)
+    - Path as PowerShell literal  (copy.path.ps)
+    - Path escaped (\\)  (copy.path.json)
+    - Path relative to marked folder  (copy.path.rel-marked)
+    - Path relative to repo root  (copy.path.rel-git)
   - Size  (copy.size)
-- Paste & New: Move into new folder...  (new.group-selected)  [modifies]
-- Open: Notepad  (open.notepad)
+  - Copy as file for pasting  (copy.file.clipboard)
+- Paste & New: Move selection into new folder  (new.group-selected)  [modifies]
+- Open: Open in Notepad  (open.notepad)
++ Rename/
+  - lower case names  (rename.lower)  [modifies]
+  - kebab-case names  (rename.kebab)  [modifies]
+  - snake_case names  (rename.snake)  [modifies]
+  - Title Case Names  (rename.title)  [modifies]
+  - Prefix with date taken/modified  (rename.date-prefix)  [modifies]
+  - Number sequentially  (rename.number)  [modifies]
+  - Lower-case extensions  (rename.ext-lower)  [modifies]
 - Archive: Zip (skip build folders)  (archive.zip-smart)  [modifies]
-- Compare: Mark for link or compare  (compare.mark)
++ Compare/
+  - Are these identical?  (compare.hash-selected)
+  - Compare the two selected  (compare.two-selected)
+  - Mark for compare  (compare.mark)
 + Fix/
   + Attributes/
     - Hide  (fix.attr.hide)  [modifies]

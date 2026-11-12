@@ -52,6 +52,18 @@ jobs:
         run: |
           app\tests\ci\run-logged.ps1 -Script app\tests\menu-snapshot.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\menu-snapshot.txt
           exit $LASTEXITCODE
+      - name: Actions parse check (Windows PowerShell 5.1)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\actions-check.ps1 -Params @{ File = 'app\actions.json' } -Log app\out\logs\actions-check.txt
+          exit $LASTEXITCODE
+      - name: Coverage gate (POWER_ACTIONS.md)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\coverage-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Doc = 'docs\v4\POWER_ACTIONS.md'; Tests = 'app\tests\action-tests.json' } -Log app\out\logs\coverage.txt
+          exit $LASTEXITCODE
       - name: Snippet check
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: pwsh

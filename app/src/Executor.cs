@@ -96,7 +96,12 @@ namespace PSTools
             {
                 string plain;
                 var table = RunEngine.ParseTable(output.ToString(), out plain);
-                if (table != null) { ShowForm(new ResultsForm(s.Title, table)); return; }
+                if (table != null)
+                {
+                    if (TestSink.Active) { TestSink.Tables.Add(TestSink.Render(table)); return; }
+                    ShowForm(new ResultsForm(s.Title, table));
+                    return;
+                }
                 Program.Msg(plain ?? "");
                 return;
             }
@@ -108,9 +113,17 @@ namespace PSTools
             switch (s.Output)
             {
                 case ActionOutput.Clipboard:
+                    string toast = null;
+                    int marker = text.LastIndexOf("##PST-TOAST## ", StringComparison.Ordinal);
+                    if (marker >= 0)
+                    {
+                        toast = text.Substring(marker + 14).Trim();
+                        text = text.Substring(0, marker).TrimEnd();
+                    }
+                    if (text.Length == 0 && toast != null) { Runner.Notify(null, toast, false); return; }
                     if (text.Length == 0) { Program.Msg("Nothing to copy: " + s.Title + " returned no output."); return; }
                     Clip.Set(text);
-                    Runner.Notify(null, "Copied " + text.Split('\n').Length + " line" + (text.Contains("\n") ? "s" : "") + " from " + s.Title, false);
+                    Runner.Notify(null, toast ?? "Copied " + text.Split('\n').Length + " line" + (text.Contains("\n") ? "s" : "") + " from " + s.Title, false);
                     break;
                 case ActionOutput.Toast:
                     Runner.Notify(null, text.Length == 0 ? s.Title + " done" : text.Split('\n')[0], false);

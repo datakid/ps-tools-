@@ -1,31 +1,1484 @@
 {
-  "version": 1,
-  "actions": [
-    {
-      "id": "system.ip-local",
-      "title": "Local IP addresses",
-      "menu": "System",
-      "when": ["background", "folder", "drive"],
-      "shell": "powershell",
-      "command": "(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notmatch '^(127\\.|169\\.254\\.)' } | Sort-Object InterfaceIndex).IPAddress",
-      "output": "clipboard",
-      "risk": "safe",
-      "keywords": ["ip", "network", "address", "lan"],
-      "description": "Copies this PC's IPv4 addresses, one per line, to the clipboard."
-    },
-    {
-      "id": "git.copy.branch",
-      "title": "Branch name",
-      "menu": "Git",
-      "when": ["folder", "background", "file"],
-      "requires": ["git"],
-      "shell": "powershell",
-      "command": "git -C {dir} rev-parse --abbrev-ref HEAD",
-      "output": "clipboard",
-      "risk": "safe",
-      "multi": "single",
-      "keywords": ["branch", "git", "head"],
-      "description": "Copies the current git branch of this folder to the clipboard."
+ "version": 1,
+ "actions": [
+  {
+   "id": "system.ip-local",
+   "title": "Local IP addresses",
+   "menu": "System",
+   "when": [
+    "background",
+    "folder",
+    "drive"
+   ],
+   "shell": "powershell",
+   "command": "(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notmatch '^(127\\.|169\\.254\\.)' } | Sort-Object InterfaceIndex).IPAddress",
+   "output": "clipboard",
+   "risk": "safe",
+   "keywords": [
+    "ip",
+    "network",
+    "address",
+    "lan"
+   ],
+   "description": "Copies this PC's IPv4 addresses, one per line, to the clipboard."
+  },
+  {
+   "id": "git.copy.branch",
+   "title": "Branch name",
+   "menu": "Copy/Git",
+   "when": [
+    "folder",
+    "background",
+    "file"
+   ],
+   "requires": [
+    "git"
+   ],
+   "shell": "powershell",
+   "command": "$p = {path}\n$d = if (Test-Path -LiteralPath $p -PathType Container) { $p } else { Split-Path -Parent $p }\n& git -C $d rev-parse --abbrev-ref HEAD",
+   "output": "clipboard",
+   "risk": "safe",
+   "multi": "single",
+   "keywords": [
+    "branch",
+    "git",
+    "head"
+   ],
+   "description": "Copies the current git branch of this folder to the clipboard."
+  },
+  {
+   "id": "copy.tree.ascii",
+   "title": "Tree (ASCII)",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background",
+    "drive"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '\n$L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '\n$V = [string][char]0x2502 + '   '\n$S = '    '\nWalk $root 1 '' $false 0\n$nodes = @($all)\n\n$lines = New-Object System.Collections.Generic.List[string]\n$lines.Add($leaf + '/')\nforeach ($r in (Render $nodes $T $L $V $S)) { $lines.Add($r.Text) }\n$lines -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as a tree with box-drawing lines. Folders end with a slash.",
+   "aliases": [
+    "copy-tree"
+   ],
+   "keywords": [
+    "tree",
+    "structure",
+    "folders"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.tree.ascii-plain",
+   "title": "Tree (plain ASCII)",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = '+-- '; $L = '\\-- '; $V = '|   '; $S = '    '\nWalk $root 1 '' $false 0\n$nodes = @($all)\n\n$lines = New-Object System.Collections.Generic.List[string]\n$lines.Add($leaf + '/')\nforeach ($r in (Render $nodes $T $L $V $S)) { $lines.Add($r.Text) }\n$lines -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as a tree drawn with plain + - | characters for apps that mangle Unicode.",
+   "keywords": [
+    "tree",
+    "ascii",
+    "plain"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.tree.folders",
+   "title": "Tree, folders only",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background",
+    "drive"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '\n$L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '\n$V = [string][char]0x2502 + '   '\n$S = '    '\nWalk $root 1 '' $false 0\n$nodes = @($all)\n$nodes = @($all | Where-Object { $_.Dir })\n\n$lines = New-Object System.Collections.Generic.List[string]\n$lines.Add($leaf + '/')\nforeach ($r in (Render $nodes $T $L $V $S)) { $lines.Add($r.Text) }\n$lines -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the folder structure without any files.",
+   "aliases": [
+    "copy-dirs-tree"
+   ],
+   "keywords": [
+    "tree",
+    "folders"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.tree.depth",
+   "title": "Tree to depth…",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '\n$L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '\n$V = [string][char]0x2502 + '   '\n$S = '    '\nWalk $root 1 '' $false ([int]{input:depth})\n$nodes = @($all)\n\n$lines = New-Object System.Collections.Generic.List[string]\n$lines.Add($leaf + '/')\nforeach ($r in (Render $nodes $T $L $V $S)) { $lines.Add($r.Text) }\n$lines -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as a tree but only down to the level you choose.",
+   "inputs": {
+    "depth": {
+     "label": "How many levels",
+     "type": "pick",
+     "options": [
+      "1",
+      "2",
+      "3",
+      "4"
+     ],
+     "default": "2"
     }
-  ]
+   },
+   "keywords": [
+    "tree",
+    "depth",
+    "levels"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.tree.sizes",
+   "title": "Tree with sizes",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '\n$L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '\n$V = [string][char]0x2502 + '   '\n$S = '    '\nWalk $root 1 '' $false 0\n$nodes = @($all)\n\n$sizes = @{}\nfor ($i = 0; $i -lt $nodes.Count; $i++) {\n  if ($nodes[$i].Dir) { $tot = [int64]0; $j = $i + 1; while ($j -lt $nodes.Count -and $nodes[$j].Depth -gt $nodes[$i].Depth) { if (-not $nodes[$j].Dir) { $tot += $nodes[$j].Size }; $j++ }; $sizes[$i] = $tot }\n  else { $sizes[$i] = $nodes[$i].Size }\n}\n$rows = @(Render $nodes $T $L $V $S)\n$rootTotal = [int64]0; foreach ($x in $nodes) { if (-not $x.Dir) { $rootTotal += $x.Size } }\n$width = $leaf.Length + 1; foreach ($r in $rows) { if ($r.Text.Length -gt $width) { $width = $r.Text.Length } }\n$lines = New-Object System.Collections.Generic.List[string]\n$lines.Add(($leaf + '/').PadRight($width + 2) + (Fmt $rootTotal).PadLeft(10))\nfor ($i = 0; $i -lt $rows.Count; $i++) { $lines.Add($rows[$i].Text.PadRight($width + 2) + (Fmt $sizes[$i]).PadLeft(10)) }\n$lines -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as a tree with a size next to every item. A folder shows the total of everything inside it.",
+   "keywords": [
+    "tree",
+    "size"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.tree.markdown",
+   "title": "Tree as Markdown",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '\n$L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '\n$V = [string][char]0x2502 + '   '\n$S = '    '\nWalk $root 1 '' $false 0\n$nodes = @($all)\n$lines = New-Object System.Collections.Generic.List[string]\n$lines.Add('```text')\n$lines.Add($leaf + '/')\nforeach ($r in (Render $nodes $T $L $V $S)) { $lines.Add($r.Text) }\n$lines.Add('```')\n$lines -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as a tree inside a Markdown code fence.",
+   "keywords": [
+    "tree",
+    "markdown",
+    "md"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.tree.nested-list",
+   "title": "Tree as nested list",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '\n$L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '\n$V = [string][char]0x2502 + '   '\n$S = '    '\nWalk $root 1 '' $false 0\n$nodes = @($all)\n\n$lines = New-Object System.Collections.Generic.List[string]\n$lines.Add('- ' + $leaf + '/')\nforeach ($x in $nodes) { $lines.Add(('  ' * $x.Depth) + '- ' + $x.Name + $(if ($x.Dir) { '/' } else { '' })) }\n$lines -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as an indented bullet list you can paste into Notion or Obsidian.",
+   "keywords": [
+    "tree",
+    "list",
+    "notion",
+    "obsidian"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.tree.gitignore",
+   "title": "Tree (respect .gitignore)",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$files = @()\n$gitOk = $false\ntry { $files = @(& git -C $root ls-files -co --exclude-standard 2>$null); $gitOk = ($LASTEXITCODE -eq 0) } catch { }\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    [void]$all.Add([pscustomobject]@{ Name = $it.Name; Dir = [bool]$it.PSIsContainer; Depth = $depth })\n    if ($it.PSIsContainer) { Walk $it.FullName ($depth + 1) '' $nobuild $maxDepth }\n  }\n}\nif ($gitOk) {\n  $tree = @{ children = @{} }\n  foreach ($f in $files) {\n    $parts = $f -split '/'; $n = $tree\n    for ($i = 0; $i -lt $parts.Count; $i++) {\n      $nm = $parts[$i]\n      if (-not $n.children.ContainsKey($nm)) { $n.children[$nm] = @{ children = @{}; dir = ($i -lt $parts.Count - 1); name = $nm } }\n      $n = $n.children[$nm]\n    }\n  }\n  function Add-Node($n, [int]$depth) {\n    $kids = @($n.children.Values)\n    $ordered = @($kids | Where-Object { $_.dir } | Sort-Object { $_.name.ToUpperInvariant() }) + @($kids | Where-Object { -not $_.dir } | Sort-Object { $_.name.ToUpperInvariant() })\n    foreach ($k in $ordered) { [void]$all.Add([pscustomobject]@{ Name = $k.name; Dir = [bool]$k.dir; Depth = $depth }); Add-Node $k ($depth + 1) }\n  }\n  Add-Node $tree 1\n} else { Walk $root 1 '' $true 0 }\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '\n$L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '\n$V = [string][char]0x2502 + '   '\n$S = '    '\n\n$nodes = @($all)\n\n$lines = New-Object System.Collections.Generic.List[string]\n$lines.Add($leaf + '/')\nforeach ($r in (Render $nodes $T $L $V $S)) { $lines.Add($r.Text) }\n$lines -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as a tree but leaves out everything git ignores. Without git it skips common build folders instead.",
+   "keywords": [
+    "tree",
+    "gitignore",
+    "git"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.tree.json",
+   "title": "Tree as JSON",
+   "menu": "Copy/Tree",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @()\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\nfunction To-Node($item) {\n  if ($item.PSIsContainer) {\n    $kids = @(Get-Sorted $item.FullName $false | ForEach-Object { To-Node $_ })\n    [ordered]@{ name = $item.Name; type = 'folder'; children = $kids }\n  } else { [ordered]@{ name = $item.Name; type = 'file'; size = [int64]$item.Length } }\n}\n$kids = @(Get-Sorted $root $false | ForEach-Object { To-Node $_ })\n$top = [ordered]@{ name = $leaf; type = 'folder'; children = $kids }\nConvertTo-Json -InputObject $top -Depth 100 -Compress",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as JSON: name, type, size and children for every item.",
+   "keywords": [
+    "tree",
+    "json"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.subfolder-names",
+   "title": "All subfolder names",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 1\n(@(Get-Sorted $root $false | Where-Object { $_.PSIsContainer } | ForEach-Object { $_.Name })) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the names of the folders directly inside this one.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.subfolder-names-rec",
+   "title": "All subfolder names (recursive)",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n(@($all | Where-Object { $_.Dir } | ForEach-Object { $_.Name } | Sort-Object { $_.ToUpperInvariant() } | Select-Object -Unique)) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies every different folder name found below this folder, sorted.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.subfolder-paths-rel",
+   "title": "All subfolder paths (relative)",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n(@($all | Where-Object { $_.Dir } | ForEach-Object { $_.Rel })) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the path of every folder below this one, relative to it.",
+   "multi": "single",
+   "aliases": [
+    "copy-dirs-rel"
+   ]
+  },
+  {
+   "id": "copy.list.file-names-rec",
+   "title": "All file names (recursive)",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n(@($all | Where-Object { -not $_.Dir } | ForEach-Object { $_.Name })) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the name of every file below this folder.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.file-paths-rel",
+   "title": "All file paths (relative)",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $true 0\n(@($all | Where-Object { -not $_.Dir } | ForEach-Object { $_.Rel })) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the path of every file below this folder, relative to it. Common build folders are skipped.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.file-paths-abs",
+   "title": "All file paths (absolute)",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n(@($all | Where-Object { -not $_.Dir } | ForEach-Object { $_.Full })) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the full path of every file below this folder.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.by-ext",
+   "title": "File paths of type…",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n$e = ({input:ext}).Trim().TrimStart('.')\n(@($all | Where-Object { -not $_.Dir -and $_.Name.EndsWith('.' + $e, [StringComparison]::OrdinalIgnoreCase) } | ForEach-Object { $_.Rel })) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the relative path of every file with the extension you choose.",
+   "multi": "single",
+   "inputs": {
+    "ext": {
+     "label": "Extension, for example py",
+     "type": "text",
+     "default": "py"
+    }
+   }
+  },
+  {
+   "id": "copy.list.csv",
+   "title": "Listing as CSV",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n$rows = @($all | ForEach-Object { [pscustomobject][ordered]@{ RelativePath = $_.Rel; Name = $_.Name; Ext = $(if ($_.Dir) { '' } else { [IO.Path]::GetExtension($_.Name) }); Size = $(if ($_.Dir) { '' } else { $_.Size }); Modified = $_.Modified.ToString('yyyy-MM-ddTHH:mm:ss') } })\nif ($rows.Count -eq 0) { 'RelativePath,Name,Ext,Size,Modified' } else { ($rows | ConvertTo-Csv -NoTypeInformation) -join \"`n\" }",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies every file and folder below this one as CSV: path, name, extension, size, modified.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.json",
+   "title": "Listing as JSON",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n$rows = @($all | ForEach-Object { [pscustomobject][ordered]@{ RelativePath = $_.Rel; Name = $_.Name; Ext = $(if ($_.Dir) { '' } else { [IO.Path]::GetExtension($_.Name) }); Size = $(if ($_.Dir) { '' } else { $_.Size }); Modified = $_.Modified.ToString('yyyy-MM-ddTHH:mm:ss') } })\nConvertTo-Json -InputObject @($rows) -Compress",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies every file and folder below this one as a JSON array.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.ext-summary",
+   "title": "File types summary",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n\n$g = @($all | Where-Object { -not $_.Dir } | Group-Object { $e = [IO.Path]::GetExtension($_.Name).ToLowerInvariant(); if ($e) { $e } else { '(none)' } } | ForEach-Object { [pscustomobject]@{ Ext = $_.Name; Count = $_.Count; Size = ($_.Group | Measure-Object Size -Sum).Sum } })\n$g = @($g | Sort-Object @{ Expression = { $_.Size }; Descending = $true }, @{ Expression = { $_.Ext }; Descending = $false })\n(@($g | ForEach-Object { '{0}  {1} file{2}  {3}' -f $_.Ext, $_.Count, $(if ($_.Count -eq 1) { '' } else { 's' }), (Fmt $_.Size) })) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies how many files of each type are below this folder and how big they are, biggest first.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.list.count",
+   "title": "Count files and folders",
+   "menu": "Copy/Lists",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\nWalk $root 1 '' $false 0\n\n$f = @($all | Where-Object { -not $_.Dir }).Count; $d = @($all | Where-Object { $_.Dir }).Count\n$sz = [int64]0; foreach ($x in $all) { if (-not $x.Dir) { $sz += $x.Size } }\n$text = '{0} file{1}, {2} folder{3}, {4}' -f $f, $(if ($f -eq 1) { '' } else { 's' }), $d, $(if ($d -eq 1) { '' } else { 's' }), (Fmt $sz)\ntry { Set-Clipboard -Value $text } catch { }\n$text",
+   "output": "toast",
+   "risk": "safe",
+   "description": "Shows how many files and folders are below this folder and their total size. The text is also copied.",
+   "multi": "single"
+  },
+  {
+   "id": "copy.path",
+   "title": "Path",
+   "menu": "Copy/Paths",
+   "when": [
+    "file",
+    "folder",
+    "background",
+    "drive"
+   ],
+   "shell": "powershell",
+   "command": "@({paths}) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the full path, one per line when several items are selected.",
+   "aliases": [
+    "copy-path"
+   ]
+  },
+  {
+   "id": "copy.path.json",
+   "title": "Path escaped (\\\\)",
+   "menu": "Copy/Paths",
+   "when": [
+    "file",
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "(@({paths}) | ForEach-Object { $_.Replace('\\', '\\\\') }) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the path with every backslash doubled, ready to paste into a JSON or code string.",
+   "aliases": [
+    "copy-json"
+   ]
+  },
+  {
+   "id": "copy.path.ps",
+   "title": "Path as PowerShell literal",
+   "menu": "Copy/Paths",
+   "when": [
+    "file",
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "(@({paths}) | ForEach-Object { \"'\" + $_.Replace(\"'\", \"''\") + \"'\" }) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the path as a single-quoted PowerShell string that survives apostrophes."
+  },
+  {
+   "id": "copy.path.short",
+   "title": "8.3 short path",
+   "menu": "Copy/Paths",
+   "when": [
+    "file",
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "$fso = New-Object -ComObject Scripting.FileSystemObject\n(@({paths}) | ForEach-Object { if (Test-Path -LiteralPath $_ -PathType Container) { $fso.GetFolder($_).ShortPath } else { $fso.GetFile($_).ShortPath } }) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the old DOS-style short path (needs 8.3 names to be enabled on the drive).",
+   "requires": []
+  },
+  {
+   "id": "copy.path.rel-git",
+   "title": "Path relative to repo root",
+   "menu": "Copy/Paths",
+   "when": [
+    "file",
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "$out = foreach ($p in @({paths})) {\n  $d = if (Test-Path -LiteralPath $p -PathType Container) { $p } else { Split-Path -Parent $p }\n  $top = (& git -C $d rev-parse --show-toplevel 2>$null)\n  if ($LASTEXITCODE -ne 0 -or -not $top) { $p }\n  else {\n    $topW = ([string]$top).Replace('/', '\\').TrimEnd('\\')\n    if ($p.Equals($topW, [StringComparison]::OrdinalIgnoreCase)) { '.' }\n    elseif ($p.StartsWith($topW + '\\', [StringComparison]::OrdinalIgnoreCase)) { $p.Substring($topW.Length + 1).Replace('\\', '/') }\n    else { $p }\n  }\n}\n@($out) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the path relative to the root of the git repository it is in, with forward slashes.",
+   "requires": [
+    "git"
+   ]
+  },
+  {
+   "id": "copy.path.rel-marked",
+   "title": "Path relative to marked folder",
+   "menu": "Copy/Paths",
+   "when": [
+    "file",
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "$markFile = Join-Path $(if ($env:PSTOOLS_DATA) { $env:PSTOOLS_DATA } else { Join-Path $env:LOCALAPPDATA 'PSTools' }) 'marks.txt'\n$base = $null\nif (Test-Path -LiteralPath $markFile) { $base = @(Get-Content -LiteralPath $markFile -Encoding UTF8 | Where-Object { $_.Trim() })[0] }\nif (-not $base) { 'Nothing is marked. Right-click a folder and choose Mark for compare first.'; return }\nif (-not (Test-Path -LiteralPath $base -PathType Container)) { $base = Split-Path -Parent $base }\n$b = $base.TrimEnd('\\')\n$out = foreach ($p in @({paths})) {\n  if ($p.StartsWith($b + '\\', [StringComparison]::OrdinalIgnoreCase)) { $p.Substring($b.Length + 1) } elseif ($p.Equals($b, [StringComparison]::OrdinalIgnoreCase)) { '.' } else { $p }\n}\n@($out) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the path relative to the folder you marked with Mark for compare."
+  },
+  {
+   "id": "copy.ai.folder",
+   "title": "Copy folder for AI",
+   "menu": "Copy/For AI",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\n$lang = @{ '.py'='python'; '.js'='javascript'; '.jsx'='jsx'; '.ts'='typescript'; '.tsx'='tsx'; '.json'='json'; '.md'='markdown'; '.yml'='yaml'; '.yaml'='yaml'; '.cs'='csharp'; '.java'='java'; '.go'='go'; '.rs'='rust'; '.c'='c'; '.h'='c'; '.cpp'='cpp'; '.hpp'='cpp'; '.sh'='bash'; '.ps1'='powershell'; '.psm1'='powershell'; '.html'='html'; '.css'='css'; '.scss'='scss'; '.sql'='sql'; '.xml'='xml'; '.toml'='toml'; '.ini'='ini'; '.bat'='bat'; '.cmd'='bat'; '.rb'='ruby'; '.php'='php'; '.kt'='kotlin'; '.swift'='swift'; '.vue'='vue'; '.txt'='' }\n$binExt = @('.dll','.exe','.png','.jpg','.jpeg','.gif','.bmp','.ico','.zip','.7z','.rar','.gz','.tar','.pdf','.mp3','.mp4','.mov','.avi','.woff','.woff2','.ttf','.otf','.so','.pyc','.class','.jar','.pdb','.obj','.o','.lib','.bin','.webp','.psd','.iso','.msi')\n$lockNames = @('package-lock.json','pnpm-lock.yaml','yarn.lock','poetry.lock','Cargo.lock')\n$maxFile = 200KB; $maxTotal = 400KB\nfunction Test-Binary([string]$f) {\n  $ext = [IO.Path]::GetExtension($f).ToLowerInvariant()\n  if ($binExt -contains $ext) { return $true }\n  try { $fs = [IO.File]::OpenRead($f); try { $buf = New-Object byte[] 8192; $n = $fs.Read($buf, 0, 8192); for ($i = 0; $i -lt $n; $i++) { if ($buf[$i] -eq 0) { return $true } } } finally { $fs.Dispose() } } catch { return $true }\n  $false\n}\nfunction Build-Ai([string]$title, $entries) {\n  $sb = New-Object System.Text.StringBuilder\n  $skipBin = New-Object System.Collections.Generic.List[string]; $skipBig = New-Object System.Collections.Generic.List[string]; $skipCap = New-Object System.Collections.Generic.List[string]\n  $included = 0; $total = 0\n  foreach ($e in $entries) {\n    $name = [IO.Path]::GetFileName($e.Full)\n    if ($lockNames -contains $name) { continue }\n    if (Test-Binary $e.Full) { $skipBin.Add($e.Rel); continue }\n    $len = (Get-Item -LiteralPath $e.Full).Length\n    if ($len -gt $maxFile) { $skipBig.Add($e.Rel); continue }\n    if ($total + $len -gt $maxTotal) { $skipCap.Add($e.Rel); continue }\n    $text = [IO.File]::ReadAllText($e.Full).TrimEnd(\"`r\", \"`n\")\n    $ext = [IO.Path]::GetExtension($name).ToLowerInvariant()\n    $l = if ($lang.ContainsKey($ext)) { $lang[$ext] } else { '' }\n    [void]$sb.Append(\"`n### \" + $e.Rel + \"`n`n``````\" + $l + \"`n\" + $text + \"`n``````\" + \"`n\")\n    $included++; $total += $len\n  }\n  $parts = @()\n  if ($skipBin.Count) { $parts += ('{0} binary' -f $skipBin.Count) }\n  if ($skipBig.Count) { $parts += ('{0} large' -f $skipBig.Count) }\n  if ($skipCap.Count) { $parts += ('{0} over the size limit' -f $skipCap.Count) }\n  if ($parts.Count) { $names = @($skipBin + $skipBig + $skipCap | Select-Object -First 5) -join ', '; [void]$sb.Append(\"`nSkipped: \" + ($parts -join ', ') + ' (' + $names + \")`n\") }\n  $tokens = [int][Math]::Ceiling($sb.Length / 4.0)\n  [pscustomobject]@{ Text = $sb.ToString(); Files = $included; Chars = $sb.Length; Tokens = $tokens }\n}\n\nfunction Render($items, [string]$T, [string]$L, [string]$V, [string]$S) {\n  $out = New-Object System.Collections.ArrayList\n  $n = $items.Count\n  $isLast = New-Object 'bool[]' $n\n  for ($i = 0; $i -lt $n; $i++) {\n    $j = $i + 1\n    while ($j -lt $n -and $items[$j].Depth -gt $items[$i].Depth) { $j++ }\n    $isLast[$i] = ($j -ge $n -or $items[$j].Depth -lt $items[$i].Depth)\n  }\n  $anc = New-Object 'bool[]' 64\n  for ($i = 0; $i -lt $n; $i++) {\n    $it = $items[$i]; $d = $it.Depth\n    $anc[$d - 1] = $isLast[$i]\n    $pre = ''\n    for ($k = 0; $k -lt $d - 1; $k++) { $pre += $(if ($anc[$k]) { $S } else { $V }) }\n    $pre += $(if ($isLast[$i]) { $L } else { $T })\n    [void]$out.Add([pscustomobject]@{ Text = $pre + $it.Name + $(if ($it.Dir) { '/' } else { '' }); Item = $it })\n  }\n  $out\n}\n\n$T = [string][char]0x251C + [char]0x2500 + [char]0x2500 + ' '\n$L = [string][char]0x2514 + [char]0x2500 + [char]0x2500 + ' '\n$V = [string][char]0x2502 + '   '\n$S = '    '\n$entries = New-Object System.Collections.ArrayList\n$gitOk = $false; $files = @()\ntry { $files = @(& git -C $root ls-files -co --exclude-standard 2>$null); $gitOk = ($LASTEXITCODE -eq 0) } catch { }\nif ($gitOk) {\n  $nodes = New-Object System.Collections.ArrayList\n  $tree = @{ children = @{} }\n  foreach ($f in $files) { $parts = $f -split '/'; $n = $tree; for ($i = 0; $i -lt $parts.Count; $i++) { $nm = $parts[$i]; if (-not $n.children.ContainsKey($nm)) { $n.children[$nm] = @{ children = @{}; dir = ($i -lt $parts.Count - 1); name = $nm; path = (($parts[0..$i]) -join '/') } }; $n = $n.children[$nm] } }\n  function Add-Node($n, [int]$depth) {\n    $kids = @($n.children.Values)\n    $ordered = @($kids | Where-Object { $_.dir } | Sort-Object { $_.name.ToUpperInvariant() }) + @($kids | Where-Object { -not $_.dir } | Sort-Object { $_.name.ToUpperInvariant() })\n    foreach ($k in $ordered) {\n      [void]$nodes.Add([pscustomobject]@{ Name = $k.name; Dir = [bool]$k.dir; Depth = $depth })\n      if (-not $k.dir) { [void]$entries.Add([pscustomobject]@{ Rel = $k.path; Full = (Join-Path $root ($k.path.Replace('/', '\\'))) }) }\n      Add-Node $k ($depth + 1)\n    }\n  }\n  Add-Node $tree 1\n} else {\n  Walk $root 1 '' $true 0\n  $nodes = @($all)\n  foreach ($x in $all) { if (-not $x.Dir) { [void]$entries.Add([pscustomobject]@{ Rel = $x.Rel.Replace('\\', '/'); Full = $x.Full }) } }\n}\n$treeLines = New-Object System.Collections.Generic.List[string]\n$treeLines.Add($leaf + '/')\nforeach ($r in (Render @($nodes) $T $L $V $S)) { $treeLines.Add($r.Text) }\n$ai = Build-Ai $leaf $entries\n$head = \"# \" + $leaf + \"`n`n``````text`n\" + ($treeLines -join \"`n\") + \"`n``````\" + \"`n\"\n($head + $ai.Text).TrimEnd() \n'##PST-TOAST## Copied {0} file{1} ({2}, about {3} tokens)' -f $ai.Files, $(if ($ai.Files -eq 1) { '' } else { 's' }), (Fmt $ai.Chars), $ai.Tokens",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies this folder as one block of text for an AI chat: a tree, then every text file under a heading with a code block. Binary, huge and lock files are skipped.",
+   "keywords": [
+    "ai",
+    "chatgpt",
+    "claude",
+    "prompt",
+    "llm",
+    "context"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "copy.ai.files",
+   "title": "Copy selected files for AI",
+   "menu": "Copy/For AI",
+   "when": [
+    "file",
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "$lang = @{ '.py'='python'; '.js'='javascript'; '.jsx'='jsx'; '.ts'='typescript'; '.tsx'='tsx'; '.json'='json'; '.md'='markdown'; '.yml'='yaml'; '.yaml'='yaml'; '.cs'='csharp'; '.java'='java'; '.go'='go'; '.rs'='rust'; '.c'='c'; '.h'='c'; '.cpp'='cpp'; '.hpp'='cpp'; '.sh'='bash'; '.ps1'='powershell'; '.psm1'='powershell'; '.html'='html'; '.css'='css'; '.scss'='scss'; '.sql'='sql'; '.xml'='xml'; '.toml'='toml'; '.ini'='ini'; '.bat'='bat'; '.cmd'='bat'; '.rb'='ruby'; '.php'='php'; '.kt'='kotlin'; '.swift'='swift'; '.vue'='vue'; '.txt'='' }\n$binExt = @('.dll','.exe','.png','.jpg','.jpeg','.gif','.bmp','.ico','.zip','.7z','.rar','.gz','.tar','.pdf','.mp3','.mp4','.mov','.avi','.woff','.woff2','.ttf','.otf','.so','.pyc','.class','.jar','.pdb','.obj','.o','.lib','.bin','.webp','.psd','.iso','.msi')\n$lockNames = @('package-lock.json','pnpm-lock.yaml','yarn.lock','poetry.lock','Cargo.lock')\n$maxFile = 200KB; $maxTotal = 400KB\nfunction Test-Binary([string]$f) {\n  $ext = [IO.Path]::GetExtension($f).ToLowerInvariant()\n  if ($binExt -contains $ext) { return $true }\n  try { $fs = [IO.File]::OpenRead($f); try { $buf = New-Object byte[] 8192; $n = $fs.Read($buf, 0, 8192); for ($i = 0; $i -lt $n; $i++) { if ($buf[$i] -eq 0) { return $true } } } finally { $fs.Dispose() } } catch { return $true }\n  $false\n}\nfunction Build-Ai([string]$title, $entries) {\n  $sb = New-Object System.Text.StringBuilder\n  $skipBin = New-Object System.Collections.Generic.List[string]; $skipBig = New-Object System.Collections.Generic.List[string]; $skipCap = New-Object System.Collections.Generic.List[string]\n  $included = 0; $total = 0\n  foreach ($e in $entries) {\n    $name = [IO.Path]::GetFileName($e.Full)\n    if ($lockNames -contains $name) { continue }\n    if (Test-Binary $e.Full) { $skipBin.Add($e.Rel); continue }\n    $len = (Get-Item -LiteralPath $e.Full).Length\n    if ($len -gt $maxFile) { $skipBig.Add($e.Rel); continue }\n    if ($total + $len -gt $maxTotal) { $skipCap.Add($e.Rel); continue }\n    $text = [IO.File]::ReadAllText($e.Full).TrimEnd(\"`r\", \"`n\")\n    $ext = [IO.Path]::GetExtension($name).ToLowerInvariant()\n    $l = if ($lang.ContainsKey($ext)) { $lang[$ext] } else { '' }\n    [void]$sb.Append(\"`n### \" + $e.Rel + \"`n`n``````\" + $l + \"`n\" + $text + \"`n``````\" + \"`n\")\n    $included++; $total += $len\n  }\n  $parts = @()\n  if ($skipBin.Count) { $parts += ('{0} binary' -f $skipBin.Count) }\n  if ($skipBig.Count) { $parts += ('{0} large' -f $skipBig.Count) }\n  if ($skipCap.Count) { $parts += ('{0} over the size limit' -f $skipCap.Count) }\n  if ($parts.Count) { $names = @($skipBin + $skipBig + $skipCap | Select-Object -First 5) -join ', '; [void]$sb.Append(\"`nSkipped: \" + ($parts -join ', ') + ' (' + $names + \")`n\") }\n  $tokens = [int][Math]::Ceiling($sb.Length / 4.0)\n  [pscustomobject]@{ Text = $sb.ToString(); Files = $included; Chars = $sb.Length; Tokens = $tokens }\n}\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\n$sel = @({paths})\n$first = $sel[0]\n$base = if (Test-Path -LiteralPath $first -PathType Container) { Split-Path -Parent $first } else { Split-Path -Parent $first }\n$entries = New-Object System.Collections.ArrayList\nforeach ($p in $sel) {\n  if (Test-Path -LiteralPath $p -PathType Container) {\n    foreach ($f in (Get-ChildItem -LiteralPath $p -Recurse -File -ErrorAction SilentlyContinue | Sort-Object { $_.FullName.ToUpperInvariant() })) { [void]$entries.Add($f.FullName) }\n  } else { [void]$entries.Add($p) }\n}\n$list = foreach ($f in $entries) {\n  $rel = if ($base -and $f.StartsWith($base.TrimEnd('\\') + '\\', [StringComparison]::OrdinalIgnoreCase)) { $f.Substring($base.TrimEnd('\\').Length + 1) } else { $f }\n  [pscustomobject]@{ Rel = $rel.Replace('\\', '/'); Full = $f }\n}\n$ai = Build-Ai 'Selection' @($list)\n$head = '# Selection (' + @($list).Count + ' file' + $(if (@($list).Count -eq 1) { '' } else { 's' }) + \")`n\"\n($head + $ai.Text).TrimEnd()\n'##PST-TOAST## Copied {0} file{1} ({2}, about {3} tokens)' -f $ai.Files, $(if ($ai.Files -eq 1) { '' } else { 's' }), (Fmt $ai.Chars), $ai.Tokens",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the selected files as one block of text for an AI chat, each under a heading with a code block.",
+   "keywords": [
+    "ai",
+    "files",
+    "prompt",
+    "llm"
+   ]
+  },
+  {
+   "id": "copy.contents.fenced",
+   "title": "Contents as code block",
+   "menu": "Copy/Contents",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$lang = @{ '.py'='python'; '.js'='javascript'; '.jsx'='jsx'; '.ts'='typescript'; '.tsx'='tsx'; '.json'='json'; '.md'='markdown'; '.yml'='yaml'; '.yaml'='yaml'; '.cs'='csharp'; '.java'='java'; '.go'='go'; '.rs'='rust'; '.c'='c'; '.h'='c'; '.cpp'='cpp'; '.hpp'='cpp'; '.sh'='bash'; '.ps1'='powershell'; '.psm1'='powershell'; '.html'='html'; '.css'='css'; '.scss'='scss'; '.sql'='sql'; '.xml'='xml'; '.toml'='toml'; '.ini'='ini'; '.bat'='bat'; '.cmd'='bat'; '.rb'='ruby'; '.php'='php'; '.kt'='kotlin'; '.swift'='swift'; '.vue'='vue'; '.txt'='' }\n$binExt = @('.dll','.exe','.png','.jpg','.jpeg','.gif','.bmp','.ico','.zip','.7z','.rar','.gz','.tar','.pdf','.mp3','.mp4','.mov','.avi','.woff','.woff2','.ttf','.otf','.so','.pyc','.class','.jar','.pdb','.obj','.o','.lib','.bin','.webp','.psd','.iso','.msi')\n$lockNames = @('package-lock.json','pnpm-lock.yaml','yarn.lock','poetry.lock','Cargo.lock')\n$maxFile = 200KB; $maxTotal = 400KB\nfunction Test-Binary([string]$f) {\n  $ext = [IO.Path]::GetExtension($f).ToLowerInvariant()\n  if ($binExt -contains $ext) { return $true }\n  try { $fs = [IO.File]::OpenRead($f); try { $buf = New-Object byte[] 8192; $n = $fs.Read($buf, 0, 8192); for ($i = 0; $i -lt $n; $i++) { if ($buf[$i] -eq 0) { return $true } } } finally { $fs.Dispose() } } catch { return $true }\n  $false\n}\nfunction Build-Ai([string]$title, $entries) {\n  $sb = New-Object System.Text.StringBuilder\n  $skipBin = New-Object System.Collections.Generic.List[string]; $skipBig = New-Object System.Collections.Generic.List[string]; $skipCap = New-Object System.Collections.Generic.List[string]\n  $included = 0; $total = 0\n  foreach ($e in $entries) {\n    $name = [IO.Path]::GetFileName($e.Full)\n    if ($lockNames -contains $name) { continue }\n    if (Test-Binary $e.Full) { $skipBin.Add($e.Rel); continue }\n    $len = (Get-Item -LiteralPath $e.Full).Length\n    if ($len -gt $maxFile) { $skipBig.Add($e.Rel); continue }\n    if ($total + $len -gt $maxTotal) { $skipCap.Add($e.Rel); continue }\n    $text = [IO.File]::ReadAllText($e.Full).TrimEnd(\"`r\", \"`n\")\n    $ext = [IO.Path]::GetExtension($name).ToLowerInvariant()\n    $l = if ($lang.ContainsKey($ext)) { $lang[$ext] } else { '' }\n    [void]$sb.Append(\"`n### \" + $e.Rel + \"`n`n``````\" + $l + \"`n\" + $text + \"`n``````\" + \"`n\")\n    $included++; $total += $len\n  }\n  $parts = @()\n  if ($skipBin.Count) { $parts += ('{0} binary' -f $skipBin.Count) }\n  if ($skipBig.Count) { $parts += ('{0} large' -f $skipBig.Count) }\n  if ($skipCap.Count) { $parts += ('{0} over the size limit' -f $skipCap.Count) }\n  if ($parts.Count) { $names = @($skipBin + $skipBig + $skipCap | Select-Object -First 5) -join ', '; [void]$sb.Append(\"`nSkipped: \" + ($parts -join ', ') + ' (' + $names + \")`n\") }\n  $tokens = [int][Math]::Ceiling($sb.Length / 4.0)\n  [pscustomobject]@{ Text = $sb.ToString(); Files = $included; Chars = $sb.Length; Tokens = $tokens }\n}\n\n$f = {path}\n$ext = [IO.Path]::GetExtension($f).ToLowerInvariant()\n$l = if ($lang.ContainsKey($ext)) { $lang[$ext] } else { '' }\n$text = [IO.File]::ReadAllText($f).TrimEnd(\"`r\", \"`n\")\n'```' + $l + \"`n\" + $text + \"`n\" + '```'",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the text of the file inside a Markdown code block that has the right language tag.",
+   "keywords": [
+    "code",
+    "markdown",
+    "fence"
+   ],
+   "multi": "single",
+   "match": {
+    "kind": "file"
+   }
+  },
+  {
+   "id": "git.copy.permalink",
+   "title": "Permalink to this file",
+   "menu": "Copy/Git",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "function Get-RepoInfo([string]$p) {\n  $d = if (Test-Path -LiteralPath $p -PathType Container) { $p } else { Split-Path -Parent $p }\n  $top = (& git -C $d rev-parse --show-toplevel 2>$null)\n  if ($LASTEXITCODE -ne 0 -or -not $top) { return $null }\n  $url = (& git -C $d remote get-url origin 2>$null)\n  if ($LASTEXITCODE -ne 0 -or -not $url) { $first = @(& git -C $d remote 2>$null)[0]; if ($first) { $url = (& git -C $d remote get-url $first 2>$null) } }\n  if (-not $url) { return [pscustomobject]@{ Top = ([string]$top).Replace('/', '\\'); Dir = $d; Url = $null; Web = $null; Host = $null } }\n  $u = [string]$url; $u = $u.Trim()\n  $web = $u\n  if ($u -match '^git@([^:]+):(.+)$') { $web = 'https://' + $Matches[1] + '/' + $Matches[2] }\n  elseif ($u -match '^ssh://(?:[^@]+@)?([^/:]+)(?::\\d+)?/(.+)$') { $web = 'https://' + $Matches[1] + '/' + $Matches[2] }\n  $web = ($web -replace '\\.git$', '').TrimEnd('/')\n  $web = $web -replace '^https://[^@/]+@', 'https://'\n  $hostName = ([Uri]$web).Host\n  [pscustomobject]@{ Top = ([string]$top).Replace('/', '\\'); Dir = $d; Url = $u; Web = $web; Host = $hostName }\n}\nfunction Get-Permalink($info, [string]$file, [string]$sha) {\n  $rel = $file.Substring($info.Top.TrimEnd('\\').Length + 1).Replace('\\', '/')\n  $enc = ($rel -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'\n  if ($info.Host -like '*dev.azure.com' -or $info.Host -like '*visualstudio.com') { return $info.Web + '?path=/' + $enc + '&version=GC' + $sha }\n  if ($info.Host -like '*gitlab*') { return $info.Web + '/-/blob/' + $sha + '/' + $enc }\n  if ($info.Host -like '*bitbucket*') { return $info.Web + '/src/' + $sha + '/' + $enc }\n  $info.Web + '/blob/' + $sha + '/' + $enc\n}\n\n$f = {path}\n$info = Get-RepoInfo $f\nif (-not $info) { Write-Error 'This file is not inside a git repository.'; return }\nif (-not $info.Web) { Write-Error 'This repository has no remote, so there is no web address.'; return }\n$sha = (& git -C $info.Dir rev-parse HEAD).Trim()\nGet-Permalink $info $f $sha",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies a link to this file as it is in the current commit, for GitHub, GitLab, Bitbucket and Azure DevOps.",
+   "requires": [
+    "git"
+   ],
+   "multi": "single",
+   "keywords": [
+    "permalink",
+    "github",
+    "link",
+    "url"
+   ]
+  },
+  {
+   "id": "git.copy.last-commit",
+   "title": "Last commit (hash + message)",
+   "menu": "Copy/Git",
+   "when": [
+    "file",
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$p = {path}\n$d = if (Test-Path -LiteralPath $p -PathType Container) { $p } else { Split-Path -Parent $p }\nif (Test-Path -LiteralPath $p -PathType Leaf) { & git -C $d log -1 --format='%h %s' -- $p } else { & git -C $d log -1 --format='%h %s' }",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the short hash and message of the last commit. For a file it is the last commit that touched that file.",
+   "requires": [
+    "git"
+   ],
+   "multi": "single",
+   "keywords": [
+    "commit",
+    "hash",
+    "log"
+   ]
+  },
+  {
+   "id": "git.copy.remote",
+   "title": "Remote URL",
+   "menu": "Copy/Git",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$d = {dir}\n$url = (& git -C $d remote get-url origin 2>$null)\nif (-not $url) { $first = @(& git -C $d remote 2>$null)[0]; if ($first) { $url = (& git -C $d remote get-url $first) } }\nif (-not $url) { Write-Error 'This repository has no remote.' } else { $url }",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the address of the remote this repository pushes to.",
+   "requires": [
+    "git"
+   ],
+   "multi": "single",
+   "keywords": [
+    "remote",
+    "origin",
+    "url"
+   ]
+  },
+  {
+   "id": "git.open.web",
+   "title": "Open repo in browser",
+   "menu": "Git",
+   "when": [
+    "file",
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "function Get-RepoInfo([string]$p) {\n  $d = if (Test-Path -LiteralPath $p -PathType Container) { $p } else { Split-Path -Parent $p }\n  $top = (& git -C $d rev-parse --show-toplevel 2>$null)\n  if ($LASTEXITCODE -ne 0 -or -not $top) { return $null }\n  $url = (& git -C $d remote get-url origin 2>$null)\n  if ($LASTEXITCODE -ne 0 -or -not $url) { $first = @(& git -C $d remote 2>$null)[0]; if ($first) { $url = (& git -C $d remote get-url $first 2>$null) } }\n  if (-not $url) { return [pscustomobject]@{ Top = ([string]$top).Replace('/', '\\'); Dir = $d; Url = $null; Web = $null; Host = $null } }\n  $u = [string]$url; $u = $u.Trim()\n  $web = $u\n  if ($u -match '^git@([^:]+):(.+)$') { $web = 'https://' + $Matches[1] + '/' + $Matches[2] }\n  elseif ($u -match '^ssh://(?:[^@]+@)?([^/:]+)(?::\\d+)?/(.+)$') { $web = 'https://' + $Matches[1] + '/' + $Matches[2] }\n  $web = ($web -replace '\\.git$', '').TrimEnd('/')\n  $web = $web -replace '^https://[^@/]+@', 'https://'\n  $hostName = ([Uri]$web).Host\n  [pscustomobject]@{ Top = ([string]$top).Replace('/', '\\'); Dir = $d; Url = $u; Web = $web; Host = $hostName }\n}\nfunction Get-Permalink($info, [string]$file, [string]$sha) {\n  $rel = $file.Substring($info.Top.TrimEnd('\\').Length + 1).Replace('\\', '/')\n  $enc = ($rel -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'\n  if ($info.Host -like '*dev.azure.com' -or $info.Host -like '*visualstudio.com') { return $info.Web + '?path=/' + $enc + '&version=GC' + $sha }\n  if ($info.Host -like '*gitlab*') { return $info.Web + '/-/blob/' + $sha + '/' + $enc }\n  if ($info.Host -like '*bitbucket*') { return $info.Web + '/src/' + $sha + '/' + $enc }\n  $info.Web + '/blob/' + $sha + '/' + $enc\n}\n\n$p = {path}\n$info = Get-RepoInfo $p\nif (-not $info -or -not $info.Web) { Write-Error 'No remote address was found for this repository.'; return }\n$target = $info.Web\nif (Test-Path -LiteralPath $p -PathType Leaf) { $sha = (& git -C $info.Dir rev-parse HEAD).Trim(); $target = Get-Permalink $info $p $sha }\nStart-Process $target",
+   "output": "none",
+   "risk": "safe",
+   "description": "Opens this repository's page in your browser. For a file it opens that file's page.",
+   "requires": [
+    "git"
+   ],
+   "multi": "single",
+   "keywords": [
+    "browser",
+    "github",
+    "web"
+   ]
+  },
+  {
+   "id": "git.fetch.repos",
+   "title": "Fetch all repos below",
+   "menu": "Git",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$repos = @(Get-ChildItem -LiteralPath $root -Directory -Recurse -Depth 4 -Force -Filter '.git' -ErrorAction SilentlyContinue | ForEach-Object { $_.Parent.FullName })\nif (Test-Path -LiteralPath (Join-Path $root '.git')) { $repos = @($root) + $repos }\nforeach ($r in $repos) {\n  $o = (& git -C $r fetch --all --prune 2>&1 | Out-String).Trim()\n  [pscustomobject]@{ Repo = $r; Result = $(if ($LASTEXITCODE -eq 0) { if ($o) { 'Fetched' } else { 'Up to date' } } else { 'Failed' }); Detail = ($o -split \"`n\" | Select-Object -First 1) }\n}",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Runs git fetch in every repository below this folder and lists what happened. Nothing in your files changes.",
+   "requires": [
+    "git"
+   ],
+   "multi": "single",
+   "keywords": [
+    "fetch",
+    "repos"
+   ]
+  },
+  {
+   "id": "git.log.file",
+   "title": "History of this file",
+   "menu": "Git",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$p = {path}\n& git -C (Split-Path -Parent $p) log --follow --oneline -n 50 -- $p",
+   "output": "console",
+   "risk": "safe",
+   "description": "Shows the last 50 commits that changed this file, following renames.",
+   "requires": [
+    "git"
+   ],
+   "multi": "single",
+   "keywords": [
+    "history",
+    "log"
+   ]
+  },
+  {
+   "id": "git.blame.file",
+   "title": "Who changed this file?",
+   "menu": "Git",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$p = {path}\n$lines = @(& git -C (Split-Path -Parent $p) blame --line-porcelain -- $p 2>$null)\n$authors = @{}\nforeach ($l in $lines) { if ($l.StartsWith('author ')) { $a = $l.Substring(7); if ($authors.ContainsKey($a)) { $authors[$a]++ } else { $authors[$a] = 1 } } }\n$total = ($authors.Values | Measure-Object -Sum).Sum\nif (-not $total) { return }\n$authors.GetEnumerator() | Sort-Object { -$_.Value }, Name | ForEach-Object { [pscustomobject]@{ Author = $_.Name; Lines = $_.Value; Percent = ('{0:0}%' -f (100.0 * $_.Value / $total)) } }",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Shows who wrote how many lines of this file, from git blame.",
+   "requires": [
+    "git"
+   ],
+   "multi": "single",
+   "keywords": [
+    "blame",
+    "authors"
+   ]
+  },
+  {
+   "id": "search.text",
+   "title": "Find text in files…",
+   "menu": "Search",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\n$pattern = {input:pattern}\n$useRegex = ({input:regex}) -eq 'true'\nWalk $root 1 '' $true 0\n$binExt = @('.dll','.exe','.png','.jpg','.jpeg','.gif','.bmp','.ico','.zip','.7z','.rar','.gz','.tar','.pdf','.mp3','.mp4','.pyc','.class','.jar','.pdb','.woff','.woff2','.ttf')\n$hits = New-Object System.Collections.ArrayList\nforeach ($f in @($all | Where-Object { -not $_.Dir -and ($binExt -notcontains [IO.Path]::GetExtension($_.Name).ToLowerInvariant()) -and $_.Size -lt 5MB })) {\n  if ($hits.Count -ge 5000) { break }\n  $m = if ($useRegex) { Select-String -LiteralPath $f.Full -Pattern $pattern -ErrorAction SilentlyContinue } else { Select-String -LiteralPath $f.Full -Pattern $pattern -SimpleMatch -ErrorAction SilentlyContinue }\n  foreach ($x in $m) { [void]$hits.Add([pscustomobject][ordered]@{ File = $f.Rel; Line = $x.LineNumber; Text = $x.Line.Trim().Substring(0, [Math]::Min(200, $x.Line.Trim().Length)); FullName = $f.Full }) }\n}\n$hits",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Searches the text inside every file below this folder and lists each matching line.",
+   "multi": "single",
+   "inputs": {
+    "pattern": {
+     "label": "Text to find",
+     "type": "text",
+     "default": ""
+    },
+    "regex": {
+     "label": "Treat as a regular expression",
+     "type": "bool",
+     "default": "false"
+    }
+   },
+   "keywords": [
+    "grep",
+    "find",
+    "text",
+    "search"
+   ]
+  },
+  {
+   "id": "search.empty",
+   "title": "Empty folders",
+   "menu": "Search",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\nWalk $root 1 '' $false 0\n@($all | Where-Object { $_.Dir -and @(Get-ChildItem -LiteralPath $_.Full -Force -ErrorAction SilentlyContinue).Count -eq 0 } | ForEach-Object { [pscustomobject][ordered]@{ Folder = $_.Rel; FullName = $_.Full } })",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Lists folders that have nothing inside them.",
+   "multi": "single",
+   "keywords": [
+    "empty",
+    "folders"
+   ]
+  },
+  {
+   "id": "search.by-date",
+   "title": "Files changed between…",
+   "menu": "Search",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$root = {dir}\n$leaf = Split-Path -Leaf $root; if (-not $leaf) { $leaf = $root }\n$skipBuild = @('.git','node_modules','.vs','__pycache__','bin','obj','dist','build','.next','.venv','venv','target','.gradle','.idea')\n\nfunction Get-Sorted([string]$p, [bool]$nobuild) {\n  $k = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })\n  if ($nobuild) { $k = @($k | Where-Object { -not ($_.PSIsContainer -and ($script:skipBuild -contains $_.Name)) }) }\n  @($k | Where-Object { $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() }) + @($k | Where-Object { -not $_.PSIsContainer } | Sort-Object { $_.Name.ToUpperInvariant() })\n}\n\n$all = New-Object System.Collections.ArrayList\nfunction Walk([string]$p, [int]$depth, [string]$rel, [bool]$nobuild, [int]$maxDepth) {\n  foreach ($it in (Get-Sorted $p $nobuild)) {\n    $r = if ($rel) { $rel + '\\' + $it.Name } else { $it.Name }\n    [void]$all.Add([pscustomobject]@{ Rel = $r; Name = $it.Name; Dir = [bool]$it.PSIsContainer; Size = $(if ($it.PSIsContainer) { [int64]0 } else { [int64]$it.Length }); Modified = $it.LastWriteTime; Depth = $depth; Full = $it.FullName })\n    if ($it.PSIsContainer -and ($maxDepth -le 0 -or $depth -lt $maxDepth)) { Walk $it.FullName ($depth + 1) $r $nobuild $maxDepth }\n  }\n}\n\n\nfunction Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\n$from = [datetime]::Parse({input:from}, [Globalization.CultureInfo]::InvariantCulture)\n$to = [datetime]::Parse({input:to}, [Globalization.CultureInfo]::InvariantCulture).AddDays(1)\nWalk $root 1 '' $false 0\n@($all | Where-Object { -not $_.Dir -and $_.Modified -ge $from -and $_.Modified -lt $to } | Sort-Object Modified -Descending | ForEach-Object { [pscustomobject][ordered]@{ File = $_.Rel; Modified = $_.Modified.ToString('yyyy-MM-dd HH:mm'); Size = (Fmt $_.Size); FullName = $_.Full } })",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Lists files that were changed between two dates you choose.",
+   "multi": "single",
+   "inputs": {
+    "from": {
+     "label": "From (yyyy-mm-dd)",
+     "type": "text",
+     "default": ""
+    },
+    "to": {
+     "label": "To (yyyy-mm-dd)",
+     "type": "text",
+     "default": ""
+    }
+   },
+   "keywords": [
+    "date",
+    "changed",
+    "modified"
+   ]
+  },
+  {
+   "id": "open.terminal",
+   "title": "Terminal here",
+   "menu": "Open",
+   "when": [
+    "folder",
+    "background",
+    "drive",
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$d = {path}; if (Test-Path -LiteralPath $d -PathType Leaf) { $d = Split-Path -Parent $d }\nif (Get-Command wt -ErrorAction SilentlyContinue) { Start-Process wt -ArgumentList '-d', ('\"' + $d.TrimEnd('\\') + '\"') } else { Start-Process powershell -WorkingDirectory $d -ArgumentList '-NoExit' }",
+   "output": "none",
+   "risk": "safe",
+   "description": "Opens Windows Terminal in this folder, or PowerShell if Windows Terminal is not installed.",
+   "multi": "single",
+   "keywords": [
+    "terminal",
+    "wt",
+    "shell"
+   ]
+  },
+  {
+   "id": "open.pwsh",
+   "title": "PowerShell 7 here",
+   "menu": "Open",
+   "when": [
+    "folder",
+    "background",
+    "drive"
+   ],
+   "shell": "powershell",
+   "command": "$d = {path}; if (Test-Path -LiteralPath $d -PathType Leaf) { $d = Split-Path -Parent $d }\nStart-Process pwsh -WorkingDirectory $d -ArgumentList '-NoExit'",
+   "output": "none",
+   "risk": "safe",
+   "description": "Opens PowerShell 7 in this folder.",
+   "multi": "single",
+   "requires": [
+    "pwsh"
+   ],
+   "keywords": [
+    "pwsh",
+    "powershell"
+   ]
+  },
+  {
+   "id": "open.admin",
+   "title": "Admin terminal here",
+   "menu": "Open",
+   "when": [
+    "folder",
+    "background",
+    "drive"
+   ],
+   "shell": "powershell",
+   "command": "$d = {path}; if (Test-Path -LiteralPath $d -PathType Leaf) { $d = Split-Path -Parent $d }\nif (Get-Command wt -ErrorAction SilentlyContinue) { Start-Process wt -Verb RunAs -ArgumentList '-d', ('\"' + $d.TrimEnd('\\') + '\"') } else { Start-Process powershell -Verb RunAs -ArgumentList '-NoExit', '-Command', ('Set-Location -LiteralPath ''' + $d.Replace(\"'\", \"''\") + '''') }",
+   "output": "none",
+   "risk": "modifies",
+   "description": "Opens a terminal in this folder with administrator rights. Windows asks you to confirm.",
+   "extended": true,
+   "multi": "single",
+   "keywords": [
+    "admin",
+    "elevated",
+    "terminal"
+   ]
+  },
+  {
+   "id": "open.gitbash",
+   "title": "Git Bash here",
+   "menu": "Open",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$d = {path}; if (Test-Path -LiteralPath $d -PathType Leaf) { $d = Split-Path -Parent $d }\n\n$git = (Get-Command git -ErrorAction SilentlyContinue)\n$bash = $null\nif ($git) { $root = Split-Path -Parent (Split-Path -Parent $git.Source); foreach ($c in @((Join-Path $root 'git-bash.exe'), (Join-Path (Split-Path -Parent $root) 'git-bash.exe'))) { if (Test-Path -LiteralPath $c) { $bash = $c; break } } }\nif (-not $bash) { Write-Error 'Git Bash was not found next to your git installation.'; return }\nStart-Process $bash -ArgumentList ('--cd=' + $d)",
+   "output": "none",
+   "risk": "safe",
+   "description": "Opens Git Bash in this folder.",
+   "multi": "single",
+   "requires": [
+    "git"
+   ],
+   "keywords": [
+    "bash",
+    "git"
+   ]
+  },
+  {
+   "id": "open.run-console",
+   "title": "Run console here",
+   "menu": "Open",
+   "when": [
+    "folder",
+    "background",
+    "drive",
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$d = {path}; if (Test-Path -LiteralPath $d -PathType Leaf) { $d = Split-Path -Parent $d }\nStart-Process -FilePath $env:PSTOOLS_EXE -ArgumentList 'run', ('\"' + $d.TrimEnd('\\') + '\"')",
+   "output": "none",
+   "risk": "safe",
+   "description": "Opens the Run console with this folder as the working folder.",
+   "multi": "single",
+   "keywords": [
+    "run",
+    "console",
+    "command"
+   ]
+  },
+  {
+   "id": "open.with-default-editor",
+   "title": "Edit with…",
+   "menu": "Open",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "Start-Process rundll32.exe -ArgumentList 'shell32.dll,OpenAs_RunDLL', ('\"' + {path} + '\"')",
+   "output": "none",
+   "risk": "safe",
+   "description": "Opens the Windows Open with dialog for this file.",
+   "multi": "single",
+   "keywords": [
+    "open with",
+    "editor"
+   ]
+  },
+  {
+   "id": "inspect.facts",
+   "title": "File facts",
+   "menu": "Inspect",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "function Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\n$f = {path}\n$item = Get-Item -LiteralPath $f\n$bytes = [IO.File]::ReadAllBytes($f)\n$enc = 'Unknown'\nif ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) { $enc = 'UTF-8 with BOM' }\nelseif ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) { $enc = 'UTF-16 LE with BOM' }\nelseif ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFE -and $bytes[1] -eq 0xFF) { $enc = 'UTF-16 BE with BOM' }\nelse { try { $null = (New-Object System.Text.UTF8Encoding($false, $true)).GetString($bytes); $enc = 'UTF-8' } catch { $enc = 'ANSI or binary' } }\n$crlf = 0; $lf = 0\nfor ($i = 0; $i -lt $bytes.Length; $i++) { if ($bytes[$i] -eq 10) { if ($i -gt 0 -and $bytes[$i - 1] -eq 13) { $crlf++ } else { $lf++ } } }\n$ending = if ($crlf -gt 0 -and $lf -gt 0) { 'Mixed (' + $crlf + ' CRLF, ' + $lf + ' LF)' } elseif ($crlf -gt 0) { 'CRLF' } elseif ($lf -gt 0) { 'LF' } else { 'None' }\n$lines = $crlf + $lf; if ($bytes.Length -gt 0 -and $bytes[$bytes.Length - 1] -ne 10) { $lines++ }\n$sha = [BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($bytes)).Replace('-', '').ToLowerInvariant()\n$rows = New-Object System.Collections.ArrayList\nfunction Row($k, $v) { [void]$rows.Add([pscustomobject][ordered]@{ Fact = $k; Value = [string]$v }) }\nRow 'Name' $item.Name\nRow 'Size' ((Fmt $item.Length) + ' (' + $item.Length + ' bytes)')\nRow 'Encoding' $enc\nRow 'Line endings' $ending\nRow 'Lines' $lines\nRow 'Created' $item.CreationTime.ToString('yyyy-MM-dd HH:mm:ss')\nRow 'Modified' $item.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss')\nRow 'SHA-256' $sha\n$ext = $item.Extension.ToLowerInvariant()\nif (@('.exe','.dll','.msi','.ps1','.sys','.cat') -contains $ext) { try { Row 'Signature' (Get-AuthenticodeSignature -LiteralPath $f).Status } catch { Row 'Signature' 'Unknown' } }\nif (@('.png','.jpg','.jpeg','.bmp','.gif','.tif','.tiff') -contains $ext) { try { Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile($f); Row 'Image size' ($img.Width.ToString() + ' x ' + $img.Height.ToString()); $img.Dispose() } catch { } }\n$rows",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Shows the encoding, line endings, line count, size, dates and SHA-256 of this file, plus the signature or image size where it applies.",
+   "multi": "single",
+   "keywords": [
+    "facts",
+    "encoding",
+    "bom",
+    "line endings",
+    "hash"
+   ]
+  },
+  {
+   "id": "inspect.origin",
+   "title": "Where did this come from?",
+   "menu": "Inspect",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$f = {path}\n$stream = $null\ntry { $stream = Get-Content -LiteralPath $f -Stream Zone.Identifier -ErrorAction Stop } catch { }\nif (-not $stream) { [pscustomobject][ordered]@{ Fact = 'Origin'; Value = 'No download mark: this file was not marked as coming from the internet.' }; return }\n$map = @{}\nforeach ($l in $stream) { if ($l -match '^(\\w+)=(.*)$') { $map[$Matches[1]] = $Matches[2] } }\n$zone = switch ($map['ZoneId']) { '0' { 'My Computer' } '1' { 'Local intranet' } '2' { 'Trusted sites' } '3' { 'Internet' } '4' { 'Restricted sites' } default { $map['ZoneId'] } }\n[pscustomobject][ordered]@{ Fact = 'Zone'; Value = $zone }\n[pscustomobject][ordered]@{ Fact = 'Downloaded from'; Value = $map['HostUrl'] }\n[pscustomobject][ordered]@{ Fact = 'Referrer'; Value = $map['ReferrerUrl'] }",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Shows where a downloaded file came from, using the mark Windows put on it.",
+   "multi": "single",
+   "keywords": [
+    "origin",
+    "download",
+    "zone",
+    "blocked"
+   ]
+  },
+  {
+   "id": "inspect.env-path",
+   "title": "Is this folder on PATH?",
+   "menu": "Inspect",
+   "when": [
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "$d = {path}\n$norm = { param($x) [Environment]::ExpandEnvironmentVariables([string]$x).TrimEnd('\\').ToLowerInvariant() }\n$me = & $norm $d\n$user = @([Environment]::GetEnvironmentVariable('Path', 'User') -split ';' | Where-Object { $_ } | ForEach-Object { & $norm $_ })\n$machine = @([Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';' | Where-Object { $_ } | ForEach-Object { & $norm $_ })\nif ($user -contains $me) { 'Yes, this folder is on your user PATH.' } elseif ($machine -contains $me) { 'Yes, this folder is on the machine PATH.' } else { 'No, this folder is not on PATH.' }",
+   "output": "toast",
+   "risk": "safe",
+   "description": "Tells you whether this folder is on your PATH, so its programs can be run by name.",
+   "multi": "single",
+   "keywords": [
+    "path",
+    "environment"
+   ]
+  },
+  {
+   "id": "inspect.locking",
+   "title": "Who is locking this?",
+   "menu": "Inspect",
+   "when": [
+    "file",
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "Add-Type -TypeDefinition @'\nusing System;\nusing System.Collections.Generic;\nusing System.Runtime.InteropServices;\npublic static class PstLock {\n  [StructLayout(LayoutKind.Sequential)] struct RM_UNIQUE_PROCESS { public int dwProcessId; public System.Runtime.InteropServices.ComTypes.FILETIME ProcessStartTime; }\n  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)] struct RM_PROCESS_INFO {\n    public RM_UNIQUE_PROCESS Process;\n    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)] public string strAppName;\n    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)] public string strServiceShortName;\n    public int ApplicationType; public uint AppStatus; public uint TSSessionId;\n    [MarshalAs(UnmanagedType.Bool)] public bool bRestartable; }\n  [DllImport(\"rstrtmgr.dll\", CharSet = CharSet.Unicode)] static extern int RmStartSession(out uint h, int flags, string key);\n  [DllImport(\"rstrtmgr.dll\")] static extern int RmEndSession(uint h);\n  [DllImport(\"rstrtmgr.dll\", CharSet = CharSet.Unicode)] static extern int RmRegisterResources(uint h, uint nFiles, string[] files, uint nApps, RM_UNIQUE_PROCESS[] apps, uint nSvc, string[] svcs);\n  [DllImport(\"rstrtmgr.dll\")] static extern int RmGetList(uint h, out uint needed, ref uint count, [In, Out] RM_PROCESS_INFO[] info, ref uint reasons);\n  public static List<string[]> Who(string[] files) {\n    var result = new List<string[]>();\n    uint h; if (RmStartSession(out h, 0, Guid.NewGuid().ToString()) != 0) return result;\n    try {\n      if (RmRegisterResources(h, (uint)files.Length, files, 0, null, 0, null) != 0) return result;\n      uint needed = 0, count = 0, reasons = 0;\n      int r = RmGetList(h, out needed, ref count, null, ref reasons);\n      if (r == 234 && needed > 0) {\n        var info = new RM_PROCESS_INFO[needed]; count = needed;\n        r = RmGetList(h, out needed, ref count, info, ref reasons);\n        if (r == 0) for (int i = 0; i < count; i++) result.Add(new[] { info[i].strAppName, info[i].Process.dwProcessId.ToString(), info[i].ApplicationType.ToString() });\n      }\n    } finally { RmEndSession(h); }\n    return result;\n  }\n}\n'@\n$p = {path}\n$files = @($p)\nif (Test-Path -LiteralPath $p -PathType Container) { $files = @(Get-ChildItem -LiteralPath $p -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 5000 | ForEach-Object { $_.FullName }) }\n$types = @{ '0' = 'Unknown'; '1' = 'Application'; '2' = 'Window'; '3' = 'Service'; '4' = 'Explorer'; '5' = 'Console'; '1000' = 'Critical' }\n$seen = @{}\n$rows = New-Object System.Collections.ArrayList\nforeach ($chunk in 0..([Math]::Max(0, [Math]::Ceiling($files.Count / 200.0) - 1))) {\n  $part = @($files | Select-Object -Skip ($chunk * 200) -First 200)\n  if ($part.Count -eq 0) { continue }\n  foreach ($w in [PstLock]::Who([string[]]$part)) {\n    if ($seen.ContainsKey($w[1])) { continue }\n    $seen[$w[1]] = $true\n    $an = $w[0]; if (-not $an -or -not $an.Trim()) { $pr = Get-Process -Id ([int]$w[1]) -ErrorAction SilentlyContinue; $an = if ($pr) { $pr.ProcessName } else { 'Unknown' } }\n    [void]$rows.Add([pscustomobject][ordered]@{ App = $an; PID = [int]$w[1]; Type = $types[$w[2]] })\n  }\n}\nif ($rows.Count -eq 0) { [pscustomobject][ordered]@{ App = 'Nothing is using this'; PID = ''; Type = '' } } else { $rows }",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Lists the programs that currently have this file, or any file inside this folder, open.",
+   "multi": "single",
+   "keywords": [
+    "lock",
+    "locked",
+    "in use",
+    "handle"
+   ]
+  },
+  {
+   "id": "compare.two-selected",
+   "title": "Compare the two selected",
+   "menu": "Compare",
+   "when": [
+    "file",
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "function Fmt([double]$b) {\n  $c = [Globalization.CultureInfo]::InvariantCulture\n  if ($b -lt 1024) { return ([int64]$b).ToString($c) + ' B' }\n  if ($b -lt 1MB) { return [string]::Format($c, '{0:0.0} KB', $b / 1KB) }\n  if ($b -lt 1GB) { return [string]::Format($c, '{0:0.0} MB', $b / 1MB) }\n  return [string]::Format($c, '{0:0.0} GB', $b / 1GB)\n}\n\nfunction Get-Map([string]$base) {\n  $m = @{}\n  foreach ($f in (Get-ChildItem -LiteralPath $base -Recurse -File -ErrorAction SilentlyContinue)) { $m[$f.FullName.Substring($base.TrimEnd('\\').Length + 1).ToLowerInvariant()] = $f }\n  $m\n}\nfunction Hash-Of([string]$p) { [BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash([IO.File]::ReadAllBytes($p))) }\n$paths = @({paths})\n$a = $paths[0]; $b = $paths[1]\nif ((Test-Path -LiteralPath $a -PathType Container) -and (Test-Path -LiteralPath $b -PathType Container)) {\n  $ma = Get-Map $a; $mb = Get-Map $b\n  $rows = New-Object System.Collections.ArrayList\n  foreach ($k in ($ma.Keys + $mb.Keys | Sort-Object -Unique)) {\n    $ia = $ma[$k]; $ib = $mb[$k]\n    if ($ia -and -not $ib) { [void]$rows.Add([pscustomobject][ordered]@{ Result = 'Only in A'; File = $k; Detail = (Fmt $ia.Length) }) }\n    elseif ($ib -and -not $ia) { [void]$rows.Add([pscustomobject][ordered]@{ Result = 'Only in B'; File = $k; Detail = (Fmt $ib.Length) }) }\n    elseif ($ia.Length -ne $ib.Length -or (Hash-Of $ia.FullName) -ne (Hash-Of $ib.FullName)) { [void]$rows.Add([pscustomobject][ordered]@{ Result = 'Different'; File = $k; Detail = ((Fmt $ia.Length) + ' vs ' + (Fmt $ib.Length)) }) }\n  }\n  if ($rows.Count -eq 0) { [pscustomobject][ordered]@{ Result = 'Identical'; File = ''; Detail = 'Both folders have the same files with the same content' } } else { $rows }\n} else {\n  $ta = @(Get-Content -LiteralPath $a); $tb = @(Get-Content -LiteralPath $b)\n  $diff = @(Compare-Object -ReferenceObject $ta -DifferenceObject $tb -CaseSensitive | Select-Object -First 500)\n  if ($diff.Count -eq 0) { [pscustomobject][ordered]@{ Result = 'Identical'; File = ''; Detail = 'Both files have the same lines' } }\n  else { foreach ($d in $diff) { [pscustomobject][ordered]@{ Result = $(if ($d.SideIndicator -eq '<=') { 'Only in A' } else { 'Only in B' }); File = ''; Detail = [string]$d.InputObject } } }\n}",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Compares the two items you selected: for folders it lists files only on one side or different, for files it lists the lines that differ.",
+   "match": {
+    "min": 2,
+    "max": 2
+   },
+   "keywords": [
+    "compare",
+    "diff",
+    "two"
+   ]
+  },
+  {
+   "id": "compare.hash-selected",
+   "title": "Are these identical?",
+   "menu": "Compare",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$paths = @({paths}) | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf }\n$groups = @($paths | ForEach-Object { [pscustomobject]@{ Path = $_; Hash = [BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash([IO.File]::ReadAllBytes($_))) } } | Group-Object Hash)\nif ($groups.Count -eq 1) { 'All {0} identical' -f $paths.Count } else { '{0} groups of identical files among {1}' -f $groups.Count, $paths.Count }",
+   "output": "toast",
+   "risk": "safe",
+   "description": "Checks whether the selected files have exactly the same content.",
+   "match": {
+    "min": 2
+   },
+   "keywords": [
+    "identical",
+    "hash",
+    "same"
+   ]
+  },
+  {
+   "id": "archive.zip-gitignore",
+   "title": "Zip (respect .gitignore)",
+   "menu": "Archive",
+   "when": [
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "$root = {path}\n$leaf = Split-Path -Leaf $root\n$files = @(& git -C $root ls-files -co --exclude-standard 2>$null)\nif ($LASTEXITCODE -ne 0 -or $files.Count -eq 0) { Write-Error 'This folder is not a git repository, or it has no files to zip.'; return }\n$zipPath = Join-Path (Split-Path -Parent $root) ($leaf + '.zip')\nif (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }\nAdd-Type -AssemblyName System.IO.Compression\nAdd-Type -AssemblyName System.IO.Compression.FileSystem\n$zip = [IO.Compression.ZipFile]::Open($zipPath, 'Create')\ntry { foreach ($f in $files) { $full = Join-Path $root ($f.Replace('/', '\\')); if (Test-Path -LiteralPath $full -PathType Leaf) { [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $full, $f, 'Optimal') } } } finally { $zip.Dispose() }\n'Created {0}.zip with {1} files' -f $leaf, $files.Count",
+   "output": "toast",
+   "risk": "modifies",
+   "description": "Zips this folder next to it, leaving out everything git ignores.",
+   "requires": [
+    "git"
+   ],
+   "multi": "single",
+   "keywords": [
+    "zip",
+    "gitignore",
+    "git"
+   ]
+  },
+  {
+   "id": "archive.extract-tar",
+   "title": "Extract (tar/7z/gz)",
+   "menu": "Archive",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$f = {path}\n$dest = Join-Path (Split-Path -Parent $f) ([IO.Path]::GetFileNameWithoutExtension($f) -replace '\\.tar$', '')\nNew-Item -ItemType Directory -Force -Path $dest | Out-Null\n& tar.exe -xf $f -C $dest\nif ($LASTEXITCODE -ne 0) { Write-Error 'tar could not read this archive.'; return }\n'Extracted to ' + (Split-Path -Leaf $dest)",
+   "output": "toast",
+   "risk": "modifies",
+   "description": "Extracts a tar, tgz, gz, 7z or rar archive into a folder next to it.",
+   "match": {
+    "ext": [
+     "tar",
+     "gz",
+     "tgz",
+     "7z",
+     "rar"
+    ]
+   },
+   "multi": "single",
+   "keywords": [
+    "extract",
+    "tar",
+    "gz",
+    "7z",
+    "rar"
+   ]
+  },
+  {
+   "id": "archive.list",
+   "title": "List archive contents",
+   "menu": "Archive",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$f = {path}\n$ext = [IO.Path]::GetExtension($f).ToLowerInvariant()\nif ($ext -eq '.zip') {\n  Add-Type -AssemblyName System.IO.Compression.FileSystem\n  $z = [IO.Compression.ZipFile]::OpenRead($f)\n  try { foreach ($e in $z.Entries) { if ($e.FullName.EndsWith('/')) { continue }; [pscustomobject][ordered]@{ Name = $e.FullName; Size = $e.Length; Packed = $e.CompressedLength } } } finally { $z.Dispose() }\n} else {\n  foreach ($l in (& tar.exe -tf $f)) { if ($l -and -not $l.EndsWith('/')) { [pscustomobject][ordered]@{ Name = $l; Size = ''; Packed = '' } } }\n}",
+   "output": "grid",
+   "risk": "safe",
+   "description": "Lists the files inside a zip, tar, gz, 7z or rar archive without extracting it.",
+   "multi": "single",
+   "match": {
+    "ext": [
+     "zip",
+     "tar",
+     "gz",
+     "tgz",
+     "7z",
+     "rar"
+    ]
+   },
+   "keywords": [
+    "archive",
+    "list",
+    "zip"
+   ]
+  },
+  {
+   "id": "image.dimensions",
+   "title": "Copy dimensions",
+   "menu": "Image",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "Add-Type -AssemblyName System.Drawing\n$out = foreach ($p in @({paths})) { $i = [System.Drawing.Image]::FromFile($p); try { '{0}x{1}' -f $i.Width, $i.Height } finally { $i.Dispose() } }\n@($out) -join \"`n\"",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the width and height of the selected pictures, for example 1200x800.",
+   "match": {
+    "ext": [
+     "png",
+     "jpg",
+     "jpeg",
+     "bmp",
+     "gif",
+     "tif",
+     "tiff",
+     "webp"
+    ]
+   },
+   "keywords": [
+    "image",
+    "size",
+    "dimensions",
+    "pixels"
+   ]
+  },
+  {
+   "id": "image.webp",
+   "title": "Convert to WebP",
+   "menu": "Image",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$p = {path}\n$out = [IO.Path]::ChangeExtension($p, '.webp')\nif (Get-Command magick -ErrorAction SilentlyContinue) { & magick $p $out } else { & ffmpeg -y -loglevel error -i $p $out }\nif ($LASTEXITCODE -ne 0) { Write-Error 'The conversion failed.'; return }\n'Created ' + (Split-Path -Leaf $out)",
+   "output": "toast",
+   "risk": "modifies",
+   "description": "Converts the picture to WebP using ImageMagick or ffmpeg, whichever you have.",
+   "match": {
+    "ext": [
+     "png",
+     "jpg",
+     "jpeg",
+     "bmp",
+     "gif",
+     "tif",
+     "tiff",
+     "webp"
+    ]
+   },
+   "multi": "each",
+   "keywords": [
+    "webp",
+    "convert"
+   ]
+  },
+  {
+   "id": "media.to-mp3",
+   "title": "Extract audio (MP3)",
+   "menu": "Media",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$p = {path}; $o = [IO.Path]::ChangeExtension($p, '.mp3'); & ffmpeg -y -loglevel error -i $p -vn -q:a 2 $o; if ($LASTEXITCODE -ne 0) { Write-Error 'ffmpeg failed.' } else { 'Created ' + (Split-Path -Leaf $o) }",
+   "output": "toast",
+   "risk": "modifies",
+   "description": "Saves the sound of the video as an MP3 file next to it.",
+   "match": {
+    "ext": [
+     "mp4",
+     "mkv",
+     "mov",
+     "avi",
+     "webm",
+     "wmv",
+     "flv",
+     "m4v"
+    ]
+   },
+   "requires": [
+    "ffmpeg"
+   ],
+   "multi": "each",
+   "keywords": [
+    "mp3",
+    "audio",
+    "ffmpeg"
+   ]
+  },
+  {
+   "id": "media.compress-video",
+   "title": "Compress video (H.264, CRF 28)",
+   "menu": "Media",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$p = {path}; $o = [IO.Path]::Combine((Split-Path -Parent $p), [IO.Path]::GetFileNameWithoutExtension($p) + '-compressed.mp4'); & ffmpeg -y -i $p -c:v libx264 -crf 28 -preset medium -c:a aac $o 2>&1; if ($LASTEXITCODE -eq 0) { 'Created ' + (Split-Path -Leaf $o) }",
+   "output": "console",
+   "risk": "modifies",
+   "description": "Makes a smaller copy of the video with H.264 and shows ffmpeg's progress.",
+   "match": {
+    "ext": [
+     "mp4",
+     "mkv",
+     "mov",
+     "avi",
+     "webm",
+     "wmv",
+     "flv",
+     "m4v"
+    ]
+   },
+   "requires": [
+    "ffmpeg"
+   ],
+   "multi": "each",
+   "keywords": [
+    "compress",
+    "video",
+    "ffmpeg",
+    "h264"
+   ]
+  },
+  {
+   "id": "media.gif",
+   "title": "Video → GIF (first 10 s)",
+   "menu": "Media",
+   "when": [
+    "file"
+   ],
+   "shell": "powershell",
+   "command": "$p = {path}; $o = [IO.Path]::ChangeExtension($p, '.gif'); & ffmpeg -y -loglevel error -t 10 -i $p -vf 'fps=12,scale=640:-1:flags=lanczos' $o; if ($LASTEXITCODE -ne 0) { Write-Error 'ffmpeg failed.' } else { 'Created ' + (Split-Path -Leaf $o) }",
+   "output": "toast",
+   "risk": "modifies",
+   "description": "Makes an animated GIF from the first 10 seconds of the video.",
+   "match": {
+    "ext": [
+     "mp4",
+     "mkv",
+     "mov",
+     "avi",
+     "webm",
+     "wmv",
+     "flv",
+     "m4v"
+    ]
+   },
+   "requires": [
+    "ffmpeg"
+   ],
+   "multi": "each",
+   "keywords": [
+    "gif",
+    "video",
+    "ffmpeg"
+   ]
+  },
+  {
+   "id": "dev.npm-install",
+   "title": "npm install here",
+   "menu": "Dev",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "Set-Location -LiteralPath {dir}\nnpm install 2>&1",
+   "output": "console",
+   "risk": "modifies",
+   "description": "Runs npm install in this folder and shows the output.",
+   "requires": [
+    "node"
+   ],
+   "multi": "single",
+   "match": {
+    "has": [
+     "package.json"
+    ]
+   },
+   "keywords": [
+    "npm",
+    "node",
+    "install"
+   ]
+  },
+  {
+   "id": "dev.pip-venv",
+   "title": "Create Python venv here",
+   "menu": "Dev",
+   "when": [
+    "folder",
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "Set-Location -LiteralPath {dir}\n$py = if (Get-Command python -ErrorAction SilentlyContinue) { 'python' } else { 'py' }\n& $py -m venv .venv 2>&1\nif ($LASTEXITCODE -ne 0) { return }\n'Created .venv'\nif (Test-Path -LiteralPath 'requirements.txt') { & .\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt 2>&1 }",
+   "output": "console",
+   "risk": "modifies",
+   "description": "Creates a Python virtual environment named .venv here, and installs requirements.txt when there is one.",
+   "requires": [
+    "python"
+   ],
+   "multi": "single",
+   "keywords": [
+    "python",
+    "venv",
+    "pip"
+   ]
+  },
+  {
+   "id": "dev.port-kill",
+   "title": "Free port…",
+   "menu": "Dev",
+   "when": [
+    "background"
+   ],
+   "shell": "powershell",
+   "command": "$port = [int]{input:port}\n$conns = @(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)\nif ($conns.Count -eq 0) { 'Nothing is listening on port ' + $port; return }\nforeach ($c in $conns) {\n  $proc = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue\n  if ($proc) { 'Stopping {0} (PID {1}) on port {2}' -f $proc.ProcessName, $proc.Id, $port; Stop-Process -Id $proc.Id -Force }\n}",
+   "output": "console",
+   "risk": "destructive",
+   "description": "Stops the program that is listening on a port, so you can use the port again.",
+   "inputs": {
+    "port": {
+     "label": "Port number",
+     "type": "number",
+     "default": "3000"
+    }
+   },
+   "multi": "single",
+   "keywords": [
+    "port",
+    "kill",
+    "stop",
+    "listening"
+   ]
+  },
+  {
+   "id": "dev.env-path-add",
+   "title": "Add this folder to user PATH",
+   "menu": "Dev",
+   "when": [
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "$d = ({path}).TrimEnd('\\')\n$key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)\n$old = [string]$key.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)\n$parts = @($old -split ';' | Where-Object { $_ })\n$present = @($parts | Where-Object { $_.TrimEnd('\\').Equals($d, [StringComparison]::OrdinalIgnoreCase) }).Count -gt 0\nif ($present) { 'Already on your PATH.'; return }\n$new = (($parts + $d) -join ';')\n$dataDir = if ($env:PSTOOLS_DATA) { $env:PSTOOLS_DATA } else { Join-Path $env:LOCALAPPDATA 'PSTools' }\nNew-Item -ItemType Directory -Force -Path $dataDir | Out-Null\nAdd-Content -LiteralPath (Join-Path $dataDir 'changes.txt') -Value ('{0}|PATH|{1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $old) -Encoding UTF8\n$key.SetValue('Path', $new, [Microsoft.Win32.RegistryValueKind]::ExpandString)\n$key.Close()\nAdd-Type -Namespace PstEnv -Name Native -MemberDefinition '[System.Runtime.InteropServices.DllImport(\"user32.dll\", SetLastError=true, CharSet=System.Runtime.InteropServices.CharSet.Auto)] public static extern System.IntPtr SendMessageTimeout(System.IntPtr hWnd, uint Msg, System.UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out System.UIntPtr lpdwResult);'\n$r = [UIntPtr]::Zero\n[void][PstEnv.Native]::SendMessageTimeout([IntPtr]0xffff, 0x1A, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$r)\n'Added to your user PATH. Open a new terminal to use it.'",
+   "output": "toast",
+   "risk": "modifies",
+   "description": "Adds this folder to your user PATH. The old value is saved so it can be put back.",
+   "multi": "single",
+   "keywords": [
+    "path",
+    "environment",
+    "add"
+   ]
+  },
+  {
+   "id": "dev.env-path-remove",
+   "title": "Remove folder from user PATH",
+   "menu": "Dev",
+   "when": [
+    "folder"
+   ],
+   "shell": "powershell",
+   "command": "$d = ({path}).TrimEnd('\\')\n$key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)\n$old = [string]$key.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)\n$parts = @($old -split ';' | Where-Object { $_ })\n$present = @($parts | Where-Object { $_.TrimEnd('\\').Equals($d, [StringComparison]::OrdinalIgnoreCase) }).Count -gt 0\nif (-not $present) { 'This folder is not on your user PATH.'; return }\n$new = (($parts | Where-Object { -not $_.TrimEnd('\\').Equals($d, [StringComparison]::OrdinalIgnoreCase) }) -join ';')\n$dataDir = if ($env:PSTOOLS_DATA) { $env:PSTOOLS_DATA } else { Join-Path $env:LOCALAPPDATA 'PSTools' }\nNew-Item -ItemType Directory -Force -Path $dataDir | Out-Null\nAdd-Content -LiteralPath (Join-Path $dataDir 'changes.txt') -Value ('{0}|PATH|{1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $old) -Encoding UTF8\n$key.SetValue('Path', $new, [Microsoft.Win32.RegistryValueKind]::ExpandString)\n$key.Close()\nAdd-Type -Namespace PstEnv -Name Native -MemberDefinition '[System.Runtime.InteropServices.DllImport(\"user32.dll\", SetLastError=true, CharSet=System.Runtime.InteropServices.CharSet.Auto)] public static extern System.IntPtr SendMessageTimeout(System.IntPtr hWnd, uint Msg, System.UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out System.UIntPtr lpdwResult);'\n$r = [UIntPtr]::Zero\n[void][PstEnv.Native]::SendMessageTimeout([IntPtr]0xffff, 0x1A, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$r)\n'Removed from your user PATH. Open a new terminal to see it.'",
+   "output": "toast",
+   "risk": "modifies",
+   "description": "Removes this folder from your user PATH. The old value is saved so it can be put back.",
+   "multi": "single",
+   "keywords": [
+    "path",
+    "environment",
+    "remove"
+   ]
+  },
+  {
+   "id": "system.ip-public",
+   "title": "Public IP address",
+   "menu": "System",
+   "when": [
+    "background",
+    "folder",
+    "drive"
+   ],
+   "shell": "powershell",
+   "command": "try { $ip = (Invoke-RestMethod -Uri 'https://api.ipify.org' -TimeoutSec 5).ToString().Trim(); $ip }\ncatch { '##PST-TOAST## Could not reach the internet to look up your public IP address.' }",
+   "output": "clipboard",
+   "risk": "safe",
+   "description": "Copies the IP address the internet sees for this PC. It asks api.ipify.org, so it needs a connection.",
+   "keywords": [
+    "ip",
+    "public",
+    "external",
+    "internet"
+   ],
+   "multi": "single"
+  },
+  {
+   "id": "system.uptime",
+   "title": "Uptime",
+   "menu": "System",
+   "when": [
+    "background",
+    "folder",
+    "drive"
+   ],
+   "shell": "powershell",
+   "command": "$boot = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime\n$span = (Get-Date) - $boot\n'Up {0} day{1} {2} h {3} min (since {4})' -f [int]$span.TotalDays, $(if ([int]$span.TotalDays -eq 1) { '' } else { 's' }), $span.Hours, $span.Minutes, $boot.ToString('yyyy-MM-dd HH:mm')",
+   "output": "toast",
+   "risk": "safe",
+   "description": "Shows how long this PC has been running since the last start.",
+   "keywords": [
+    "uptime",
+    "boot",
+    "running"
+   ],
+   "multi": "single"
+  }
+ ]
 }

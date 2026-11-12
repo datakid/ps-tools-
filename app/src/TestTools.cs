@@ -14,6 +14,9 @@ namespace PSTools
     {
         public static bool Active;
         public static string ClipboardIn = "";
+        public static List<string> ClipboardFilesIn = new List<string>();
+        public static string InputIn = "";
+        public static string ClipboardImageIn = "";
         public static List<string> Clips = new List<string>();
         public static List<string> Toasts = new List<string>();
         public static List<string> Dialogs = new List<string>();
@@ -119,11 +122,14 @@ namespace PSTools
         static string Normalize(string text, string root)
         {
             text = text.Replace("\r\n", "\n").Replace("\r", "\n");
+            text = Regex.Replace(text, "\\b" + Process.GetCurrentProcess().Id + "\\b", "<PID>");
             if (!string.IsNullOrEmpty(root))
             {
                 text = text.Replace(root, "<FX>");
                 text = text.Replace(root.Replace('\\', '/'), "<FX>");
                 text = text.Replace(root.Replace("\\", "\\\\"), "<FX>");
+                if (root.Length > 3 && root[1] == ':')
+                    text = text.Replace("/mnt/" + char.ToLowerInvariant(root[0]) + root.Substring(2).Replace('\\', '/'), "<FX>");
             }
             var lines = text.Split('\n').Select(l => l.TrimEnd()).ToList();
             return string.Join("\n", lines).TrimEnd('\n') + "\n";
@@ -151,10 +157,23 @@ namespace PSTools
             foreach (var f in Directory.GetFiles(from))
             {
                 string dest = Path.Combine(to, Path.GetFileName(f));
-                if (dest.Length < 250) File.Copy(f, dest, true);
+                if (dest.Length < 250)
+                {
+                    File.Copy(f, dest, true);
+                    try { File.SetCreationTime(dest, File.GetCreationTime(f)); File.SetLastWriteTime(dest, File.GetLastWriteTime(f)); } catch { }
+                }
             }
             foreach (var d in Directory.GetDirectories(from))
                 CopyTree(d, Path.Combine(to, Path.GetFileName(d)));
+            try
+            {
+                var info = new DirectoryInfo(from);
+                var target = new DirectoryInfo(to);
+                target.CreationTime = info.CreationTime;
+                target.LastWriteTime = info.LastWriteTime;
+                target.Attributes = info.Attributes;
+            }
+            catch { }
         }
 
         class Outcome
@@ -192,6 +211,7 @@ namespace PSTools
             {
                 var o = new Outcome { Name = Str(spec, "name"), Id = Str(spec, "id") };
                 var sw = Stopwatch.StartNew();
+                FileStream lockStream = null;
                 string work = Path.Combine(Path.GetTempPath(), "pstools-test-" + Guid.NewGuid().ToString("N"));
                 try
                 {
@@ -205,7 +225,7 @@ namespace PSTools
 
                     var catalogSpec = ActionCatalog.Current.Find(o.Id);
                     var action = catalogSpec == null ? null : catalogSpec.Legacy;
-                    if (action == null) { o.Status = "fail"; o.Detail = catalogSpec == null ? "unknown action id" : "action has no built-in implementation to run"; continue; }
+                    if (catalogSpec == null) { o.Status = "fail"; o.Detail = "unknown action id"; continue; }
 
                     var targets = Strings(spec.ContainsKey("targets") ? spec["targets"] : null)
                         .Select(t => t.Length == 0 ? Path.Combine(work, fixture) : Path.Combine(work, fixture, t.Replace('/', '\\')))
@@ -214,8 +234,30 @@ namespace PSTools
 
                     TestSink.Reset();
                     TestSink.ClipboardIn = Str(spec, "clipboard") ?? "";
+                    TestSink.InputIn = Str(spec, "input") ?? "";
+                    string clipFile = Str(spec, "clipboardFile");
+                    if (clipFile != null) TestSink.ClipboardIn = File.ReadAllText(Path.Combine(fixtures, clipFile.Replace('/', '\\')), Encoding.UTF8);
+                    string clipImage = Str(spec, "clipboardImage");
+                    TestSink.ClipboardImageIn = clipImage == null ? "" : Path.Combine(work, fixture, clipImage.Replace('/', '\\'));
+                    if (spec.ContainsKey("marks"))
+                    {
+                        Directory.CreateDirectory(Journal.Dir);
+                        File.WriteAllLines(Path.Combine(Journal.Dir, "marks.txt"), Strings(spec["marks"]).Select(m => m.Length == 0 ? Path.Combine(work, fixture) : Path.Combine(work, fixture, m.Replace('/', '\\'))).ToArray());
+                    }
+                    TestSink.ClipboardFilesIn = Strings(spec.ContainsKey("clipboardFiles") ? spec["clipboardFiles"] : null)
+                        .Select(t => Path.Combine(work, fixture, t.Replace('/', '\\'))).ToList();
+                    string lockRel = Str(spec, "lock");
+                    if (lockRel != null) lockStream = new FileStream(Path.Combine(work, fixture, lockRel.Replace('/', '\\')), FileMode.Open, FileAccess.Read, FileShare.Read);
                     Journal.Wrote = false;
-                    Runner.Execute(action, action.Multi ? targets : new[] { targets[0] }, null);
+                    Dictionary<string, string> inputs = null;
+                    if (spec.ContainsKey("inputs") && spec["inputs"] is Dictionary<string, object>)
+                    {
+                        inputs = new Dictionary<string, string>();
+                        foreach (var kv in (Dictionary<string, object>)spec["inputs"]) inputs[kv.Key] = Convert.ToString(kv.Value);
+                    }
+                    if (action != null) Runner.Execute(action, action.Multi ? targets : new[] { targets[0] }, null);
+                    else Executor.Run(catalogSpec, catalogSpec.Multi == MultiMode.Single ? new[] { targets[0] } : targets, inputs);
+                    if (lockStream != null) { lockStream.Dispose(); lockStream = null; }
                     string actual = Normalize(TestSink.Collect(), work);
 
                     var problems = new List<string>();
@@ -234,13 +276,20 @@ namespace PSTools
 
                     var files = Strings(spec.ContainsKey("expectFiles") ? spec["expectFiles"] : null);
                     foreach (var rel in files)
-                        if (!File.Exists(Path.Combine(work, fixture, rel.Replace('/', '\\'))) && !Directory.Exists(Path.Combine(work, fixture, rel.Replace('/', '\\'))))
-                            problems.Add("expected path missing after run: " + rel);
+                    {
+                        string full = Path.Combine(work, fixture, rel.Replace('/', '\\'));
+                        if (rel.Contains("*"))
+                        {
+                            string folder = Path.GetDirectoryName(full);
+                            if (!Directory.Exists(folder) || Directory.GetFileSystemEntries(folder, Path.GetFileName(full)).Length == 0) problems.Add("expected a file matching: " + rel);
+                        }
+                        else if (!File.Exists(full) && !Directory.Exists(full)) problems.Add("expected path missing after run: " + rel);
+                    }
 
                     if (spec.ContainsKey("undo") && Convert.ToBoolean(spec["undo"]))
                     {
                         string undoText = Journal.Undo();
-                        foreach (var rel in files)
+                        foreach (var rel in files.Where(f => !f.Contains("*")))
                             if (File.Exists(Path.Combine(work, fixture, rel.Replace('/', '\\'))) || Directory.Exists(Path.Combine(work, fixture, rel.Replace('/', '\\'))))
                                 problems.Add("path still present after undo: " + rel + " (" + undoText + ")");
                     }
@@ -255,6 +304,7 @@ namespace PSTools
                 }
                 finally
                 {
+                    if (lockStream != null) lockStream.Dispose();
                     sw.Stop();
                     o.Ms = sw.ElapsedMilliseconds;
                     if (o.Status == null) o.Status = "skip";

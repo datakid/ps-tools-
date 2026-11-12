@@ -127,6 +127,8 @@ namespace PSTools
             };
             if (!string.IsNullOrEmpty(r.Dir) && Directory.Exists(r.Dir)) psi.WorkingDirectory = r.Dir;
             psi.EnvironmentVariables["NO_COLOR"] = "1";
+            psi.EnvironmentVariables["PSTOOLS_DATA"] = Journal.Dir;
+            psi.EnvironmentVariables["PSTOOLS_EXE"] = System.Windows.Forms.Application.ExecutablePath;
             if (r.Shell == ActionShell.Cmd)
             {
                 string tmp = Path.Combine(Journal.Dir, "tmp");

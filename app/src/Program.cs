@@ -95,7 +95,13 @@ namespace PSTools
                 var spec = ActionCatalog.Current.Find(args[0]);
                 if (spec == null) { Msg("Unknown action: " + args[0]); return 1; }
                 Action a = spec.Legacy;
-                if (a == null) { Msg(spec.Title + " is a script action. Script actions run from the Run console and the Power menu in a later build."); return 1; }
+                if (a == null)
+                {
+                    string[] scriptPaths = spec.Multi == MultiMode.Single ? new[] { path } : Collector.Gather(spec.Id, path);
+                    if (scriptPaths == null) return 0;
+                    Executor.Run(spec, scriptPaths);
+                    return 0;
+                }
                 string[] paths = a.Multi ? Collector.Gather(a.Id, path) : new[] { path };
                 if (paths == null) return 0;
                 Runner.Execute(a, paths, null);

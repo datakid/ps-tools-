@@ -38,6 +38,7 @@ namespace PSTools
         public List<string> MatchExt = new List<string>();
         public MatchKind MatchKind = MatchKind.Any;
         public int MatchMin, MatchMax;
+        public List<string> MatchHas = new List<string>();
         public List<string> Requires = new List<string>();
         public ActionShell Shell = ActionShell.Builtin;
         public bool Fallback;
