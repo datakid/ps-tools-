@@ -1,0 +1,9 @@
+[clipboard]
+.hidden
+bin
+docs
+empty
+node_modules
+src
+[toast]
+Copied 6 names

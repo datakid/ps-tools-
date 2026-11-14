@@ -1,0 +1,5 @@
+[clipboard]
+hello-world-foo
+foo-bar-baz
+[toast]
+Converted to kebab-case

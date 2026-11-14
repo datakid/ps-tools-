@@ -1,0 +1,2 @@
+957 command names written to app\out\commands-list.json
+exit code 0
