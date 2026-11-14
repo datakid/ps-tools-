@@ -81,6 +81,29 @@ namespace PSTools
             else Console.Write(text);
         }
 
+        public static int RiskClassifyJson(string[] args)
+        {
+            string file = args.Length > 1 ? args[1] : null;
+            if (file == null || !File.Exists(file)) { Console.WriteLine("Usage: --risk-classify-json <file.json> [--out <file>]"); return 2; }
+            var input = new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.DeserializeObject(File.ReadAllText(file, Encoding.UTF8)) as IEnumerable;
+            var result = new List<Dictionary<string, object>>();
+            if (input != null)
+                foreach (object item in input)
+                {
+                    var d = item as Dictionary<string, object>;
+                    if (d == null) continue;
+                    object id, text, shell;
+                    d.TryGetValue("id", out id);
+                    d.TryGetValue("text", out text);
+                    d.TryGetValue("shell", out shell);
+                    var kind = shell != null && string.Equals(shell.ToString(), "cmd", StringComparison.OrdinalIgnoreCase) ? ActionShell.Cmd : ActionShell.PowerShell;
+                    var r = RiskScan.Classify(text == null ? "" : text.ToString(), kind);
+                    result.Add(new Dictionary<string, object> { { "id", id == null ? "" : id.ToString() }, { "risk", r.Risk.ToString().ToLowerInvariant() }, { "reasons", r.Reasons.ToArray() } });
+                }
+            Emit(args, new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Serialize(result) + Environment.NewLine);
+            return 0;
+        }
+
         public static int ListActions(string[] args)
         {
             var sb = new StringBuilder();

@@ -18,6 +18,7 @@ if errorlevel 1 exit /b 1
 
 copy /y commands.json out\ >nul
 copy /y actions.json out\ >nul
+copy /y cheatsheet.json out\ >nul
 echo.
 echo Built out\PSTools.exe
 for %%F in (out\PSTools.exe) do echo Size: %%~zF bytes

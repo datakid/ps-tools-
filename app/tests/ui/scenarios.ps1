@@ -633,6 +633,82 @@ else {
 }
 Stop-All
 
+function Get-ListNames($root) {
+    $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::ListItem)
+    $rows = @()
+    foreach ($i in $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $cond)) { $rows += [pscustomobject]@{ Name = $i.Current.Name; Y = $i.Current.BoundingRectangle.Y } }
+    return @($rows | Sort-Object Y | ForEach-Object { $_.Name })
+}
+
+function Get-EditValue($root, [string]$name) {
+    $el = Find-Named $root $name ([System.Windows.Automation.ControlType]::Edit)
+    if (-not $el) { return $null }
+    try { return $el.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value } catch { return $null }
+}
+
+$envC = New-Env 'cheat'
+$cheatArgs = 'cheatsheet "{0}" --query grep --settings "{1}" --data-dir "{2}"' -f $treeBasic, $envC.Settings, $envC.Dir
+$procC = Start-Process -FilePath $Exe -ArgumentList $cheatArgs -PassThru
+$cheat = Find-Window 'PS Tools Cheat sheet' 15000
+if (-not $cheat) { Add-Result 'cheatsheet-search-grep' $false 'cheat sheet window did not appear' }
+else {
+    Start-Sleep -Milliseconds 700
+    $names = Get-ListNames $cheat
+    Snap $cheat '21-cheatsheet-grep'
+    Add-Result 'cheatsheet-search-grep' ($names -contains 'Find text inside files') ('typed grep, first rows: ' + (($names | Select-Object -First 4) -join ' | '))
+
+    [void](Click-Button $cheat 'Try here')
+    $run = Find-Dialog $cheat 'PS Tools Run console' 15000
+    $okTry = $false
+    $detail = 'Run console did not open'
+    if ($run) {
+        Start-Sleep -Milliseconds 600
+        $text = Get-EditValue $run 'Command editor'
+        $status = Get-StatusText $run
+        $outText = Get-OutputText $run
+        $okTry = [bool]($text -match 'Select-String' -and -not $outText.Trim() -and $status -notmatch 'Exit|Running')
+        $detail = 'editor: ' + $text + ' | status: ' + $status + ' | output empty: ' + (-not $outText.Trim())
+        Snap $run '22-cheatsheet-try-here'
+    }
+    Add-Result 'cheatsheet-try-here-never-runs' $okTry $detail
+
+    $cheat2 = Find-Window 'PS Tools Cheat sheet' 3000
+    if ($cheat2) {
+        [void](Click-Button $cheat2 'Save as action')
+        $dlg = Find-Dialog $cheat2 'Save as action' 10000
+        $okSave = $false
+        $detail2 = 'Save as action did not open'
+        if ($dlg) {
+            Start-Sleep -Milliseconds 500
+            $cmdText = Get-EditValue $dlg 'Command'
+            $titleText = Get-EditValue $dlg 'Action title'
+            $okSave = [bool]($cmdText -match '\{dir\}' -and $titleText -eq 'Find text inside files')
+            $detail2 = 'title: ' + $titleText + ' | command has {dir}: ' + ($cmdText -match '\{dir\}')
+            Snap $dlg '23-cheatsheet-save-action'
+            [void](Click-Button $dlg 'Cancel')
+        }
+        Add-Result 'cheatsheet-save-as-action-template' $okSave $detail2
+    }
+    else { Add-Result 'cheatsheet-save-as-action-template' $false 'cheat sheet window went away' }
+}
+Stop-All
+
+$procB = Start-Process -FilePath $Exe -ArgumentList ('cheatsheet "{0}" --query grep --settings "{1}" --data-dir "{2}"' -f $treeBasic, $envC.Settings, $envC.Dir) -PassThru
+$cheatB = Find-Window 'PS Tools Cheat sheet' 15000
+if (-not $cheatB) { Add-Result 'cheatsheet-bash-tab' $false 'cheat sheet window did not appear' }
+else {
+    Start-Sleep -Milliseconds 600
+    Send-Keys $cheatB '^3'
+    Start-Sleep -Milliseconds 500
+    $bashNames = Get-ListNames $cheatB
+    Snap $cheatB '24-cheatsheet-bash'
+    Add-Result 'cheatsheet-bash-tab' ([bool]($bashNames | Where-Object { $_ -like 'grep -rn*' })) ('grep in the bash tab: ' + (($bashNames | Select-Object -First 4) -join ' | '))
+    Send-Keys $cheatB '^2'
+    Start-Sleep -Milliseconds 400
+    Snap $cheatB '25-cheatsheet-cmd'
+}
+Stop-All
+
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 $failed = @($results | Where-Object { -not $_.Ok }).Count
 Write-Host ('{0} scenarios, {1} failed' -f $results.Count, $failed)
