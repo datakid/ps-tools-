@@ -1,0 +1,56 @@
+PASS  popup-perf  median 472 ms, runs: 999, 467, 470, 472, 475
+PASS  popup-search-run  typed "ta", Enter; clipboard starts with: tree-basic/
+PASS  popup-recent-recorded  settings file lists the action as recently used
+PASS  popup-escape-clears-search  first Esc clears the text and keeps the popup open
+PASS  popup-escape-closes  second Esc closes the popup and the process exits
+PASS  popup-favorite-toggle  Ctrl+D on the Size row added it to the favorites in the settings file
+PASS  popup-background-opens  menu-bg opens the popup
+PASS  popup-rows-exposed  rows are visible to UI Automation: Tree (ASCII), Path (quoted), Path (quoted), Tree (ASCII), 
+Zip (skip build folders), Paste image as PNG
+PASS  popup-drill  drilled Copy > Tree with the keyboard: Folder structure…, Tree (ASCII), Tree (plain ASCII), Tree 
+(respect .gitignore), Tree as JSON, Tree as Markdown, Tree as nested list, Tree to depth…, Tree with sizes, Tree, 
+folders only
+PASS  popup-back  Backspace with an empty search box goes up one level: For AI, Git, Lists, Names, Paths
+PASS  popup-multi-1  1 processes started in 18 ms, popup visible after 497 ms, popup lists 1 items, popups open: 1
+PASS  popup-multi-20  20 processes started in 47 ms, popup visible after 1072 ms, popup lists 20 items, popups open: 1
+PASS  popup-multi-200  200 processes started in 460 ms, popup visible after 6496 ms, popup lists 200 items, popups 
+open: 1
+PASS  run-echo  status: ● Exit 0 · 0.42 s; output has hello-pst: True
+PASS  run-error  status: ● Exit 1 · 0.53 s; plain error text: True
+PASS  run-cmd  status: ● Exit 0 · 0.04 s
+PASS  run-stop  while running: Running 0.5 s; after Esc: Stopped
+PASS  run-idle-banner  banner appeared after 12040 ms of silence and an idle process
+PASS  run-table  Show as table opens a result window with the rows
+combo Menu location: ControlType.ComboBox class=WindowsForms10.COMBOBOX.app.0.34f5582_r6_ad1
+   child: ControlType.Edit name=Menu location class=Edit
+   child: ControlType.List name=Menu location class=ComboLBox
+   child: ControlType.Button name=Drop Down Button class=
+combo Result: ControlType.ComboBox class=WindowsForms10.COMBOBOX.app.0.34f5582_r6_ad1
+   child: ControlType.List name=Result class=ComboLBox
+   child: ControlType.Button name=Drop Down Button class=
+PASS  save-action-roundtrip  typed a command, saved it as Python files under Search, ran it from the popup on another 
+folder. clipboard after running from the popup: Name    Length | ----    ------ | main.py     14
+PASS  demo-1-tree-to-console  ta + Enter copies the tree, the Run console shows it back
+PASS  demo-2-copy-for-ai  for ai + Enter copies the folder as an AI prompt, toast screenshot saved
+PASS  demo-3-folders-from-clipboard  preview dialog found: True; tree created: True; copying the new tree gives the 
+original text: True
+PASS  demo-4-locking  a result window listing the process holding the file: True
+PASS  demo-5-permalink  clipboard: 
+https://github.com/example/repo/blob/212afbc906fd9b99c48b4c58eec0fe069ad8ac8d/src/app/main.py
+combo Menu location: ControlType.ComboBox class=WindowsForms10.COMBOBOX.app.0.34f5582_r6_ad1
+   child: ControlType.Edit name=Menu location class=Edit
+   child: ControlType.List name=Menu location class=ComboLBox
+   child: ControlType.Button name=Drop Down Button class=
+combo Result: ControlType.ComboBox class=WindowsForms10.COMBOBOX.app.0.34f5582_r6_ad1
+   child: ControlType.List name=Result class=ComboLBox
+   child: ControlType.Button name=Drop Down Button class=
+PASS  demo-6-count-by-extension  table from the Run console, saved as Count by extension in Inspect, run again from 
+the popup
+PASS  cheatsheet-search-grep  typed grep, first rows: Find text inside files | List only the files that contain a word 
+| Search with exact capitalisation | Search with a regular expression
+FAIL  cheatsheet-try-here-never-runs  editor:  | status:  | output empty: True
+FAIL  cheatsheet-save-as-action-template  title: Find text inside files | command has {dir}: False
+PASS  cheatsheet-bash-tab  grep in the bash tab: grep text file | grep -i text file | grep -rn "TODO" . | grep -v text 
+file
+30 scenarios, 2 failed
+exit code 1

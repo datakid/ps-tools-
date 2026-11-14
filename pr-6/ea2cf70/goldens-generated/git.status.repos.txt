@@ -1,0 +1,6 @@
+[table]
+1 repos, 0 with uncommitted changes
+Repo	Branch	Changes	Ahead / behind	Path
+repo	main	clean		<FX>\repo
+[dialog]
+1 repos, 0 with uncommitted changes

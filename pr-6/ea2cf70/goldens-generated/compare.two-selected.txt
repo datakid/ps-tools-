@@ -1,0 +1,6 @@
+[table]
+3 rows
+Result	File	Detail
+Only in A	app\main.py	15 B
+Only in A	app\util.py	32 B
+Only in B	readme.md	26 B

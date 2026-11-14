@@ -1,0 +1,10 @@
+FAIL  commands list has 0 names, need at least 200 (run app/tools/gen-commands-list.ps1)
+EXCEPTION: D:\a\ps-tools-\ps-tools-\app\tests\cheatsheet-check.ps1 : Cannot index into a null array.
+At D:\a\ps-tools-\ps-tools-\app\tests\ci\run-logged.ps1:15 char:5
++     & $Script @Params *>&1 | ForEach-Object {
++     ~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [cheatsheet-check.ps1], RuntimeException
+    + FullyQualifiedErrorId : NullArray,cheatsheet-check.ps1
+ 
+
+exit code 1
