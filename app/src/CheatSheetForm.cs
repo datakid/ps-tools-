@@ -513,7 +513,7 @@ namespace PSTools
         readonly string dir;
         readonly Label title = new Label { Text = "Cheat sheet", AutoSize = false, AccessibleName = "Cheat sheet title" };
         readonly FSegment tabs = new FSegment { AccessibleName = "Cheat sheet section" };
-        readonly FSearchBox search = new FSearchBox("Search tasks, commands and aliases, for example grep, port 3000, ls -la");
+        readonly FSearchBox search = new FSearchBox("Search tasks, commands, aliases (grep, port 3000)");
         readonly FTreeList categories = new FTreeList { AccessibleName = "Categories", CompactSecondary = true };
         readonly FEntryList list = new FEntryList();
         readonly CheatDetail detail = new CheatDetail();
@@ -533,8 +533,9 @@ namespace PSTools
             Text = "PS Tools Cheat sheet";
             AccessibleName = "PS Tools Cheat sheet";
             Font = UI.Font;
-            ClientSize = new Size(UI.S(1100), UI.S(700));
-            MinimumSize = new Size(UI.S(880), UI.S(560));
+            var area = Screen.PrimaryScreen.WorkingArea;
+            ClientSize = new Size(Math.Min(UI.S(1100), area.Width - UI.S(40)), Math.Min(UI.S(700), area.Height - UI.S(90)));
+            MinimumSize = new Size(Math.Min(UI.S(880), area.Width), Math.Min(UI.S(560), area.Height));
             StartPosition = FormStartPosition.CenterScreen;
             KeyPreview = true;
 
@@ -644,7 +645,7 @@ namespace PSTools
             {
                 foreach (var e in data.Search(q, category))
                     rows.Add(new CheatRow { Title = e.Title, Mono = e.Command, Id = e.Id, Risk = ToRisk(e.Risk), Admin = e.Admin, Source = e });
-                list.EmptyText = "No entry matches. Try fewer words, or look in the cmd and bash tabs.";
+                list.EmptyText = "Nothing matches. Try fewer words.";
             }
             else
             {
@@ -782,8 +783,9 @@ namespace PSTools
             if (info.Visible) { info.SetBounds(pad, y, w, UI.S(44)); y += UI.S(44) + gap; }
             int bottom = ClientSize.Height - pad;
             bool showCats = tabs.SelectedIndex == 0;
-            int catW = showCats ? UI.S(232) : 0;
-            int detW = UI.S(360);
+            int detW = Math.Max(UI.S(300), Math.Min(UI.S(380), w * 36 / 100));
+            int catW = showCats ? Math.Max(UI.S(168), Math.Min(UI.S(232), w * 21 / 100)) : 0;
+            if (showCats && w - detW - catW - gap * 2 < UI.S(260)) { showCats = false; catW = 0; }
             categories.Visible = showCats;
             categories.SetBounds(pad, y, catW, Math.Max(40, bottom - y));
             if (showCats && categories.Selected >= 0) categories.Select(categories.Selected);
