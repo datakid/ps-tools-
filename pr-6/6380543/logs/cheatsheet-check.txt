@@ -1,9 +1,0 @@
-TRAP Argument types do not match
-At D:\a\ps-tools-\ps-tools-\app\tests\cheatsheet-check.ps1:246 char:26
-+         foreach ($job in @($active)) {
-+                          ~~~~~~~~~~
-at <ScriptBlock>, D:\a\ps-tools-\ps-tools-\app\tests\cheatsheet-check.ps1: line 246
-at <ScriptBlock>, D:\a\ps-tools-\ps-tools-\app\tests\ci\run-logged.ps1: line 15
-at <ScriptBlock>, D:\a\_temp\62fdf5d9-c111-466d-a96a-8b567528332b.ps1: line 2
-at <ScriptBlock>, <No file>: line 1
-exit code 1

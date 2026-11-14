@@ -1,0 +1,6 @@
+FAIL  profile.find-command : timed out after 10 s
+
+entries 399, categories 25, cmd rows 61, bash rows 106, commands 957
+parsed 589/589 texts (0 errors), risk scans 422, ran 227, skipped 172, failed 1
+1 problems
+exit code 1
