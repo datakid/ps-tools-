@@ -126,6 +126,8 @@ namespace PSTools
             l.Add(new Scenario { Name = "cheatsheet-search", Build = () => CheatScene(0, null, "grep", null) });
             l.Add(new Scenario { Name = "cheatsheet-cmd", Build = () => CheatScene(1, null, null, "cmd:dir /s /b") });
             l.Add(new Scenario { Name = "cheatsheet-bash", Build = () => CheatScene(2, null, null, "bash:grep -rn \"TODO\" .") });
+            l.Add(new Scenario { Name = "cheatsheet-min", Build = () => { var f = CheatScene(0, "git", null, "git.status"); f.Size = f.MinimumSize; return f; } });
+            l.Add(new Scenario { Name = "cheatsheet-empty", Build = () => CheatScene(0, null, "zzqxzz", null) });
             l.Add(new Scenario { Name = "cheatsheet-params", Build = () => CheatScene(0, "search", null, "search.text") });
             l.Add(new Scenario { Name = "popup-empty", Build = () => Popup(new PowerMenuOptions { InitialSearch = "zzqx" }) });
             l.Add(new Scenario { Name = "popup-many", Build = () => Popup(new PowerMenuOptions { InitialSearch = "e" }) });
