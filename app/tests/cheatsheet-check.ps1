@@ -243,7 +243,7 @@ if (-not $SkipRun) {
             $active.Add(@{ entry = $item.entry; proc = $p; watch = [System.Diagnostics.Stopwatch]::StartNew(); err = $errFile; errTask = $errTask; outTask = $outTask; timeout = $false })
         }
         Start-Sleep -Milliseconds 60
-        foreach ($job in @($active)) {
+        foreach ($job in $active.ToArray()) {
             $p = $job.proc
             if ($p.HasExited) {
                 try { [IO.File]::WriteAllText($job.err, $job.errTask.Result) } catch { }
