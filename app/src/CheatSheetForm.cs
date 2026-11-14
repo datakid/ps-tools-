@@ -513,7 +513,7 @@ namespace PSTools
         readonly string dir;
         readonly Label title = new Label { Text = "Cheat sheet", AutoSize = false, AccessibleName = "Cheat sheet title" };
         readonly FSegment tabs = new FSegment { AccessibleName = "Cheat sheet section" };
-        readonly FSearchBox search = new FSearchBox("Search tasks, commands, aliases (grep, port 3000)");
+        readonly FSearchBox search = new FSearchBox("Search tasks, commands, aliases");
         readonly FTreeList categories = new FTreeList { AccessibleName = "Categories", CompactSecondary = true };
         readonly FEntryList list = new FEntryList();
         readonly CheatDetail detail = new CheatDetail();
