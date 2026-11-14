@@ -61,7 +61,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = '${{ steps.tag.outputs.tag }}'
-          $existing = gh release view $tag --json isDraft 2>$null | ConvertFrom-Json
+          $existing = gh release list --limit 100 --json tagName,isDraft | ConvertFrom-Json | Where-Object { $_.tagName -eq $tag } | Select-Object -First 1
           if ($existing) {
             if ($existing.isDraft) { gh release delete $tag --yes | Out-Null }
             else { throw "Release $tag is already published. Use a new branch name." }
