@@ -794,12 +794,15 @@ namespace PSTools
             list.SetBounds(listX, y, Math.Max(100, detX - gap - listX), Math.Max(40, bottom - y));
             int btnY = bottom - Tok.ButtonHeight;
             detail.SetBounds(detX, y, detW, Math.Max(40, btnY - gap - y));
+            var buttons = new[] { tryHere, copy, saveAction };
+            var widths = buttons.Select(b => Math.Max(b.GetPreferredSize(Size.Empty).Width, UI.S(96))).ToArray();
+            int room = detW - gap * (buttons.Length - 1);
+            int sum = widths.Sum();
             int x = detX;
-            foreach (var b in new[] { tryHere, copy, saveAction })
+            for (int i = 0; i < buttons.Length; i++)
             {
-                var size = b.GetPreferredSize(Size.Empty);
-                int bw = Math.Max(size.Width, UI.S(96));
-                b.SetBounds(x, btnY, bw, Tok.ButtonHeight);
+                int bw = sum > room ? widths[i] * room / sum : widths[i];
+                buttons[i].SetBounds(x, btnY, bw, Tok.ButtonHeight);
                 x += bw + gap;
             }
         }
