@@ -122,6 +122,11 @@ namespace PSTools
             l.Add(new Scenario { Name = "run-modifies", Build = () => RunScene("Move-Item a.txt b.txt", false, "modifies") });
             l.Add(new Scenario { Name = "run-history", Build = () => Show(new HistoryPicker()) });
             l.Add(new Scenario { Name = "save-action", Build = () => SaveScene() });
+            l.Add(new Scenario { Name = "cheatsheet", Build = () => CheatScene(0, "files", null, "files.largest") });
+            l.Add(new Scenario { Name = "cheatsheet-search", Build = () => CheatScene(0, null, "grep", null) });
+            l.Add(new Scenario { Name = "cheatsheet-cmd", Build = () => CheatScene(1, null, null, "cmd:dir /s /b") });
+            l.Add(new Scenario { Name = "cheatsheet-bash", Build = () => CheatScene(2, null, null, "bash:grep -rn \"TODO\" .") });
+            l.Add(new Scenario { Name = "cheatsheet-params", Build = () => CheatScene(0, "search", null, "search.text") });
             l.Add(new Scenario { Name = "popup-empty", Build = () => Popup(new PowerMenuOptions { InitialSearch = "zzqx" }) });
             l.Add(new Scenario { Name = "popup-many", Build = () => Popup(new PowerMenuOptions { InitialSearch = "e" }) });
             l.Add(new Scenario { Name = "dialog-info", Build = () => Show(Create<FDialog>("Explorer menu installed.\n\nWindows 11: right-click > Show more options.", "PS Tools", FDialog.Kind.Info, false)) });
@@ -189,6 +194,17 @@ namespace PSTools
                 for (int i = 0; i < 6; i++) { Application.DoEvents(); Thread.Sleep(50); }
             }
             else if (preview != null) f.StartRun();
+            return f;
+        }
+
+        static Form CheatScene(int tab, string category, string query, string entryId)
+        {
+            var f = new CheatSheetForm(WorkFolder(), null);
+            Show(f);
+            f.SetTab(tab);
+            if (category != null) f.SelectCategory(category);
+            if (query != null) f.SetQuery(query);
+            if (entryId != null) f.SelectEntry(entryId);
             return f;
         }
 

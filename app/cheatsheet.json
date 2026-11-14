@@ -1,0 +1,7420 @@
+{
+ "version": 1,
+ "categories": [
+  {
+   "id": "nav",
+   "label": "Navigation",
+   "icon": "E8DE"
+  },
+  {
+   "id": "files",
+   "label": "Files & folders",
+   "icon": "E8B7"
+  },
+  {
+   "id": "search",
+   "label": "Search & text",
+   "icon": "E721"
+  },
+  {
+   "id": "pipeline",
+   "label": "Pipeline & objects",
+   "icon": "E8FD"
+  },
+  {
+   "id": "format",
+   "label": "Formatting & export",
+   "icon": "E8A5"
+  },
+  {
+   "id": "clipboard",
+   "label": "Clipboard",
+   "icon": "E77F"
+  },
+  {
+   "id": "process",
+   "label": "Processes",
+   "icon": "E9D9"
+  },
+  {
+   "id": "services",
+   "label": "Services",
+   "icon": "E713"
+  },
+  {
+   "id": "network",
+   "label": "Network",
+   "icon": "E774"
+  },
+  {
+   "id": "sysinfo",
+   "label": "System info",
+   "icon": "E770"
+  },
+  {
+   "id": "disks",
+   "label": "Disks & storage",
+   "icon": "EDA2"
+  },
+  {
+   "id": "registry",
+   "label": "Registry",
+   "icon": "E8EC"
+  },
+  {
+   "id": "env",
+   "label": "Environment & PATH",
+   "icon": "E8C9"
+  },
+  {
+   "id": "tasks",
+   "label": "Scheduled tasks",
+   "icon": "E916"
+  },
+  {
+   "id": "archive",
+   "label": "Archives & hashes",
+   "icon": "E7B8"
+  },
+  {
+   "id": "perm",
+   "label": "Permissions & ownership",
+   "icon": "EA18"
+  },
+  {
+   "id": "events",
+   "label": "Event logs",
+   "icon": "E8F1"
+  },
+  {
+   "id": "security",
+   "label": "Users & security",
+   "icon": "E72E"
+  },
+  {
+   "id": "apps",
+   "label": "Apps & winget",
+   "icon": "ECAA"
+  },
+  {
+   "id": "git",
+   "label": "Git",
+   "icon": "E8D4"
+  },
+  {
+   "id": "strings",
+   "label": "Strings",
+   "icon": "E8D2"
+  },
+  {
+   "id": "dates",
+   "label": "Dates & time",
+   "icon": "E787"
+  },
+  {
+   "id": "math",
+   "label": "Math & conversions",
+   "icon": "E8EF"
+  },
+  {
+   "id": "remoting",
+   "label": "Remoting",
+   "icon": "E839"
+  },
+  {
+   "id": "profile",
+   "label": "Profile & modules",
+   "icon": "E77B"
+  }
+ ],
+ "entries": [
+  {
+   "id": "nav.where-am-i",
+   "category": "nav",
+   "title": "Show the current folder",
+   "command": "Get-Location",
+   "aliases": [
+    "pwd",
+    "cd"
+   ],
+   "explain": "Prints the folder your session is working in.",
+   "exampleOutput": "Path\n----\nC:\\proj",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "nav.go-home"
+   ],
+   "keywords": [
+    "current",
+    "directory",
+    "path"
+   ]
+  },
+  {
+   "id": "nav.go-to",
+   "category": "nav",
+   "title": "Go to another folder",
+   "command": "Set-Location $env:windir",
+   "aliases": [
+    "cd",
+    "chdir",
+    "sl"
+   ],
+   "explain": "Changes the working folder. Relative and absolute paths both work.",
+   "params": [
+    {
+     "name": "-LiteralPath",
+     "text": "Treat the path exactly as typed, no wildcards"
+    }
+   ],
+   "example": "Set-Location $env:windir; Get-Location",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "change directory",
+    "cd"
+   ]
+  },
+  {
+   "id": "nav.go-home",
+   "category": "nav",
+   "title": "Go to your home folder",
+   "command": "Set-Location ~",
+   "aliases": [
+    "cd ~"
+   ],
+   "explain": "The tilde stands for your user profile folder.",
+   "example": "Set-Location ~; Get-Location",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "home",
+    "profile"
+   ]
+  },
+  {
+   "id": "nav.go-up",
+   "category": "nav",
+   "title": "Go up one folder",
+   "command": "Set-Location ..",
+   "aliases": [
+    "cd .."
+   ],
+   "explain": "Moves to the parent of the current folder.",
+   "example": "Set-Location ..; Get-Location",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "nav.go-back",
+   "category": "nav",
+   "title": "Jump to a folder and come back",
+   "command": "Push-Location C:\\Windows; Pop-Location",
+   "aliases": [
+    "pushd",
+    "popd"
+   ],
+   "explain": "Push-Location remembers where you were, Pop-Location returns there.",
+   "example": "Push-Location $env:windir; Get-Location; Pop-Location; Get-Location",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "nav.dir-stack"
+   ]
+  },
+  {
+   "id": "nav.dir-stack",
+   "category": "nav",
+   "title": "See the remembered folders",
+   "command": "Get-Location -Stack",
+   "explain": "Lists the folders saved by Push-Location.",
+   "example": "Push-Location ..; Get-Location -Stack; Pop-Location",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "pushd",
+    "stack"
+   ]
+  },
+  {
+   "id": "nav.drives",
+   "category": "nav",
+   "title": "List drives",
+   "command": "Get-PSDrive -PSProvider FileSystem",
+   "aliases": [
+    "gdr"
+   ],
+   "explain": "Shows every drive letter with used and free space in bytes.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "drive letters",
+    "free space"
+   ]
+  },
+  {
+   "id": "nav.switch-drive",
+   "category": "nav",
+   "title": "Switch to another drive",
+   "command": "Set-Location D:\\",
+   "explain": "Type the drive letter and a colon, or use Set-Location with the full path.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "nav.drives"
+   ],
+   "keywords": [
+    "d:",
+    "drive"
+   ]
+  },
+  {
+   "id": "nav.resolve",
+   "category": "nav",
+   "title": "Get the full path of a relative path",
+   "command": "Resolve-Path .\\src",
+   "aliases": [
+    "realpath",
+    "readlink -f"
+   ],
+   "explain": "Turns a short path into the complete path and fails when it does not exist.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "absolute",
+    "full path"
+   ]
+  },
+  {
+   "id": "nav.split-path",
+   "category": "nav",
+   "title": "Split a path into parts",
+   "command": "Split-Path C:\\proj\\docs\\readme.md -Leaf",
+   "aliases": [
+    "basename",
+    "dirname"
+   ],
+   "explain": "-Leaf gives the file name, -Parent the folder, -Qualifier the drive.",
+   "params": [
+    {
+     "name": "-Leaf",
+     "text": "File or last folder name"
+    },
+    {
+     "name": "-Parent",
+     "text": "Containing folder"
+    },
+    {
+     "name": "-Extension",
+     "text": "Extension (PowerShell 6+)"
+    }
+   ],
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "file name",
+    "folder name"
+   ]
+  },
+  {
+   "id": "nav.join-path",
+   "category": "nav",
+   "title": "Build a path without worrying about slashes",
+   "command": "Join-Path $env:USERPROFILE 'Documents'",
+   "explain": "Joins path pieces with the right separator.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "combine",
+    "concatenate"
+   ]
+  },
+  {
+   "id": "nav.special-folders",
+   "category": "nav",
+   "title": "Find Desktop, Documents, Downloads",
+   "command": "[Environment]::GetFolderPath('Desktop')",
+   "explain": "Works even when folders are redirected to OneDrive. Other names: MyDocuments, ApplicationData, LocalApplicationData, UserProfile.",
+   "example": "[Environment]::GetFolderPath('MyDocuments')",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "known folders",
+    "appdata",
+    "onedrive"
+   ]
+  },
+  {
+   "id": "nav.exists",
+   "category": "nav",
+   "title": "Check whether a file or folder exists",
+   "command": "Test-Path .\\src",
+   "aliases": [
+    "test -e",
+    "if exist"
+   ],
+   "explain": "Returns True or False. Add -PathType Leaf for files or Container for folders.",
+   "params": [
+    {
+     "name": "-PathType Leaf",
+     "text": "Only files"
+    },
+    {
+     "name": "-PathType Container",
+     "text": "Only folders"
+    }
+   ],
+   "example": "Test-Path .\\src -PathType Container",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "nav.open-explorer",
+   "category": "nav",
+   "title": "Open this folder in Explorer",
+   "command": "Invoke-Item .",
+   "aliases": [
+    "explorer .",
+    "start ."
+   ],
+   "explain": "Opens the folder in a new Explorer window.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "file manager"
+   ]
+  },
+  {
+   "id": "nav.long-paths",
+   "category": "nav",
+   "title": "Handle paths longer than 260 characters",
+   "command": "Get-ChildItem -LiteralPath \\\\?\\C:\\very\\long\\path",
+   "explain": "The \\\\?\\ prefix lets Windows PowerShell 5.1 pass long paths to the file system.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "MAX_PATH",
+    "too long"
+   ]
+  },
+  {
+   "id": "files.list",
+   "category": "files",
+   "title": "List files and folders here",
+   "command": "Get-ChildItem",
+   "aliases": [
+    "ls",
+    "dir",
+    "gci",
+    "ls -la"
+   ],
+   "explain": "Lists the content of the current folder.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "files.list-hidden",
+    "files.list-recursive"
+   ],
+   "keywords": [
+    "show",
+    "contents"
+   ]
+  },
+  {
+   "id": "files.list-recursive",
+   "category": "files",
+   "title": "List everything below a folder",
+   "command": "Get-ChildItem -Recurse",
+   "aliases": [
+    "gci -r",
+    "ls -R",
+    "dir /s"
+   ],
+   "explain": "Lists files and folders in this folder and all subfolders.",
+   "params": [
+    {
+     "name": "-Recurse",
+     "text": "Go into subfolders"
+    },
+    {
+     "name": "-File / -Directory",
+     "text": "Only files / only folders"
+    },
+    {
+     "name": "-Depth 2",
+     "text": "Limit how deep"
+    },
+    {
+     "name": "-Force",
+     "text": "Include hidden and system items"
+    }
+   ],
+   "example": "Get-ChildItem -Recurse -File -Filter *.py | Select-Object FullName, Length",
+   "exampleOutput": "FullName                      Length\n--------                      ------\nC:\\proj\\src\\app\\main.py           14",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "files.largest",
+    "search.text"
+   ],
+   "keywords": [
+    "dir",
+    "ls",
+    "list",
+    "tree"
+   ],
+   "actionTemplate": {
+    "when": [
+     "folder",
+     "background"
+    ],
+    "output": "grid",
+    "command": "Get-ChildItem -LiteralPath {dir} -Recurse | Select-Object FullName, Length, LastWriteTime"
+   }
+  },
+  {
+   "id": "files.list-hidden",
+   "category": "files",
+   "title": "Show hidden and system files",
+   "command": "Get-ChildItem -Force",
+   "aliases": [
+    "ls -a",
+    "dir /a"
+   ],
+   "explain": "-Force includes hidden and system items that Explorer normally hides.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "dotfiles",
+    "hidden"
+   ]
+  },
+  {
+   "id": "files.only-folders",
+   "category": "files",
+   "title": "List only folders",
+   "command": "Get-ChildItem -Directory",
+   "aliases": [
+    "dir /ad",
+    "ls -d */"
+   ],
+   "explain": "Skips files. Use -File for the opposite.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "directories",
+    "subfolders"
+   ]
+  },
+  {
+   "id": "files.by-extension",
+   "category": "files",
+   "title": "List files with one extension",
+   "command": "Get-ChildItem -Recurse -Filter *.py",
+   "aliases": [
+    "ls *.py",
+    "dir *.py /s",
+    "find -name '*.py'"
+   ],
+   "explain": "-Filter is the fast way to match a pattern. Use -Include for several patterns together with -Recurse.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "extension",
+    "pattern",
+    "wildcard"
+   ]
+  },
+  {
+   "id": "files.largest",
+   "category": "files",
+   "title": "Find the 20 largest files",
+   "command": "Get-ChildItem -Recurse -File | Sort-Object Length -Descending | Select-Object -First 20 FullName, Length",
+   "aliases": [
+    "du -a | sort -n"
+   ],
+   "explain": "Sorts every file by size and keeps the first 20.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "files.folder-sizes"
+   ],
+   "keywords": [
+    "biggest",
+    "space",
+    "disk usage"
+   ],
+   "actionTemplate": {
+    "when": [
+     "folder",
+     "background"
+    ],
+    "output": "grid",
+    "command": "Get-ChildItem -LiteralPath {dir} -Recurse -File | Sort-Object Length -Descending | Select-Object -First 20 FullName, Length"
+   }
+  },
+  {
+   "id": "files.folder-sizes",
+   "category": "files",
+   "title": "Show the size of each folder",
+   "command": "Get-ChildItem -Directory | ForEach-Object { $s = (Get-ChildItem -LiteralPath $_.FullName -Recurse -File -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum; [pscustomobject]@{ Folder = $_.Name; MB = [math]::Round($s / 1MB, 2) } } | Sort-Object MB -Descending",
+   "aliases": [
+    "du -sh *"
+   ],
+   "explain": "Adds up every file inside each subfolder. It reads everything, so big folders take time.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "files.largest"
+   ],
+   "keywords": [
+    "du",
+    "disk usage",
+    "size of folders"
+   ]
+  },
+  {
+   "id": "files.changed-today",
+   "category": "files",
+   "title": "Find files changed today",
+   "command": "Get-ChildItem -Recurse -File | Where-Object { $_.LastWriteTime -ge (Get-Date).Date }",
+   "explain": "Compares each modified time with midnight today.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "modified",
+    "recent",
+    "today"
+   ]
+  },
+  {
+   "id": "files.newest",
+   "category": "files",
+   "title": "Show the 10 newest files",
+   "command": "Get-ChildItem -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 10 FullName, LastWriteTime",
+   "aliases": [
+    "ls -t | head"
+   ],
+   "explain": "Sorts by last modified time, newest first.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "latest",
+    "recent"
+   ]
+  },
+  {
+   "id": "files.older-than",
+   "category": "files",
+   "title": "Find files older than 30 days",
+   "command": "Get-ChildItem -Recurse -File | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) }",
+   "explain": "Handy before cleaning up. Review the list before deleting anything.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "stale",
+    "old"
+   ]
+  },
+  {
+   "id": "files.count",
+   "category": "files",
+   "title": "Count files",
+   "command": "(Get-ChildItem -Recurse -File).Count",
+   "aliases": [
+    "find . -type f | wc -l"
+   ],
+   "explain": "The parentheses run the command first, then .Count counts the result.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "number of files"
+   ]
+  },
+  {
+   "id": "files.count-by-ext",
+   "category": "files",
+   "title": "Count files by extension",
+   "command": "Get-ChildItem -Recurse -File | Group-Object Extension | Sort-Object Count -Descending | Select-Object Name, Count",
+   "explain": "Groups files by extension and counts each group.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "types",
+    "extensions"
+   ]
+  },
+  {
+   "id": "files.read",
+   "category": "files",
+   "title": "Show the content of a text file",
+   "command": "Get-Content .\\docs\\readme.md",
+   "aliases": [
+    "cat",
+    "type",
+    "less"
+   ],
+   "explain": "Prints the file. Pipe to Select-Object -First 20 for a preview.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "view",
+    "open",
+    "read"
+   ]
+  },
+  {
+   "id": "files.head",
+   "category": "files",
+   "title": "Show the first lines of a file",
+   "command": "Get-Content .\\docs\\readme.md -TotalCount 10",
+   "aliases": [
+    "head -n 10"
+   ],
+   "explain": "-TotalCount stops reading after that many lines, so it is quick on big files.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "first lines"
+   ]
+  },
+  {
+   "id": "files.tail",
+   "category": "files",
+   "title": "Show the last lines of a file",
+   "command": "Get-Content .\\docs\\readme.md -Tail 10",
+   "aliases": [
+    "tail -n 10"
+   ],
+   "explain": "Reads the end of the file.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "files.follow"
+   ],
+   "keywords": [
+    "last lines"
+   ]
+  },
+  {
+   "id": "files.follow",
+   "category": "files",
+   "title": "Watch a log file grow",
+   "command": "Get-Content .\\app.log -Tail 20 -Wait",
+   "aliases": [
+    "tail -f"
+   ],
+   "explain": "Shows new lines as they are written. Press Ctrl+C to stop.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "live",
+    "log",
+    "monitor"
+   ]
+  },
+  {
+   "id": "files.copy",
+   "category": "files",
+   "title": "Copy a file or folder",
+   "command": "Copy-Item .\\a.txt .\\b.txt",
+   "aliases": [
+    "cp",
+    "copy",
+    "xcopy"
+   ],
+   "explain": "Add -Recurse to copy a folder with its content.",
+   "params": [
+    {
+     "name": "-Recurse",
+     "text": "Copy a folder and everything inside"
+    },
+    {
+     "name": "-Force",
+     "text": "Overwrite read-only targets"
+    }
+   ],
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.move",
+   "category": "files",
+   "title": "Move or rename a file",
+   "command": "Move-Item .\\a.txt .\\archive\\a.txt",
+   "aliases": [
+    "mv",
+    "move"
+   ],
+   "explain": "Moving inside the same folder renames the file.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.rename",
+   "category": "files",
+   "title": "Rename a file",
+   "command": "Rename-Item .\\old.txt new.txt",
+   "aliases": [
+    "ren",
+    "mv old new"
+   ],
+   "explain": "The second value is just the new name, not a path.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.new-file",
+   "category": "files",
+   "title": "Create an empty file",
+   "command": "New-Item .\\notes.txt -ItemType File",
+   "aliases": [
+    "touch",
+    "type nul >"
+   ],
+   "explain": "Creates the file, and fails if it already exists unless you add -Force.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.new-folder",
+   "category": "files",
+   "title": "Create a folder",
+   "command": "New-Item .\\reports\\2026 -ItemType Directory",
+   "aliases": [
+    "mkdir -p",
+    "md"
+   ],
+   "explain": "Creates the folder and any missing parent folders. It fails if the folder already exists.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.delete",
+   "category": "files",
+   "title": "Delete a file",
+   "command": "Remove-Item .\\old.txt",
+   "aliases": [
+    "rm",
+    "del",
+    "erase"
+   ],
+   "explain": "Deletes permanently, it does not use the Recycle Bin. Add -WhatIf first to preview.",
+   "params": [
+    {
+     "name": "-WhatIf",
+     "text": "Show what would happen without doing it"
+    },
+    {
+     "name": "-Confirm",
+     "text": "Ask before each delete"
+    }
+   ],
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.delete-folder",
+   "category": "files",
+   "title": "Delete a folder and its content",
+   "command": "Remove-Item .\\build -Recurse -Force",
+   "aliases": [
+    "rm -rf",
+    "rd /s /q"
+   ],
+   "explain": "Removes the folder and everything inside. There is no undo.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1",
+   "keywords": [
+    "rmdir",
+    "clean"
+   ]
+  },
+  {
+   "id": "files.empty-folders",
+   "category": "files",
+   "title": "Find empty folders",
+   "command": "Get-ChildItem -Recurse -Directory | Where-Object { -not (Get-ChildItem -LiteralPath $_.FullName -Force) }",
+   "explain": "Lists folders that contain nothing at all.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "cleanup",
+    "empty directories"
+   ]
+  },
+  {
+   "id": "files.readonly",
+   "category": "files",
+   "title": "Make a file read-only",
+   "command": "Set-ItemProperty .\\a.txt -Name IsReadOnly -Value $true",
+   "aliases": [
+    "attrib +r",
+    "chmod -w"
+   ],
+   "explain": "Set the value to $false to make it writable again.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.timestamps",
+   "category": "files",
+   "title": "Change a file's modified date",
+   "command": "(Get-Item .\\a.txt).LastWriteTime = '2026-01-15 10:30'",
+   "explain": "Also CreationTime and LastAccessTime.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "touch -d",
+    "date"
+   ]
+  },
+  {
+   "id": "files.hidden-attr",
+   "category": "files",
+   "title": "Hide or show a file",
+   "command": "(Get-Item .\\a.txt).Attributes += 'Hidden'",
+   "aliases": [
+    "attrib +h"
+   ],
+   "explain": "Use -= to remove the Hidden attribute again.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.file-size",
+   "category": "files",
+   "title": "Get the size of one file",
+   "command": "(Get-Item .\\bin\\out.dll).Length",
+   "aliases": [
+    "ls -l",
+    "stat"
+   ],
+   "explain": "The size is in bytes. Divide by 1KB or 1MB for readable numbers.",
+   "example": "'{0:N1} KB' -f ((Get-Item .\\bin\\out.dll).Length / 1KB)",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "files.copy-structure",
+   "category": "files",
+   "title": "Copy only the folder structure",
+   "command": "Get-ChildItem -Directory -Recurse | ForEach-Object { New-Item -ItemType Directory -Path (Join-Path 'C:\\copy' $_.FullName.Substring($PWD.Path.Length)) }",
+   "explain": "Recreates every subfolder without the files.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "skeleton",
+    "tree only"
+   ]
+  },
+  {
+   "id": "files.link",
+   "category": "files",
+   "title": "Create a symbolic link",
+   "command": "New-Item -ItemType SymbolicLink -Path .\\link -Target .\\target",
+   "aliases": [
+    "ln -s",
+    "mklink"
+   ],
+   "explain": "Needs Developer Mode or administrator rights. Use -ItemType Junction for folders without that need.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "search.text",
+   "category": "search",
+   "title": "Find text inside files",
+   "command": "Get-ChildItem -Recurse -File | Select-String -Pattern 'hello'",
+   "aliases": [
+    "grep -rn",
+    "findstr /s /i",
+    "rg"
+   ],
+   "explain": "Shows the file, line number and line for each match.",
+   "params": [
+    {
+     "name": "-Pattern",
+     "text": "Text or regular expression to find"
+    },
+    {
+     "name": "-SimpleMatch",
+     "text": "Treat the pattern as plain text"
+    },
+    {
+     "name": "-CaseSensitive",
+     "text": "Match upper and lower case exactly"
+    },
+    {
+     "name": "-Context 2",
+     "text": "Also show 2 lines around each match"
+    }
+   ],
+   "example": "Get-ChildItem -Recurse -File | Select-String -Pattern 'hello' | Select-Object Path, LineNumber, Line",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "search.text-files-only",
+    "search.case-sensitive"
+   ],
+   "keywords": [
+    "grep",
+    "find in files",
+    "contains"
+   ],
+   "actionTemplate": {
+    "when": [
+     "folder",
+     "background"
+    ],
+    "output": "grid",
+    "command": "Get-ChildItem -LiteralPath {dir} -Recurse -File | Select-String -Pattern {input:Text to find} | Select-Object Path, LineNumber, Line"
+   }
+  },
+  {
+   "id": "search.text-files-only",
+   "category": "search",
+   "title": "List only the files that contain a word",
+   "command": "Get-ChildItem -Recurse -File | Select-String -Pattern 'def ' -List | Select-Object -ExpandProperty Path",
+   "aliases": [
+    "grep -rl"
+   ],
+   "explain": "-List stops at the first match per file.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "file names"
+   ]
+  },
+  {
+   "id": "search.case-sensitive",
+   "category": "search",
+   "title": "Search with exact capitalisation",
+   "command": "Get-ChildItem -Recurse -File | Select-String -Pattern 'Hello' -CaseSensitive",
+   "aliases": [
+    "grep"
+   ],
+   "explain": "Select-String ignores case by default.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "search.regex",
+   "category": "search",
+   "title": "Search with a regular expression",
+   "command": "Select-String -Path .\\src\\app\\*.py -Pattern '^def \\w+'",
+   "aliases": [
+    "grep -E"
+   ],
+   "explain": "Patterns follow .NET regular expression rules.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "regexp"
+   ]
+  },
+  {
+   "id": "search.count-matches",
+   "category": "search",
+   "title": "Count matching lines",
+   "command": "(Get-ChildItem -Recurse -File | Select-String -Pattern 'import').Count",
+   "aliases": [
+    "grep -c"
+   ],
+   "explain": "Counts the lines that matched.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "search.not-matching",
+   "category": "search",
+   "title": "Show lines that do not match",
+   "command": "Get-Content .\\docs\\readme.md | Select-String -Pattern 'Sample' -NotMatch",
+   "aliases": [
+    "grep -v"
+   ],
+   "explain": "-NotMatch inverts the search.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "exclude",
+    "invert"
+   ]
+  },
+  {
+   "id": "search.by-name",
+   "category": "search",
+   "title": "Find files by name",
+   "command": "Get-ChildItem -Recurse -Filter *readme* | Select-Object FullName",
+   "aliases": [
+    "find -name",
+    "dir /s /b *name*"
+   ],
+   "explain": "Wildcards * and ? work in -Filter.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "locate",
+    "where"
+   ]
+  },
+  {
+   "id": "search.by-name-regex",
+   "category": "search",
+   "title": "Find files whose name matches a pattern",
+   "command": "Get-ChildItem -Recurse -File | Where-Object { $_.Name -match '^[a-z]+\\.py$' }",
+   "explain": "-match uses regular expressions, -like uses wildcards.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "regex",
+    "name pattern"
+   ]
+  },
+  {
+   "id": "search.by-size",
+   "category": "search",
+   "title": "Find files bigger than 1 MB",
+   "command": "Get-ChildItem -Recurse -File | Where-Object { $_.Length -gt 1MB }",
+   "aliases": [
+    "find -size +1M"
+   ],
+   "explain": "PowerShell understands KB, MB and GB as numbers.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "large"
+   ]
+  },
+  {
+   "id": "search.exclude-folders",
+   "category": "search",
+   "title": "Search but skip some folders",
+   "command": "Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch '\\\\(node_modules|\\.git)\\\\' }",
+   "explain": "Filters out files whose path contains the unwanted folder names.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "ignore",
+    "node_modules"
+   ]
+  },
+  {
+   "id": "search.first-match",
+   "category": "search",
+   "title": "Find the first match and stop",
+   "command": "Get-ChildItem -Recurse -Filter *.py | Select-Object -First 1",
+   "explain": "Select-Object -First stops the pipeline early.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "quit early"
+   ]
+  },
+  {
+   "id": "search.where-is-command",
+   "category": "search",
+   "title": "Find where a command lives",
+   "command": "Get-Command git | Select-Object Source",
+   "aliases": [
+    "which",
+    "where.exe",
+    "type -a"
+   ],
+   "explain": "Shows the program that runs when you type the name.",
+   "example": "Get-Command powershell | Select-Object Source",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "path to exe"
+   ]
+  },
+  {
+   "id": "search.duplicates",
+   "category": "search",
+   "title": "Find duplicate files by content",
+   "command": "Get-ChildItem -Recurse -File | Get-FileHash | Group-Object Hash | Where-Object Count -gt 1 | ForEach-Object { $_.Group.Path }",
+   "explain": "Two files with the same hash have the same content.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "archive.hash"
+   ],
+   "keywords": [
+    "same file",
+    "dupes"
+   ]
+  },
+  {
+   "id": "search.replace-text",
+   "category": "search",
+   "title": "Replace text in many files",
+   "command": "Get-ChildItem -Recurse -Filter *.txt | ForEach-Object { (Get-Content -LiteralPath $_.FullName -Raw) -replace 'old','new' | Set-Content -LiteralPath $_.FullName -NoNewline }",
+   "aliases": [
+    "sed -i s/old/new/g"
+   ],
+   "explain": "Reads each file, replaces the text and writes it back. Try on a copy first.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "sed",
+    "find and replace",
+    "bulk"
+   ]
+  },
+  {
+   "id": "search.rename-ext",
+   "category": "search",
+   "title": "Change file extensions in bulk",
+   "command": "Get-ChildItem -Filter *.txt | Rename-Item -NewName { [IO.Path]::ChangeExtension($_.Name, '.md') }",
+   "aliases": [
+    "rename *.txt *.md"
+   ],
+   "explain": "Renames every matching file. Add -WhatIf to preview.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "extension",
+    "bulk rename"
+   ]
+  },
+  {
+   "id": "search.lines-of-code",
+   "category": "search",
+   "title": "Count lines of code by extension",
+   "command": "Get-ChildItem -Recurse -File -Include *.py,*.js,*.cs | Group-Object Extension | ForEach-Object { [pscustomobject]@{ Ext = $_.Name; Files = $_.Count; Lines = ($_.Group | Get-Content | Measure-Object -Line).Lines } }",
+   "aliases": [
+    "cloc",
+    "wc -l"
+   ],
+   "explain": "Totals lines for each file type.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "loc",
+    "code size"
+   ]
+  },
+  {
+   "id": "pipeline.select",
+   "category": "pipeline",
+   "title": "Keep only some columns",
+   "command": "Get-ChildItem | Select-Object Name, Length",
+   "aliases": [
+    "cut",
+    "awk '{print $1}'"
+   ],
+   "explain": "Select-Object chooses which properties to show.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "columns",
+    "properties"
+   ]
+  },
+  {
+   "id": "pipeline.where",
+   "category": "pipeline",
+   "title": "Filter rows",
+   "command": "Get-ChildItem | Where-Object { $_.Length -gt 100 }",
+   "aliases": [
+    "grep",
+    "?"
+   ],
+   "explain": "Keeps only the objects for which the test is true. Inside the braces $_ is the current object.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "filter",
+    "condition"
+   ]
+  },
+  {
+   "id": "pipeline.where-short",
+   "category": "pipeline",
+   "title": "Filter rows with the short form",
+   "command": "Get-ChildItem | Where-Object Length -gt 100",
+   "explain": "The short form works for one simple test.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "filter"
+   ]
+  },
+  {
+   "id": "pipeline.sort",
+   "category": "pipeline",
+   "title": "Sort the results",
+   "command": "Get-ChildItem | Sort-Object Length -Descending",
+   "aliases": [
+    "sort",
+    "sort -rn"
+   ],
+   "explain": "Add -Descending to reverse the order.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "order"
+   ]
+  },
+  {
+   "id": "pipeline.first",
+   "category": "pipeline",
+   "title": "Take the first or last items",
+   "command": "Get-ChildItem | Select-Object -First 5",
+   "aliases": [
+    "head",
+    "tail"
+   ],
+   "explain": "Use -Last for the end and -Skip to skip items.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "top",
+    "limit"
+   ]
+  },
+  {
+   "id": "pipeline.unique",
+   "category": "pipeline",
+   "title": "Remove duplicates",
+   "command": "'a','b','a' | Sort-Object -Unique",
+   "aliases": [
+    "sort | uniq"
+   ],
+   "explain": "Sort-Object -Unique, or Select-Object -Unique on an already sorted list.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "distinct",
+    "dedupe"
+   ]
+  },
+  {
+   "id": "pipeline.count-values",
+   "category": "pipeline",
+   "title": "Count how often each value appears",
+   "command": "'a','b','a' | Group-Object | Select-Object Name, Count",
+   "aliases": [
+    "sort | uniq -c"
+   ],
+   "explain": "Group-Object counts identical values.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "frequency",
+    "histogram"
+   ]
+  },
+  {
+   "id": "pipeline.measure",
+   "category": "pipeline",
+   "title": "Add up, average, min and max",
+   "command": "Get-ChildItem -File | Measure-Object Length -Sum -Average -Maximum -Minimum",
+   "explain": "Calculates statistics over a numeric property.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "sum",
+    "total",
+    "average",
+    "statistics"
+   ]
+  },
+  {
+   "id": "pipeline.foreach",
+   "category": "pipeline",
+   "title": "Run something for every item",
+   "command": "1..3 | ForEach-Object { $_ * 2 }",
+   "aliases": [
+    "xargs",
+    "for /f"
+   ],
+   "explain": "The braces run once per item. The alias % is the short name.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "loop",
+    "each",
+    "%"
+   ]
+  },
+  {
+   "id": "pipeline.members",
+   "category": "pipeline",
+   "title": "See which properties an object has",
+   "command": "Get-Item . | Get-Member",
+   "explain": "Shows the names and types of properties and methods, which tells you what you can select.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "discover",
+    "properties",
+    "methods"
+   ]
+  },
+  {
+   "id": "pipeline.expand",
+   "category": "pipeline",
+   "title": "Get plain values instead of objects",
+   "command": "Get-ChildItem | Select-Object -ExpandProperty Name",
+   "explain": "-ExpandProperty returns just the values so that text tools can use them.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "unwrap",
+    "only names"
+   ]
+  },
+  {
+   "id": "pipeline.calculated",
+   "category": "pipeline",
+   "title": "Add a calculated column",
+   "command": "Get-ChildItem -File | Select-Object Name, @{Name='KB'; Expression={ [math]::Round($_.Length / 1KB, 1) }}",
+   "explain": "A hashtable with Name and Expression creates a new column.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "computed",
+    "custom column"
+   ]
+  },
+  {
+   "id": "pipeline.group",
+   "category": "pipeline",
+   "title": "Group items",
+   "command": "Get-ChildItem -File -Recurse | Group-Object Extension",
+   "explain": "Collects items that share a value.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "group by"
+   ]
+  },
+  {
+   "id": "pipeline.tee",
+   "category": "pipeline",
+   "title": "Show output and save it too",
+   "command": "Get-ChildItem | Tee-Object -FilePath $env:TEMP\\list.txt",
+   "aliases": [
+    "tee"
+   ],
+   "explain": "Writes to the file and passes the objects on.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "copy output"
+   ]
+  },
+  {
+   "id": "pipeline.compare",
+   "category": "pipeline",
+   "title": "Compare two lists",
+   "command": "Compare-Object -ReferenceObject (Get-Content a.txt) -DifferenceObject (Get-Content b.txt)",
+   "aliases": [
+    "diff",
+    "fc"
+   ],
+   "explain": "=> means only in the second list, <= only in the first.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "difference"
+   ]
+  },
+  {
+   "id": "pipeline.join",
+   "category": "pipeline",
+   "title": "Join items into one line",
+   "command": "(Get-ChildItem -Name) -join ', '",
+   "explain": "-join glues the items together with a separator.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "concatenate",
+    "comma separated"
+   ]
+  },
+  {
+   "id": "pipeline.split-lines",
+   "category": "pipeline",
+   "title": "Split text into lines",
+   "command": "'a,b,c' -split ','",
+   "explain": "-split cuts a string at the separator and returns an array.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "explode"
+   ]
+  },
+  {
+   "id": "pipeline.first-property",
+   "category": "pipeline",
+   "title": "Get one value out of an object",
+   "command": "(Get-Item .\\bin\\out.dll).Length",
+   "explain": "Parentheses followed by .Property reads a single property.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "dot property"
+   ]
+  },
+  {
+   "id": "pipeline.parallel",
+   "category": "pipeline",
+   "title": "Run in parallel (PowerShell 7)",
+   "command": "1..5 | ForEach-Object -Parallel { $_ * 2 } -ThrottleLimit 3",
+   "explain": "Runs the block on several threads at once. Variables from outside need the $using: prefix.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "7.0",
+   "keywords": [
+    "threads",
+    "fast",
+    "concurrent"
+   ]
+  },
+  {
+   "id": "pipeline.splat",
+   "category": "pipeline",
+   "title": "Pass many parameters as a hashtable",
+   "command": "$p = @{ Path = '.'; Recurse = $true; File = $true }; Get-ChildItem @p",
+   "explain": "Splatting keeps long commands readable. Use @ instead of $ when passing it.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "hashtable",
+    "arguments",
+    "@"
+   ]
+  },
+  {
+   "id": "pipeline.if",
+   "category": "pipeline",
+   "title": "Do something only if a condition is true",
+   "command": "if (Test-Path .\\src) { 'found' } else { 'missing' }",
+   "explain": "The classic if/else.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "condition",
+    "branch"
+   ]
+  },
+  {
+   "id": "pipeline.try-catch",
+   "category": "pipeline",
+   "title": "Handle errors",
+   "command": "try { Get-Item C:\\nope -ErrorAction Stop } catch { 'failed: ' + $_.Exception.Message }",
+   "explain": "-ErrorAction Stop turns an error into one that catch can handle.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "exception",
+    "error handling"
+   ]
+  },
+  {
+   "id": "format.table",
+   "category": "format",
+   "title": "Show results as a table",
+   "command": "Get-ChildItem | Format-Table Name, Length -AutoSize",
+   "aliases": [
+    "column -t"
+   ],
+   "explain": "Format-Table is for display only. Do not pipe its output into other commands.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "columns"
+   ]
+  },
+  {
+   "id": "format.list",
+   "category": "format",
+   "title": "Show every property of an item",
+   "command": "Get-Item .\\bin\\out.dll | Format-List *",
+   "explain": "Shows all properties as name and value pairs.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "details",
+    "all properties"
+   ]
+  },
+  {
+   "id": "format.wide",
+   "category": "format",
+   "title": "Show names in several columns",
+   "command": "Get-ChildItem | Format-Wide -Column 3",
+   "explain": "Compact multi-column listing.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "compact"
+   ]
+  },
+  {
+   "id": "format.grid",
+   "category": "format",
+   "title": "Show results in a searchable window",
+   "command": "Get-Process | Out-GridView",
+   "explain": "A sortable, filterable window. It is not available in PowerShell 7 without the GraphicalTools module.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "gui",
+    "window",
+    "filter"
+   ]
+  },
+  {
+   "id": "format.csv-export",
+   "category": "format",
+   "title": "Save results as CSV",
+   "command": "Get-ChildItem | Select-Object Name, Length | Export-Csv $env:TEMP\\files.csv -NoTypeInformation",
+   "explain": "Creates a CSV file that opens in Excel.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "excel",
+    "spreadsheet"
+   ]
+  },
+  {
+   "id": "format.csv-import",
+   "category": "format",
+   "title": "Read a CSV file",
+   "command": "Import-Csv .\\people.csv",
+   "explain": "Each row becomes an object with the column names as properties.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "format.csv-export"
+   ],
+   "keywords": [
+    "excel",
+    "spreadsheet"
+   ]
+  },
+  {
+   "id": "format.csv-filter",
+   "category": "format",
+   "title": "Filter a CSV and save the result",
+   "command": "Import-Csv .\\people.csv | Where-Object { $_.Age -gt 30 } | Export-Csv .\\older.csv -NoTypeInformation",
+   "explain": "Reads, filters, writes.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "format.json-parse",
+   "category": "format",
+   "title": "Read JSON text",
+   "command": "'{\"name\":\"demo\",\"size\":3}' | ConvertFrom-Json",
+   "explain": "Turns JSON text into objects.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "parse"
+   ]
+  },
+  {
+   "id": "format.json-convert",
+   "category": "format",
+   "title": "Turn objects into JSON",
+   "command": "Get-Item .\\bin\\out.dll | Select-Object Name, Length | ConvertTo-Json",
+   "explain": "-Depth 5 keeps nested objects. The default depth is only 2.",
+   "params": [
+    {
+     "name": "-Depth 5",
+     "text": "Include nested objects"
+    },
+    {
+     "name": "-Compress",
+     "text": "Remove spaces"
+    }
+   ],
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "format.json-file",
+   "category": "format",
+   "title": "Read a JSON file",
+   "command": "Get-Content .\\settings.json -Raw | ConvertFrom-Json",
+   "explain": "-Raw reads the whole file as one string, which JSON needs.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "format.html",
+   "category": "format",
+   "title": "Make an HTML report",
+   "command": "Get-Process | Select-Object -First 5 Name, Id | ConvertTo-Html | Set-Content $env:TEMP\\report.html",
+   "explain": "Creates a simple table as a web page.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "format.out-file",
+   "category": "format",
+   "title": "Save text to a file",
+   "command": "Get-ChildItem | Out-File $env:TEMP\\list.txt",
+   "aliases": [
+    ">",
+    "tee > file"
+   ],
+   "explain": "Same as the > operator. Use -Encoding utf8 for a specific encoding.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "write",
+    "redirect"
+   ]
+  },
+  {
+   "id": "format.append",
+   "category": "format",
+   "title": "Add a line to a file",
+   "command": "Add-Content .\\log.txt 'new line'",
+   "aliases": [
+    ">>",
+    "echo >>"
+   ],
+   "explain": "Appends instead of replacing.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "format.xml",
+   "category": "format",
+   "title": "Read an XML file",
+   "command": "[xml](Get-Content .\\data.xml -Raw)",
+   "explain": "Gives you an object you can navigate with dots.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "format.string-out",
+   "category": "format",
+   "title": "Turn objects into text",
+   "command": "Get-ChildItem | Out-String",
+   "explain": "Useful when a command needs a plain string.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "text",
+    "to string"
+   ]
+  },
+  {
+   "id": "format.no-header",
+   "category": "format",
+   "title": "Output only the values",
+   "command": "Get-ChildItem | Select-Object -ExpandProperty Name",
+   "aliases": [
+    "cut -f1"
+   ],
+   "explain": "Without column headers or decoration.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "plain"
+   ]
+  },
+  {
+   "id": "format.color",
+   "category": "format",
+   "title": "Print in colour",
+   "command": "Write-Host 'done' -ForegroundColor Green",
+   "aliases": [
+    "echo"
+   ],
+   "explain": "Write-Host writes to the screen only, not into the pipeline.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "colour",
+    "message"
+   ]
+  },
+  {
+   "id": "format.width",
+   "category": "format",
+   "title": "Stop output being cut off",
+   "command": "Get-ChildItem | Format-Table -AutoSize -Wrap",
+   "explain": "-AutoSize sizes the columns to fit, -Wrap wraps long values.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "truncated",
+    "dots"
+   ]
+  },
+  {
+   "id": "clipboard.get",
+   "category": "clipboard",
+   "title": "Read the clipboard",
+   "command": "Get-Clipboard",
+   "aliases": [
+    "pbpaste",
+    "xclip -o"
+   ],
+   "explain": "Returns whatever text is on the clipboard.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "clipboard.set"
+   ],
+   "keywords": [
+    "paste"
+   ]
+  },
+  {
+   "id": "clipboard.set",
+   "category": "clipboard",
+   "title": "Put text on the clipboard",
+   "command": "'hello' | Set-Clipboard",
+   "aliases": [
+    "pbcopy",
+    "clip"
+   ],
+   "explain": "Anything piped in is copied.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "copy"
+   ]
+  },
+  {
+   "id": "clipboard.copy-output",
+   "category": "clipboard",
+   "title": "Copy a command's output",
+   "command": "Get-ChildItem -Name | Set-Clipboard",
+   "aliases": [
+    "| clip"
+   ],
+   "explain": "Great for pasting a file list into a chat or email.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "copy results"
+   ]
+  },
+  {
+   "id": "clipboard.copy-file-content",
+   "category": "clipboard",
+   "title": "Copy a file's text",
+   "command": "Get-Content .\\docs\\readme.md -Raw | Set-Clipboard",
+   "explain": "-Raw keeps line breaks as they are.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "copy file"
+   ]
+  },
+  {
+   "id": "clipboard.copy-path",
+   "category": "clipboard",
+   "title": "Copy a file's full path",
+   "command": "(Resolve-Path .\\docs\\readme.md).Path | Set-Clipboard",
+   "explain": "Handy when you need the path in another program.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "full name"
+   ]
+  },
+  {
+   "id": "clipboard.append",
+   "category": "clipboard",
+   "title": "Add to what is on the clipboard",
+   "command": "(Get-Clipboard -Raw) + \"`nmore\" | Set-Clipboard",
+   "explain": "Reads the clipboard, adds text and puts it back.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "clipboard.lines",
+   "category": "clipboard",
+   "title": "Read the clipboard as lines",
+   "command": "Get-Clipboard | ForEach-Object { $_.Trim() }",
+   "explain": "Without -Raw you get one item per line.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "trim",
+    "clean"
+   ]
+  },
+  {
+   "id": "clipboard.sort-lines",
+   "category": "clipboard",
+   "title": "Sort the lines on the clipboard",
+   "command": "Get-Clipboard | Sort-Object | Set-Clipboard",
+   "explain": "Replaces the clipboard with the sorted lines.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "alphabetical"
+   ]
+  },
+  {
+   "id": "clipboard.unique-lines",
+   "category": "clipboard",
+   "title": "Remove duplicate lines on the clipboard",
+   "command": "Get-Clipboard | Sort-Object -Unique | Set-Clipboard",
+   "explain": "Keeps one copy of each line.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "dedupe"
+   ]
+  },
+  {
+   "id": "clipboard.to-upper",
+   "category": "clipboard",
+   "title": "Change clipboard text to upper case",
+   "command": "(Get-Clipboard -Raw).ToUpper() | Set-Clipboard",
+   "explain": "Also ToLower() and Trim().",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "capitals",
+    "case"
+   ]
+  },
+  {
+   "id": "clipboard.files",
+   "category": "clipboard",
+   "title": "Copy files so they can be pasted in Explorer",
+   "command": "Set-Clipboard -Path .\\docs\\readme.md",
+   "explain": "Puts the file itself on the clipboard, not its text.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "file copy",
+    "paste in explorer"
+   ]
+  },
+  {
+   "id": "clipboard.clear",
+   "category": "clipboard",
+   "title": "Clear the clipboard",
+   "command": "Set-Clipboard -Value $null",
+   "explain": "Removes the text from the clipboard.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "wipe",
+    "empty"
+   ]
+  },
+  {
+   "id": "clipboard.image-size",
+   "category": "clipboard",
+   "title": "Get the size of an image on the clipboard",
+   "command": "Add-Type -AssemblyName System.Windows.Forms; [Windows.Forms.Clipboard]::GetImage() | Select-Object Width, Height",
+   "explain": "Returns nothing when the clipboard has no image.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "screenshot"
+   ]
+  },
+  {
+   "id": "clipboard.history-note",
+   "category": "clipboard",
+   "title": "Where is the clipboard history?",
+   "command": "Start-Process ms-settings:clipboard",
+   "explain": "Windows has its own clipboard history. Press Win+V to use it.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "win+v"
+   ]
+  },
+  {
+   "id": "process.list",
+   "category": "process",
+   "title": "List running programs",
+   "command": "Get-Process",
+   "aliases": [
+    "ps",
+    "ps aux",
+    "tasklist"
+   ],
+   "explain": "Shows every process with memory and CPU use.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "running",
+    "tasks"
+   ]
+  },
+  {
+   "id": "process.top-memory",
+   "category": "process",
+   "title": "Find the programs using the most memory",
+   "command": "Get-Process | Sort-Object WorkingSet64 -Descending | Select-Object -First 10 Name, Id, @{n='MB';e={[math]::Round($_.WorkingSet64 / 1MB)}}",
+   "aliases": [
+    "top"
+   ],
+   "explain": "Sorts by memory in use.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "ram",
+    "heavy"
+   ]
+  },
+  {
+   "id": "process.top-cpu",
+   "category": "process",
+   "title": "Find the programs using the most CPU time",
+   "command": "Get-Process | Sort-Object CPU -Descending | Select-Object -First 10 Name, Id, CPU",
+   "explain": "CPU is total processor seconds since the program started.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "slow",
+    "busy"
+   ]
+  },
+  {
+   "id": "process.by-name",
+   "category": "process",
+   "title": "Find a program by name",
+   "command": "Get-Process -Name powershell",
+   "aliases": [
+    "pgrep",
+    "tasklist | findstr"
+   ],
+   "explain": "Add * for a partial match, for example chr*.",
+   "example": "Get-Process -Name powershell* | Select-Object -First 1 Name, Id",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "search process"
+   ]
+  },
+  {
+   "id": "process.kill-name",
+   "category": "process",
+   "title": "Stop a program by name",
+   "command": "Stop-Process -Name notepad",
+   "aliases": [
+    "pkill",
+    "killall",
+    "taskkill /im"
+   ],
+   "explain": "Closes every process with that name immediately. Unsaved work is lost.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "close",
+    "end task"
+   ]
+  },
+  {
+   "id": "process.kill-id",
+   "category": "process",
+   "title": "Stop a program by process ID",
+   "command": "Stop-Process -Id 1234 -Force",
+   "aliases": [
+    "kill -9",
+    "taskkill /pid /f"
+   ],
+   "explain": "Find the ID with Get-Process.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "terminate"
+   ]
+  },
+  {
+   "id": "process.start",
+   "category": "process",
+   "title": "Start a program",
+   "command": "Start-Process notepad",
+   "aliases": [
+    "start"
+   ],
+   "explain": "Starts and returns immediately. Add -Wait to wait until it ends.",
+   "params": [
+    {
+     "name": "-Wait",
+     "text": "Wait for the program to finish"
+    },
+    {
+     "name": "-ArgumentList",
+     "text": "Pass arguments"
+    },
+    {
+     "name": "-WorkingDirectory",
+     "text": "Start in a folder"
+    }
+   ],
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "launch",
+    "open",
+    "run"
+   ]
+  },
+  {
+   "id": "process.start-admin",
+   "category": "process",
+   "title": "Start a program as administrator",
+   "command": "Start-Process powershell -Verb RunAs",
+   "aliases": [
+    "sudo",
+    "runas"
+   ],
+   "explain": "Triggers the Windows prompt for administrator rights.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "elevate",
+    "run as admin"
+   ],
+   "admin": true
+  },
+  {
+   "id": "process.wait",
+   "category": "process",
+   "title": "Wait for a program to close",
+   "command": "Wait-Process -Name notepad",
+   "explain": "Blocks until the process ends.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "until",
+    "finish"
+   ]
+  },
+  {
+   "id": "process.port-owner",
+   "category": "process",
+   "title": "Find which program uses a port",
+   "command": "Get-NetTCPConnection -LocalPort 3000 | ForEach-Object { Get-Process -Id $_.OwningProcess }",
+   "aliases": [
+    "lsof -i :3000",
+    "netstat -ano | findstr :3000"
+   ],
+   "explain": "Replace 3000 with the port. Nothing is returned when the port is free.",
+   "example": "Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | ForEach-Object { Get-Process -Id $_.OwningProcess }",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "network.listening"
+   ],
+   "keywords": [
+    "port in use",
+    "who is using",
+    "address already in use"
+   ]
+  },
+  {
+   "id": "process.command-line",
+   "category": "process",
+   "title": "Show the full command line of a program",
+   "command": "Get-CimInstance Win32_Process -Filter \"Name = 'powershell.exe'\" | Select-Object ProcessId, CommandLine",
+   "aliases": [
+    "ps -ef",
+    "wmic process get commandline"
+   ],
+   "explain": "Shows the arguments each program was started with.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "arguments"
+   ]
+  },
+  {
+   "id": "process.measure",
+   "category": "process",
+   "title": "Time how long a command takes",
+   "command": "Measure-Command { Get-ChildItem -Recurse | Out-Null }",
+   "aliases": [
+    "time"
+   ],
+   "explain": "Returns a TimeSpan. Output of the command itself is hidden.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "stopwatch",
+    "benchmark",
+    "duration"
+   ]
+  },
+  {
+   "id": "process.owner",
+   "category": "process",
+   "title": "Show which user runs each program",
+   "command": "Get-Process -IncludeUserName | Select-Object -First 10 Name, UserName",
+   "explain": "Needs administrator rights to see other users' processes.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "who",
+    "account"
+   ],
+   "admin": true
+  },
+  {
+   "id": "process.priority",
+   "category": "process",
+   "title": "Change a program's priority",
+   "command": "(Get-Process notepad).PriorityClass = 'BelowNormal'",
+   "aliases": [
+    "nice",
+    "renice"
+   ],
+   "explain": "Lower priority gives other programs more CPU time.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "process.modules",
+   "category": "process",
+   "title": "List files a program has loaded",
+   "command": "(Get-Process -Id $PID).Modules | Select-Object -First 10 ModuleName",
+   "explain": "$PID is the ID of the current PowerShell session.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "dll"
+   ]
+  },
+  {
+   "id": "process.job",
+   "category": "process",
+   "title": "Run a command in the background",
+   "command": "Start-Job { Start-Sleep 5; 'done' }",
+   "explain": "Receive-Job returns the output. Get-Job lists the jobs.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "async",
+    "background"
+   ]
+  },
+  {
+   "id": "services.list",
+   "category": "services",
+   "title": "List services",
+   "command": "Get-Service",
+   "aliases": [
+    "sc query",
+    "net start",
+    "systemctl list-units"
+   ],
+   "explain": "Shows each service with its status.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "windows services"
+   ]
+  },
+  {
+   "id": "services.running",
+   "category": "services",
+   "title": "List only running services",
+   "command": "Get-Service | Where-Object Status -eq Running",
+   "explain": "Filters on the Status property.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "started"
+   ]
+  },
+  {
+   "id": "services.stopped-auto",
+   "category": "services",
+   "title": "Find automatic services that are stopped",
+   "command": "Get-CimInstance Win32_Service | Where-Object { $_.StartMode -eq 'Auto' -and $_.State -ne 'Running' } | Select-Object Name, State",
+   "explain": "Often a sign that something failed at startup.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "not running",
+    "failed",
+    "startup"
+   ]
+  },
+  {
+   "id": "services.find",
+   "category": "services",
+   "title": "Find a service by name",
+   "command": "Get-Service -Name *update*",
+   "aliases": [
+    "sc query | findstr"
+   ],
+   "explain": "The name can be the short name or use wildcards.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "search service"
+   ]
+  },
+  {
+   "id": "services.details",
+   "category": "services",
+   "title": "Show details of a service",
+   "command": "Get-CimInstance Win32_Service -Filter \"Name = 'Spooler'\" | Format-List Name, State, StartMode, PathName, StartName",
+   "explain": "Shows the program, startup type and account.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "path",
+    "account"
+   ]
+  },
+  {
+   "id": "services.start",
+   "category": "services",
+   "title": "Start a service",
+   "command": "Start-Service -Name Spooler",
+   "aliases": [
+    "net start",
+    "systemctl start"
+   ],
+   "explain": "Needs administrator rights.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "services.stop",
+   "category": "services",
+   "title": "Stop a service",
+   "command": "Stop-Service -Name Spooler",
+   "aliases": [
+    "net stop",
+    "systemctl stop"
+   ],
+   "explain": "Needs administrator rights. Dependent services stop too, add -Force.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "services.restart",
+   "category": "services",
+   "title": "Restart a service",
+   "command": "Restart-Service -Name Spooler",
+   "aliases": [
+    "systemctl restart"
+   ],
+   "explain": "Needs administrator rights.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "services.startup-type",
+   "category": "services",
+   "title": "Change how a service starts",
+   "command": "Set-Service -Name Spooler -StartupType Manual",
+   "aliases": [
+    "sc config start="
+   ],
+   "explain": "Automatic, Manual or Disabled. Needs administrator rights.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "services.dependencies",
+   "category": "services",
+   "title": "Show what a service depends on",
+   "command": "(Get-Service Spooler).ServicesDependedOn",
+   "explain": "Use DependentServices for the other direction.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "required"
+   ]
+  },
+  {
+   "id": "services.count-status",
+   "category": "services",
+   "title": "Count services by status",
+   "command": "Get-Service | Group-Object Status | Select-Object Name, Count",
+   "explain": "A quick health overview.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "overview"
+   ]
+  },
+  {
+   "id": "services.wait-running",
+   "category": "services",
+   "title": "Wait until a service is running",
+   "command": "(Get-Service Spooler).WaitForStatus('Running', '00:00:10')",
+   "explain": "Throws when the service does not reach that status in time.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "network.ip",
+   "category": "network",
+   "title": "Show my IP addresses",
+   "command": "Get-NetIPAddress -AddressFamily IPv4 | Select-Object InterfaceAlias, IPAddress",
+   "aliases": [
+    "ipconfig",
+    "ip a",
+    "ifconfig"
+   ],
+   "explain": "Lists the local IPv4 address of each adapter.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "address",
+    "ipv4"
+   ]
+  },
+  {
+   "id": "network.public-ip",
+   "category": "network",
+   "title": "Show my public IP address",
+   "command": "(Invoke-RestMethod https://api.ipify.org)",
+   "explain": "Asks a website, so it needs internet access.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "external ip",
+    "what is my ip"
+   ]
+  },
+  {
+   "id": "network.adapters",
+   "category": "network",
+   "title": "List network adapters",
+   "command": "Get-NetAdapter | Select-Object Name, Status, LinkSpeed, MacAddress",
+   "aliases": [
+    "ipconfig /all"
+   ],
+   "explain": "Shows wired and wireless adapters.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "nic",
+    "mac address"
+   ]
+  },
+  {
+   "id": "network.ping",
+   "category": "network",
+   "title": "Check whether a computer answers",
+   "command": "Test-Connection example.com -Count 2",
+   "aliases": [
+    "ping"
+   ],
+   "explain": "Like ping. Needs internet for external names.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "reachable"
+   ]
+  },
+  {
+   "id": "network.test-port",
+   "category": "network",
+   "title": "Test whether a TCP port is open",
+   "command": "Test-NetConnection example.com -Port 443",
+   "aliases": [
+    "nc -zv",
+    "telnet"
+   ],
+   "explain": "TcpTestSucceeded tells you if the connection worked.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "port check",
+    "firewall"
+   ]
+  },
+  {
+   "id": "network.dns",
+   "category": "network",
+   "title": "Look up a DNS name",
+   "command": "Resolve-DnsName example.com",
+   "aliases": [
+    "nslookup",
+    "dig"
+   ],
+   "explain": "Shows the IP addresses and record types.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "domain"
+   ]
+  },
+  {
+   "id": "network.flush-dns",
+   "category": "network",
+   "title": "Clear the DNS cache",
+   "command": "Clear-DnsClientCache",
+   "aliases": [
+    "ipconfig /flushdns"
+   ],
+   "explain": "Fixes stale name lookups. Run as administrator.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "network.listening",
+   "category": "network",
+   "title": "Show which ports are listening",
+   "command": "Get-NetTCPConnection -State Listen | Select-Object LocalAddress, LocalPort, OwningProcess | Sort-Object LocalPort",
+   "aliases": [
+    "netstat -an",
+    "ss -tlnp"
+   ],
+   "explain": "Lists the programs that accept connections.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "open ports",
+    "server"
+   ]
+  },
+  {
+   "id": "network.connections",
+   "category": "network",
+   "title": "Show active connections",
+   "command": "Get-NetTCPConnection -State Established | Select-Object -First 20 RemoteAddress, RemotePort, OwningProcess",
+   "aliases": [
+    "netstat"
+   ],
+   "explain": "Established connections to other computers.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "tcp"
+   ]
+  },
+  {
+   "id": "network.download",
+   "category": "network",
+   "title": "Download a file",
+   "command": "Invoke-WebRequest https://example.com/file.zip -OutFile $env:TEMP\\file.zip",
+   "aliases": [
+    "curl -O",
+    "wget"
+   ],
+   "explain": "Saves the response to a file.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "fetch",
+    "http"
+   ]
+  },
+  {
+   "id": "network.web-json",
+   "category": "network",
+   "title": "Call a JSON web service",
+   "command": "Invoke-RestMethod https://api.github.com/repos/PowerShell/PowerShell",
+   "aliases": [
+    "curl"
+   ],
+   "explain": "Returns the JSON already converted to objects.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "api",
+    "rest"
+   ]
+  },
+  {
+   "id": "network.post-json",
+   "category": "network",
+   "title": "Send JSON to a web service",
+   "command": "Invoke-RestMethod https://example.com/api -Method Post -Body (@{name='demo'} | ConvertTo-Json) -ContentType 'application/json'",
+   "aliases": [
+    "curl -X POST -d"
+   ],
+   "explain": "Sends a POST request with a JSON body.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "api",
+    "rest"
+   ]
+  },
+  {
+   "id": "network.wifi-list",
+   "category": "network",
+   "title": "List saved Wi-Fi networks",
+   "command": "netsh wlan show profiles",
+   "explain": "Shows the networks this PC has joined.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "wireless"
+   ]
+  },
+  {
+   "id": "network.wifi-password",
+   "category": "network",
+   "title": "Show a saved Wi-Fi password",
+   "command": "netsh wlan show profile name=\"MyWifi\" key=clear",
+   "explain": "Look for Key Content in the output. Needs administrator rights to show the key.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "wpa",
+    "wlan",
+    "key"
+   ],
+   "admin": true
+  },
+  {
+   "id": "network.route",
+   "category": "network",
+   "title": "Show the routing table",
+   "command": "Get-NetRoute -AddressFamily IPv4 | Select-Object -First 10 DestinationPrefix, NextHop",
+   "aliases": [
+    "route print",
+    "ip route"
+   ],
+   "explain": "Where network traffic goes.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "gateway"
+   ]
+  },
+  {
+   "id": "network.hosts",
+   "category": "network",
+   "title": "Show the hosts file",
+   "command": "Get-Content $env:windir\\System32\\drivers\\etc\\hosts",
+   "aliases": [
+    "cat /etc/hosts"
+   ],
+   "explain": "Maps names to addresses before DNS is asked.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "hosts"
+   ]
+  },
+  {
+   "id": "network.shares",
+   "category": "network",
+   "title": "List shared folders",
+   "command": "Get-SmbShare",
+   "aliases": [
+    "net share"
+   ],
+   "explain": "Shows the folders this PC shares on the network.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "smb"
+   ]
+  },
+  {
+   "id": "network.trace",
+   "category": "network",
+   "title": "Trace the route to a host",
+   "command": "Test-NetConnection example.com -TraceRoute",
+   "aliases": [
+    "tracert",
+    "traceroute"
+   ],
+   "explain": "Shows each hop on the way.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "sysinfo.os",
+   "category": "sysinfo",
+   "title": "Show the Windows version",
+   "command": "Get-CimInstance Win32_OperatingSystem | Select-Object Caption, Version, OSArchitecture",
+   "aliases": [
+    "ver",
+    "winver",
+    "uname -a"
+   ],
+   "explain": "Edition, build number and 32 or 64 bit.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "windows version",
+    "build"
+   ]
+  },
+  {
+   "id": "sysinfo.boot-time",
+   "category": "sysinfo",
+   "title": "Show when the PC last started",
+   "command": "(Get-CimInstance Win32_OperatingSystem).LastBootUpTime",
+   "aliases": [
+    "uptime",
+    "systeminfo | find 'Boot'"
+   ],
+   "explain": "The last boot time. Fast startup can make this older than expected.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "uptime",
+    "restart"
+   ]
+  },
+  {
+   "id": "sysinfo.uptime",
+   "category": "sysinfo",
+   "title": "Show how long the PC has been running",
+   "command": "(Get-Date) - (Get-CimInstance Win32_OperatingSystem).LastBootUpTime",
+   "aliases": [
+    "uptime"
+   ],
+   "explain": "Returns a time span.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "sysinfo.cpu",
+   "category": "sysinfo",
+   "title": "Show the processor",
+   "command": "Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors",
+   "aliases": [
+    "lscpu"
+   ],
+   "explain": "Model, cores and threads.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "processor"
+   ]
+  },
+  {
+   "id": "sysinfo.memory",
+   "category": "sysinfo",
+   "title": "Show installed memory",
+   "command": "Get-CimInstance Win32_ComputerSystem | Select-Object @{n='GB';e={[math]::Round($_.TotalPhysicalMemory / 1GB, 1)}}",
+   "aliases": [
+    "free -h"
+   ],
+   "explain": "Total physical RAM.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "ram"
+   ]
+  },
+  {
+   "id": "sysinfo.free-memory",
+   "category": "sysinfo",
+   "title": "Show free memory",
+   "command": "Get-CimInstance Win32_OperatingSystem | Select-Object @{n='FreeGB';e={[math]::Round($_.FreePhysicalMemory / 1MB, 1)}}",
+   "explain": "Memory that is currently unused.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "ram"
+   ]
+  },
+  {
+   "id": "sysinfo.bios",
+   "category": "sysinfo",
+   "title": "Show BIOS and serial number",
+   "command": "Get-CimInstance Win32_BIOS | Select-Object Manufacturer, SMBIOSBIOSVersion, SerialNumber",
+   "explain": "Useful for support calls.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "serial",
+    "firmware"
+   ]
+  },
+  {
+   "id": "sysinfo.model",
+   "category": "sysinfo",
+   "title": "Show the computer model",
+   "command": "Get-CimInstance Win32_ComputerSystem | Select-Object Manufacturer, Model, Name",
+   "explain": "Maker, model and computer name.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "hardware",
+    "vendor"
+   ]
+  },
+  {
+   "id": "sysinfo.gpu",
+   "category": "sysinfo",
+   "title": "Show the graphics card",
+   "command": "Get-CimInstance Win32_VideoController | Select-Object Name, DriverVersion",
+   "explain": "Name and driver of each graphics adapter.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "video",
+    "graphics"
+   ]
+  },
+  {
+   "id": "sysinfo.battery",
+   "category": "sysinfo",
+   "title": "Create a battery report",
+   "command": "powercfg /batteryreport /output $env:TEMP\\battery.html",
+   "explain": "Creates an HTML report with capacity and usage history.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "laptop",
+    "battery health"
+   ]
+  },
+  {
+   "id": "sysinfo.hotfix",
+   "category": "sysinfo",
+   "title": "List installed Windows updates",
+   "command": "Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 10",
+   "aliases": [
+    "wmic qfe"
+   ],
+   "explain": "Shows recent updates. It can take a few seconds.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "patches",
+    "kb"
+   ]
+  },
+  {
+   "id": "sysinfo.full-info",
+   "category": "sysinfo",
+   "title": "Show everything about this PC",
+   "command": "systeminfo",
+   "aliases": [
+    "Get-ComputerInfo"
+   ],
+   "explain": "The classic summary of hardware, network and updates. It takes a few seconds.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "specs",
+    "summary"
+   ]
+  },
+  {
+   "id": "sysinfo.user",
+   "category": "sysinfo",
+   "title": "Show the current user and computer",
+   "command": "$env:USERNAME; $env:COMPUTERNAME",
+   "aliases": [
+    "whoami",
+    "hostname"
+   ],
+   "explain": "Environment variables hold the names.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "who am i",
+    "computer name"
+   ]
+  },
+  {
+   "id": "sysinfo.powershell-version",
+   "category": "sysinfo",
+   "title": "Show the PowerShell version",
+   "command": "$PSVersionTable",
+   "aliases": [
+    "pwsh --version"
+   ],
+   "explain": "Version, edition and platform.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "version"
+   ]
+  },
+  {
+   "id": "sysinfo.monitors",
+   "category": "sysinfo",
+   "title": "Show connected monitors",
+   "command": "Get-CimInstance WmiMonitorID -Namespace root\\wmi | ForEach-Object { ($_.UserFriendlyName | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ }) -join '' }",
+   "explain": "Reads the monitor names. Laptops with one screen show one name.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "display",
+    "screen"
+   ]
+  },
+  {
+   "id": "disks.free-space",
+   "category": "disks",
+   "title": "Show free space on each drive",
+   "command": "Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{n='UsedGB';e={[math]::Round($_.Used / 1GB, 1)}}, @{n='FreeGB';e={[math]::Round($_.Free / 1GB, 1)}}",
+   "aliases": [
+    "df -h",
+    "fsutil volume diskfree"
+   ],
+   "explain": "Used and free space per drive letter.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "space",
+    "capacity"
+   ]
+  },
+  {
+   "id": "disks.volumes",
+   "category": "disks",
+   "title": "List volumes",
+   "command": "Get-Volume",
+   "aliases": [
+    "wmic logicaldisk",
+    "diskpart list volume"
+   ],
+   "explain": "Label, file system, size and health.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "partitions"
+   ]
+  },
+  {
+   "id": "disks.physical",
+   "category": "disks",
+   "title": "List physical disks",
+   "command": "Get-PhysicalDisk | Select-Object FriendlyName, MediaType, Size, HealthStatus",
+   "aliases": [
+    "lsblk"
+   ],
+   "explain": "Shows SSD or HDD and health.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "ssd",
+    "hdd",
+    "health"
+   ]
+  },
+  {
+   "id": "disks.partitions",
+   "category": "disks",
+   "title": "List partitions",
+   "command": "Get-Partition | Select-Object DiskNumber, PartitionNumber, DriveLetter, Size",
+   "aliases": [
+    "fdisk -l"
+   ],
+   "explain": "Shows how each disk is divided.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "disks.folder-size",
+   "category": "disks",
+   "title": "Get the size of one folder",
+   "command": "(Get-ChildItem .\\src -Recurse -File | Measure-Object Length -Sum).Sum / 1MB",
+   "aliases": [
+    "du -sh"
+   ],
+   "explain": "The result is in MB.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "directory size"
+   ]
+  },
+  {
+   "id": "disks.temp-size",
+   "category": "disks",
+   "title": "See how big the temp folder is",
+   "command": "(Get-ChildItem $env:TEMP -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum / 1MB",
+   "explain": "Temporary files you can usually remove.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "cache",
+    "cleanup"
+   ]
+  },
+  {
+   "id": "disks.clean-temp",
+   "category": "disks",
+   "title": "Delete old temporary files",
+   "command": "Get-ChildItem $env:TEMP -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -lt (Get-Date).AddDays(-7) | Remove-Item -Force -ErrorAction SilentlyContinue",
+   "explain": "Removes temp files older than a week. Files in use are skipped.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1",
+   "keywords": [
+    "cleanup",
+    "free space"
+   ]
+  },
+  {
+   "id": "disks.recycle-bin",
+   "category": "disks",
+   "title": "Empty the Recycle Bin",
+   "command": "Clear-RecycleBin -Force",
+   "aliases": [
+    "rd /s %systemdrive%\\$Recycle.bin"
+   ],
+   "explain": "Permanently removes what is in the bin.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "disks.disk-check",
+   "category": "disks",
+   "title": "Check a drive for errors",
+   "command": "Repair-Volume -DriveLetter C -Scan",
+   "aliases": [
+    "chkdsk"
+   ],
+   "explain": "Scans without changing anything. Needs administrator rights.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "errors",
+    "chkdsk"
+   ],
+   "admin": true
+  },
+  {
+   "id": "disks.smart",
+   "category": "disks",
+   "title": "Check disk health",
+   "command": "Get-PhysicalDisk | Get-StorageReliabilityCounter | Select-Object DeviceId, Temperature, Wear, ReadErrorsTotal",
+   "explain": "Predictive health data, when the disk reports it. Needs administrator rights.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "smart",
+    "wear"
+   ],
+   "admin": true
+  },
+  {
+   "id": "disks.mount-iso",
+   "category": "disks",
+   "title": "Mount an ISO file",
+   "command": "Mount-DiskImage -ImagePath C:\\iso\\setup.iso",
+   "explain": "Opens it as a virtual drive. Use Dismount-DiskImage to remove it.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "disks.usb",
+   "category": "disks",
+   "title": "List removable drives",
+   "command": "Get-Volume | Where-Object DriveType -eq Removable",
+   "explain": "USB sticks and card readers.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "usb",
+    "flash drive"
+   ]
+  },
+  {
+   "id": "disks.map-drive",
+   "category": "disks",
+   "title": "Map a network folder to a drive letter",
+   "command": "New-PSDrive -Name Z -PSProvider FileSystem -Root \\\\server\\share -Persist",
+   "aliases": [
+    "net use Z:"
+   ],
+   "explain": "The drive stays after you close PowerShell.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "network drive"
+   ]
+  },
+  {
+   "id": "disks.open-files",
+   "category": "disks",
+   "title": "Show the biggest folders in your profile",
+   "command": "Get-ChildItem $env:USERPROFILE -Directory | ForEach-Object { [pscustomobject]@{ Name = $_.Name; GB = [math]::Round(((Get-ChildItem $_.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum / 1GB), 2) } } | Sort-Object GB -Descending",
+   "explain": "Finds out where your space went. It can take a minute.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "where did my space go"
+   ]
+  },
+  {
+   "id": "registry.read-value",
+   "category": "registry",
+   "title": "Read a registry value",
+   "command": "Get-ItemProperty 'HKCU:\\Control Panel\\Desktop' -Name WallPaper",
+   "aliases": [
+    "reg query",
+    "regedit"
+   ],
+   "explain": "Shows the value and its name.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "key",
+    "setting"
+   ]
+  },
+  {
+   "id": "registry.list-keys",
+   "category": "registry",
+   "title": "List the keys below a key",
+   "command": "Get-ChildItem 'HKCU:\\Software\\Microsoft' | Select-Object -First 10 Name",
+   "aliases": [
+    "reg query /s"
+   ],
+   "explain": "Registry keys work like folders.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "browse"
+   ]
+  },
+  {
+   "id": "registry.set-value",
+   "category": "registry",
+   "title": "Write a registry value",
+   "command": "Set-ItemProperty 'HKCU:\\Software\\Demo' -Name Level -Value 3",
+   "aliases": [
+    "reg add"
+   ],
+   "explain": "Writes to the current user's part of the registry. Make a backup first.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "change setting"
+   ]
+  },
+  {
+   "id": "registry.new-key",
+   "category": "registry",
+   "title": "Create a registry key",
+   "command": "New-Item 'HKCU:\\Software\\Demo'",
+   "aliases": [
+    "reg add"
+   ],
+   "explain": "Creates the key. It fails if the key already exists.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "registry.remove-value",
+   "category": "registry",
+   "title": "Delete a registry value",
+   "command": "Remove-ItemProperty 'HKCU:\\Software\\Demo' -Name Level",
+   "aliases": [
+    "reg delete /v"
+   ],
+   "explain": "Removes only that value.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "registry.remove-key",
+   "category": "registry",
+   "title": "Delete a registry key",
+   "command": "Remove-Item 'HKCU:\\Software\\Demo' -Recurse",
+   "aliases": [
+    "reg delete"
+   ],
+   "explain": "Removes the key and everything below it. Export it first.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "registry.export",
+   "category": "registry",
+   "title": "Back up a registry key",
+   "command": "reg export HKCU\\Software\\Demo $env:TEMP\\demo.reg /y",
+   "explain": "Creates a .reg file you can double-click to restore.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "backup",
+    "regedit export"
+   ]
+  },
+  {
+   "id": "registry.import",
+   "category": "registry",
+   "title": "Restore a registry file",
+   "command": "reg import $env:TEMP\\demo.reg",
+   "explain": "Writes the keys from a .reg file back.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "registry.search",
+   "category": "registry",
+   "title": "Search the registry for text",
+   "command": "Get-ChildItem 'HKCU:\\Software' -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like '*Demo*' }",
+   "explain": "Slow on big hives, so start in a narrow key.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "find key"
+   ]
+  },
+  {
+   "id": "registry.test-key",
+   "category": "registry",
+   "title": "Check whether a key exists",
+   "command": "Test-Path 'HKCU:\\Software\\Microsoft'",
+   "explain": "Returns True or False.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "exists"
+   ]
+  },
+  {
+   "id": "registry.hklm",
+   "category": "registry",
+   "title": "Read machine-wide settings",
+   "command": "Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion' | Select-Object ProductName, DisplayVersion, CurrentBuild",
+   "explain": "HKLM is for the whole computer, HKCU for the current user.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "windows version",
+    "hklm"
+   ]
+  },
+  {
+   "id": "registry.startup-run",
+   "category": "registry",
+   "title": "List programs that start with Windows",
+   "command": "Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'",
+   "explain": "The Run key holds the user's startup entries.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "autostart",
+    "startup",
+    "boot"
+   ]
+  },
+  {
+   "id": "registry.drives-psdrive",
+   "category": "registry",
+   "title": "List registry drives",
+   "command": "Get-PSDrive -PSProvider Registry",
+   "explain": "HKCU: and HKLM: behave like drive letters.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "hkcu",
+    "hklm"
+   ]
+  },
+  {
+   "id": "env.list",
+   "category": "env",
+   "title": "List environment variables",
+   "command": "Get-ChildItem Env:",
+   "aliases": [
+    "set",
+    "env",
+    "printenv"
+   ],
+   "explain": "Shows every variable and its value.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "variables"
+   ]
+  },
+  {
+   "id": "env.get",
+   "category": "env",
+   "title": "Read one environment variable",
+   "command": "$env:USERPROFILE",
+   "aliases": [
+    "echo %VAR%",
+    "echo $VAR"
+   ],
+   "explain": "Use $env: followed by the name.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "variable"
+   ]
+  },
+  {
+   "id": "env.set-session",
+   "category": "env",
+   "title": "Set a variable for this window only",
+   "command": "$env:MY_FLAG = '1'",
+   "aliases": [
+    "set VAR=1",
+    "export VAR=1"
+   ],
+   "explain": "Disappears when you close PowerShell.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "temporary"
+   ]
+  },
+  {
+   "id": "env.set-user",
+   "category": "env",
+   "title": "Set a variable permanently for your account",
+   "command": "[Environment]::SetEnvironmentVariable('MY_FLAG', '1', 'User')",
+   "aliases": [
+    "setx"
+   ],
+   "explain": "New windows will see it. Existing ones need a restart.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "permanent"
+   ]
+  },
+  {
+   "id": "env.remove-user",
+   "category": "env",
+   "title": "Remove a permanent variable",
+   "command": "[Environment]::SetEnvironmentVariable('MY_FLAG', $null, 'User')",
+   "explain": "Setting it to null deletes it.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "env.path-show",
+   "category": "env",
+   "title": "Show the folders in PATH",
+   "command": "$env:Path -split ';'",
+   "aliases": [
+    "echo %PATH%",
+    "echo $PATH"
+   ],
+   "explain": "One folder per line.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "path"
+   ]
+  },
+  {
+   "id": "env.path-user",
+   "category": "env",
+   "title": "Show the PATH that belongs to your account",
+   "command": "[Environment]::GetEnvironmentVariable('Path', 'User') -split ';'",
+   "explain": "User PATH is added to the machine PATH.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "user path"
+   ]
+  },
+  {
+   "id": "env.path-machine",
+   "category": "env",
+   "title": "Show the machine-wide PATH",
+   "command": "[Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';'",
+   "explain": "Changing it needs administrator rights.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "system path"
+   ]
+  },
+  {
+   "id": "env.path-add",
+   "category": "env",
+   "title": "Add a folder to your PATH",
+   "command": "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';C:\\tools', 'User')",
+   "aliases": [
+    "export PATH=$PATH:/x",
+    "setx PATH"
+   ],
+   "explain": "Only for you, permanent. Open a new window to use it.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "add to path"
+   ]
+  },
+  {
+   "id": "env.path-check",
+   "category": "env",
+   "title": "Check that every PATH folder exists",
+   "command": "$env:Path -split ';' | Where-Object { $_ -and -not (Test-Path $_) }",
+   "explain": "Lists broken entries.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "broken",
+    "clean"
+   ]
+  },
+  {
+   "id": "env.path-dupes",
+   "category": "env",
+   "title": "Find duplicate PATH entries",
+   "command": "$env:Path -split ';' | Group-Object | Where-Object Count -gt 1 | Select-Object Name, Count",
+   "explain": "Duplicates slow nothing down but make the list messy.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "clean"
+   ]
+  },
+  {
+   "id": "env.refresh",
+   "category": "env",
+   "title": "Reload PATH in this window",
+   "command": "$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')",
+   "explain": "Useful after an installer changed PATH.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "refresh",
+    "reload"
+   ]
+  },
+  {
+   "id": "env.temp",
+   "category": "env",
+   "title": "Find the temp folder",
+   "command": "$env:TEMP",
+   "explain": "Where programs keep temporary files.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "tmp"
+   ]
+  },
+  {
+   "id": "env.psmodulepath",
+   "category": "env",
+   "title": "Show where modules are searched",
+   "command": "$env:PSModulePath -split ';'",
+   "explain": "The folders PowerShell scans for modules.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "modules"
+   ]
+  },
+  {
+   "id": "tasks.list",
+   "category": "tasks",
+   "title": "List scheduled tasks",
+   "command": "Get-ScheduledTask | Where-Object State -ne Disabled | Select-Object -First 20 TaskName, State",
+   "aliases": [
+    "schtasks /query",
+    "crontab -l"
+   ],
+   "explain": "Shows the jobs Windows runs on a schedule.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "cron",
+    "jobs"
+   ]
+  },
+  {
+   "id": "tasks.info",
+   "category": "tasks",
+   "title": "Show when a task last ran",
+   "command": "Get-ScheduledTask -TaskName 'MicrosoftEdgeUpdateTaskMachineCore*' | Get-ScheduledTaskInfo | Select-Object TaskName, LastRunTime, LastTaskResult, NextRunTime",
+   "explain": "LastTaskResult 0 means success.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "history",
+    "last run"
+   ]
+  },
+  {
+   "id": "tasks.create-daily",
+   "category": "tasks",
+   "title": "Run a script every day",
+   "command": "$a = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-File C:\\scripts\\backup.ps1'; $t = New-ScheduledTaskTrigger -Daily -At 3am; Register-ScheduledTask -TaskName 'Daily backup' -Action $a -Trigger $t",
+   "aliases": [
+    "crontab -e",
+    "schtasks /create"
+   ],
+   "explain": "Creates the task for your account.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "schedule",
+    "every day"
+   ]
+  },
+  {
+   "id": "tasks.create-logon",
+   "category": "tasks",
+   "title": "Run a script at logon",
+   "command": "Register-ScheduledTask -TaskName 'At logon' -Action (New-ScheduledTaskAction -Execute 'notepad.exe') -Trigger (New-ScheduledTaskTrigger -AtLogOn)",
+   "explain": "Starts each time you sign in.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "startup"
+   ]
+  },
+  {
+   "id": "tasks.run",
+   "category": "tasks",
+   "title": "Run a task now",
+   "command": "Start-ScheduledTask -TaskName 'Daily backup'",
+   "aliases": [
+    "schtasks /run"
+   ],
+   "explain": "Starts it immediately, without waiting for the schedule.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "tasks.disable",
+   "category": "tasks",
+   "title": "Disable a task",
+   "command": "Disable-ScheduledTask -TaskName 'Daily backup'",
+   "aliases": [
+    "schtasks /change /disable"
+   ],
+   "explain": "Keeps the task but stops it from running.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "tasks.enable",
+   "category": "tasks",
+   "title": "Enable a task",
+   "command": "Enable-ScheduledTask -TaskName 'Daily backup'",
+   "explain": "Turns a disabled task back on.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "tasks.remove",
+   "category": "tasks",
+   "title": "Delete a task",
+   "command": "Unregister-ScheduledTask -TaskName 'Daily backup' -Confirm:$false",
+   "aliases": [
+    "schtasks /delete"
+   ],
+   "explain": "Removes the task for good.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "tasks.export",
+   "category": "tasks",
+   "title": "Export a task to XML",
+   "command": "Export-ScheduledTask -TaskName 'Daily backup' | Set-Content $env:TEMP\\task.xml",
+   "explain": "Use it as a backup or to copy the task to another PC.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "tasks.find-failed",
+   "category": "tasks",
+   "title": "Find tasks that failed last time",
+   "command": "Get-ScheduledTask | Get-ScheduledTaskInfo | Where-Object { $_.LastTaskResult -ne 0 -and $_.LastRunTime.Year -gt 2000 } | Select-Object TaskName, LastRunTime, LastTaskResult",
+   "explain": "Shows tasks whose last result was not 0.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "errors",
+    "broken"
+   ]
+  },
+  {
+   "id": "tasks.every-hour",
+   "category": "tasks",
+   "title": "Run a task every hour",
+   "command": "New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Hours 1)",
+   "explain": "Combine it with Register-ScheduledTask.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "repeat",
+    "interval"
+   ]
+  },
+  {
+   "id": "tasks.sleep-then",
+   "category": "tasks",
+   "title": "Do something after a delay",
+   "command": "Start-Sleep -Seconds 2; 'done'",
+   "aliases": [
+    "sleep",
+    "timeout /t",
+    "sleep 2"
+   ],
+   "explain": "Waits, then continues. Use -Milliseconds for short waits.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "wait",
+    "pause"
+   ]
+  },
+  {
+   "id": "archive.zip",
+   "category": "archive",
+   "title": "Zip a folder",
+   "command": "Compress-Archive -Path .\\src -DestinationPath $env:TEMP\\src.zip",
+   "aliases": [
+    "zip -r",
+    "tar -a -c -f"
+   ],
+   "explain": "Creates a standard zip file. Add -Force to overwrite a zip that already exists.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "compress"
+   ]
+  },
+  {
+   "id": "archive.unzip",
+   "category": "archive",
+   "title": "Unzip an archive",
+   "command": "Expand-Archive .\\archive.zip -DestinationPath .\\out",
+   "aliases": [
+    "unzip"
+   ],
+   "explain": "-Force overwrites existing files.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "extract",
+    "decompress"
+   ]
+  },
+  {
+   "id": "archive.zip-list",
+   "category": "archive",
+   "title": "List what is inside a zip",
+   "command": "Add-Type -AssemblyName System.IO.Compression.FileSystem; [IO.Compression.ZipFile]::OpenRead((Resolve-Path .\\archive.zip)).Entries | Select-Object FullName, Length",
+   "aliases": [
+    "unzip -l"
+   ],
+   "explain": "Reads the zip without extracting it.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "contents",
+    "view zip"
+   ]
+  },
+  {
+   "id": "archive.hash",
+   "category": "archive",
+   "title": "Get the hash of a file",
+   "command": "Get-FileHash .\\bin\\out.dll",
+   "aliases": [
+    "sha256sum",
+    "certutil -hashfile"
+   ],
+   "explain": "SHA-256 by default.",
+   "params": [
+    {
+     "name": "-Algorithm MD5",
+     "text": "Use MD5, SHA1, SHA256, SHA384 or SHA512"
+    }
+   ],
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "checksum",
+    "sha256"
+   ]
+  },
+  {
+   "id": "archive.hash-md5",
+   "category": "archive",
+   "title": "Get the MD5 hash of a file",
+   "command": "Get-FileHash .\\bin\\out.dll -Algorithm MD5",
+   "aliases": [
+    "md5sum"
+   ],
+   "explain": "MD5 is fine to spot accidents, not for security.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "md5"
+   ]
+  },
+  {
+   "id": "archive.hash-compare",
+   "category": "archive",
+   "title": "Check that a file matches a known hash",
+   "command": "(Get-FileHash .\\bin\\out.dll).Hash -eq 'ABC123'",
+   "explain": "True when both match. Case does not matter.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "verify",
+    "integrity"
+   ]
+  },
+  {
+   "id": "archive.hash-string",
+   "category": "archive",
+   "title": "Get the hash of a piece of text",
+   "command": "$s = [IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes('hello')); (Get-FileHash -InputStream $s).Hash",
+   "explain": "Hashes text without creating a file.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "sha256 of text"
+   ]
+  },
+  {
+   "id": "archive.tar",
+   "category": "archive",
+   "title": "Create a tar.gz archive",
+   "command": "tar -czf $env:TEMP\\src.tar.gz src",
+   "aliases": [
+    "tar -czf"
+   ],
+   "explain": "Windows 10 and 11 include tar.exe.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "gzip"
+   ]
+  },
+  {
+   "id": "archive.untar",
+   "category": "archive",
+   "title": "Extract a tar.gz archive",
+   "command": "tar -xzf archive.tar.gz -C .\\out",
+   "aliases": [
+    "tar -xzf"
+   ],
+   "explain": "Extracts into the folder after -C.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "archive.zip-each",
+   "category": "archive",
+   "title": "Zip every subfolder separately",
+   "command": "Get-ChildItem -Directory | ForEach-Object { Compress-Archive -Path $_.FullName -DestinationPath ($env:TEMP + '\\' + $_.Name + '.zip') }",
+   "explain": "One zip per folder.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "bulk"
+   ]
+  },
+  {
+   "id": "archive.base64-file",
+   "category": "archive",
+   "title": "Encode a file as Base64",
+   "command": "[Convert]::ToBase64String([IO.File]::ReadAllBytes('.\\bin\\out.dll')).Length",
+   "aliases": [
+    "base64"
+   ],
+   "explain": "Use the string itself to embed a file in text.",
+   "example": "[Convert]::ToBase64String([IO.File]::ReadAllBytes((Resolve-Path .\\bin\\out.dll))).Length",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "encode"
+   ]
+  },
+  {
+   "id": "archive.compare-files",
+   "category": "archive",
+   "title": "Check whether two files are identical",
+   "command": "(Get-FileHash .\\a.bin).Hash -eq (Get-FileHash .\\b.bin).Hash",
+   "aliases": [
+    "cmp",
+    "fc /b"
+   ],
+   "explain": "Compares the hashes.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "same"
+   ]
+  },
+  {
+   "id": "archive.dedupe-by-hash",
+   "category": "archive",
+   "title": "Group files that have the same content",
+   "command": "Get-ChildItem -Recurse -File | Get-FileHash | Group-Object Hash | Where-Object Count -gt 1",
+   "explain": "Each group is a set of duplicates.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "duplicates"
+   ]
+  },
+  {
+   "id": "perm.show",
+   "category": "perm",
+   "title": "Show who can access a file",
+   "command": "Get-Acl .\\bin\\out.dll | Select-Object -ExpandProperty Access",
+   "aliases": [
+    "icacls",
+    "ls -l"
+   ],
+   "explain": "Lists each account and what it may do.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "acl",
+    "rights",
+    "permissions"
+   ]
+  },
+  {
+   "id": "perm.owner",
+   "category": "perm",
+   "title": "Show who owns a file",
+   "command": "(Get-Acl .\\bin\\out.dll).Owner",
+   "aliases": [
+    "ls -l"
+   ],
+   "explain": "The account that owns the file.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "owner"
+   ]
+  },
+  {
+   "id": "perm.icacls",
+   "category": "perm",
+   "title": "Show permissions the classic way",
+   "command": "icacls .\\bin\\out.dll",
+   "aliases": [
+    "cacls"
+   ],
+   "explain": "Short codes such as (F) full and (R) read.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "icacls"
+   ]
+  },
+  {
+   "id": "perm.grant",
+   "category": "perm",
+   "title": "Give a user access",
+   "command": "icacls .\\shared /grant Users:(OI)(CI)M",
+   "aliases": [
+    "chmod",
+    "chown"
+   ],
+   "explain": "Grants Modify on the folder and everything inside.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "allow",
+    "share"
+   ]
+  },
+  {
+   "id": "perm.deny-write",
+   "category": "perm",
+   "title": "Make a folder read-only for a user",
+   "command": "icacls .\\shared /deny Users:(OI)(CI)W",
+   "aliases": [
+    "chmod -w"
+   ],
+   "explain": "Deny rules win over allow rules, so use with care.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "perm.reset",
+   "category": "perm",
+   "title": "Reset permissions to the inherited defaults",
+   "command": "icacls .\\shared /reset /T",
+   "explain": "Removes custom permissions below the folder.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "fix access denied"
+   ]
+  },
+  {
+   "id": "perm.take-ownership",
+   "category": "perm",
+   "title": "Take ownership of a folder",
+   "command": "takeown /F .\\locked /R /D Y",
+   "aliases": [
+    "chown"
+   ],
+   "explain": "Run as administrator. Changing ownership of system folders can break Windows.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1",
+   "keywords": [
+    "access denied",
+    "owner"
+   ],
+   "admin": true
+  },
+  {
+   "id": "perm.unblock",
+   "category": "perm",
+   "title": "Unblock downloaded files",
+   "command": "Get-ChildItem -Recurse | Unblock-File",
+   "explain": "Removes the mark that makes Windows warn about files from the internet.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "mark of the web",
+    "blocked",
+    "zone"
+   ]
+  },
+  {
+   "id": "perm.zone",
+   "category": "perm",
+   "title": "Check if a file is marked as downloaded",
+   "command": "Get-Content .\\setup.exe -Stream Zone.Identifier",
+   "explain": "A ZoneId of 3 means it came from the internet.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "mark of the web"
+   ]
+  },
+  {
+   "id": "perm.is-admin",
+   "category": "perm",
+   "title": "Check if this window runs as administrator",
+   "command": "([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)",
+   "aliases": [
+    "id -u"
+   ],
+   "explain": "Returns True in an elevated window.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "elevated",
+    "admin"
+   ]
+  },
+  {
+   "id": "perm.attributes",
+   "category": "perm",
+   "title": "Show file attributes",
+   "command": "(Get-Item .\\bin\\out.dll).Attributes",
+   "aliases": [
+    "attrib"
+   ],
+   "explain": "Normal, Hidden, ReadOnly, Archive and so on.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "perm.inherit",
+   "category": "perm",
+   "title": "Turn off inherited permissions",
+   "command": "icacls .\\shared /inheritance:d",
+   "explain": "Copies the inherited entries into the folder, so you can change them.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "perm.effective",
+   "category": "perm",
+   "title": "Check access with a quick test",
+   "command": "try { [IO.File]::OpenWrite((Resolve-Path .\\bin\\out.dll)).Dispose(); 'writable' } catch { 'not writable' }",
+   "explain": "Opens the file for writing and closes it again. It does not change the content.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "can i write"
+   ]
+  },
+  {
+   "id": "events.errors-24h",
+   "category": "events",
+   "title": "Show system errors from the last 24 hours",
+   "command": "Get-WinEvent -FilterHashtable @{LogName='System';Level=2;StartTime=(Get-Date).AddDays(-1)}",
+   "aliases": [
+    "eventvwr"
+   ],
+   "explain": "Level 2 is Error, 3 Warning, 4 Information.",
+   "params": [
+    {
+     "name": "LogName",
+     "text": "System, Application or Security"
+    },
+    {
+     "name": "Level",
+     "text": "1 critical, 2 error, 3 warning, 4 info"
+    },
+    {
+     "name": "StartTime",
+     "text": "Only events after this time"
+    }
+   ],
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "event viewer",
+    "problems"
+   ]
+  },
+  {
+   "id": "events.app-errors",
+   "category": "events",
+   "title": "Show application errors",
+   "command": "Get-WinEvent -FilterHashtable @{LogName='Application';Level=2} -MaxEvents 20",
+   "explain": "The 20 most recent application errors.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "crash"
+   ]
+  },
+  {
+   "id": "events.crashes",
+   "category": "events",
+   "title": "Find program crashes",
+   "command": "Get-WinEvent -FilterHashtable @{LogName='Application';ProviderName='Application Error'} -MaxEvents 10",
+   "explain": "Shows the application and the faulting module.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "application error"
+   ]
+  },
+  {
+   "id": "events.logons",
+   "category": "events",
+   "title": "Show recent sign-ins",
+   "command": "Get-WinEvent -FilterHashtable @{LogName='Security';Id=4624} -MaxEvents 10",
+   "explain": "Needs administrator rights.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "login",
+    "who logged in"
+   ],
+   "admin": true
+  },
+  {
+   "id": "events.failed-logons",
+   "category": "events",
+   "title": "Show failed sign-in attempts",
+   "command": "Get-WinEvent -FilterHashtable @{LogName='Security';Id=4625} -MaxEvents 10",
+   "explain": "Needs administrator rights.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "bad password"
+   ],
+   "admin": true
+  },
+  {
+   "id": "events.shutdowns",
+   "category": "events",
+   "title": "Show when the PC started and stopped",
+   "command": "Get-WinEvent -FilterHashtable @{LogName='System';Id=6005,6006,1074} -MaxEvents 10",
+   "explain": "6005 start, 6006 stop, 1074 planned shutdown.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "restart",
+    "reboot reason"
+   ]
+  },
+  {
+   "id": "events.list-logs",
+   "category": "events",
+   "title": "List the available event logs",
+   "command": "Get-WinEvent -ListLog * | Where-Object RecordCount | Select-Object -First 15 LogName, RecordCount",
+   "explain": "Only logs that contain events.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "channels"
+   ]
+  },
+  {
+   "id": "events.message",
+   "category": "events",
+   "title": "Show the full text of an event",
+   "command": "Get-WinEvent -LogName System -MaxEvents 1 | Select-Object -ExpandProperty Message",
+   "explain": "The message tells you what happened.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "events.export-log",
+   "category": "events",
+   "title": "Save events to a file",
+   "command": "Get-WinEvent -LogName System -MaxEvents 100 | Export-Csv $env:TEMP\\events.csv -NoTypeInformation",
+   "explain": "Opens in Excel.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "events.clear-log",
+   "category": "events",
+   "title": "Clear an event log",
+   "command": "Clear-EventLog -LogName Application",
+   "explain": "Deletes every event in that log. Run as administrator.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "events.write-event",
+   "category": "events",
+   "title": "Write your own event",
+   "command": "New-EventLog -LogName Application -Source MyScript; Write-EventLog -LogName Application -Source MyScript -EventId 1000 -Message 'It ran'",
+   "explain": "Useful for scripts that run unattended. Run as administrator.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "events.count-by-source",
+   "category": "events",
+   "title": "Count events by source",
+   "command": "Get-WinEvent -LogName Application -MaxEvents 500 | Group-Object ProviderName | Sort-Object Count -Descending | Select-Object -First 10 Name, Count",
+   "explain": "Finds the noisiest programs.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "noise"
+   ]
+  },
+  {
+   "id": "security.whoami",
+   "category": "security",
+   "title": "Show who you are",
+   "command": "whoami",
+   "aliases": [
+    "id"
+   ],
+   "explain": "Account name. Add /groups to see your groups.",
+   "example": "whoami",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "current user"
+   ]
+  },
+  {
+   "id": "security.groups",
+   "category": "security",
+   "title": "Show the groups you belong to",
+   "command": "whoami /groups",
+   "explain": "Includes the integrity level.",
+   "example": "whoami /groups",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "membership"
+   ]
+  },
+  {
+   "id": "security.local-users",
+   "category": "security",
+   "title": "List local users",
+   "command": "Get-LocalUser | Select-Object Name, Enabled, LastLogon",
+   "aliases": [
+    "net user",
+    "cat /etc/passwd"
+   ],
+   "explain": "Accounts on this PC.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "accounts"
+   ]
+  },
+  {
+   "id": "security.local-groups",
+   "category": "security",
+   "title": "List local groups",
+   "command": "Get-LocalGroup | Select-Object Name, Description",
+   "aliases": [
+    "net localgroup"
+   ],
+   "explain": "Groups on this PC.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "security.admins",
+   "category": "security",
+   "title": "Show who is an administrator",
+   "command": "Get-LocalGroupMember -Group Administrators",
+   "aliases": [
+    "net localgroup administrators"
+   ],
+   "explain": "Members of the local Administrators group.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "admin rights"
+   ]
+  },
+  {
+   "id": "security.new-user",
+   "category": "security",
+   "title": "Create a local user",
+   "command": "New-LocalUser -Name 'demo' -NoPassword",
+   "aliases": [
+    "net user /add"
+   ],
+   "explain": "Run as administrator. Give the user a password afterwards.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "security.password-random",
+   "category": "security",
+   "title": "Make a random password",
+   "command": "-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 16 | ForEach-Object {[char]$_})",
+   "aliases": [
+    "openssl rand",
+    "pwgen"
+   ],
+   "explain": "16 random letters and digits. Do not reuse it elsewhere.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "generate",
+    "strong"
+   ]
+  },
+  {
+   "id": "security.guid",
+   "category": "security",
+   "title": "Make a new GUID",
+   "command": "[guid]::NewGuid().ToString()",
+   "aliases": [
+    "uuidgen"
+   ],
+   "explain": "A unique identifier, handy for file names and tests.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "uuid"
+   ]
+  },
+  {
+   "id": "security.defender-status",
+   "category": "security",
+   "title": "Check Windows Defender",
+   "command": "Get-MpComputerStatus | Select-Object AntivirusEnabled, RealTimeProtectionEnabled, AntivirusSignatureLastUpdated",
+   "explain": "Shows whether protection is on and how fresh it is.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "antivirus",
+    "virus"
+   ]
+  },
+  {
+   "id": "security.defender-scan",
+   "category": "security",
+   "title": "Run a quick virus scan",
+   "command": "Start-MpScan -ScanType QuickScan",
+   "explain": "Uses Windows Security.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "antivirus"
+   ]
+  },
+  {
+   "id": "security.firewall",
+   "category": "security",
+   "title": "Show firewall status",
+   "command": "Get-NetFirewallProfile | Select-Object Name, Enabled",
+   "explain": "Domain, private and public profiles.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "windows firewall"
+   ]
+  },
+  {
+   "id": "security.firewall-rule",
+   "category": "security",
+   "title": "Allow a program through the firewall",
+   "command": "New-NetFirewallRule -DisplayName 'Allow demo' -Direction Inbound -Program 'C:\\demo\\app.exe' -Action Allow",
+   "explain": "Run as administrator.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "open port"
+   ],
+   "admin": true
+  },
+  {
+   "id": "security.exec-policy",
+   "category": "security",
+   "title": "Show the script execution policy",
+   "command": "Get-ExecutionPolicy -List",
+   "aliases": [
+    "Set-ExecutionPolicy"
+   ],
+   "explain": "RemoteSigned is a sensible setting. Avoid Unrestricted.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "scripts disabled",
+    "cannot be loaded"
+   ]
+  },
+  {
+   "id": "security.exec-policy-set",
+   "category": "security",
+   "title": "Allow local scripts to run",
+   "command": "Set-ExecutionPolicy -Scope CurrentUser RemoteSigned",
+   "explain": "Local scripts run, downloaded ones must be signed or unblocked. Do not choose Unrestricted.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1",
+   "keywords": [
+    "running scripts is disabled"
+   ]
+  },
+  {
+   "id": "security.credential",
+   "category": "security",
+   "title": "Ask for a user name and password",
+   "command": "$cred = Get-Credential",
+   "explain": "Opens a prompt. The password stays encrypted in the variable.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "login",
+    "secure"
+   ]
+  },
+  {
+   "id": "security.secure-string",
+   "category": "security",
+   "title": "Store a secret encrypted for your account",
+   "command": "Read-Host 'Secret' -AsSecureString | ConvertFrom-SecureString",
+   "explain": "Only your account on this PC can decrypt it again.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "encrypt",
+    "password file"
+   ]
+  },
+  {
+   "id": "security.bitlocker",
+   "category": "security",
+   "title": "Check disk encryption",
+   "command": "Get-BitLockerVolume | Select-Object MountPoint, ProtectionStatus, VolumeStatus",
+   "explain": "Run as administrator.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "encryption"
+   ],
+   "admin": true
+  },
+  {
+   "id": "apps.installed",
+   "category": "apps",
+   "title": "List installed programs",
+   "command": "Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*, HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Where-Object DisplayName | Select-Object DisplayName, DisplayVersion, Publisher | Sort-Object DisplayName",
+   "aliases": [
+    "wmic product",
+    "dpkg -l"
+   ],
+   "explain": "Reads the uninstall entries from the registry. It is much faster than Win32_Product, which can also trigger repairs.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "programs and features",
+    "software"
+   ]
+  },
+  {
+   "id": "apps.installed-user",
+   "category": "apps",
+   "title": "List programs installed for your account only",
+   "command": "Get-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Where-Object DisplayName | Select-Object DisplayName, DisplayVersion",
+   "explain": "Per-user installs such as many editors and chat apps.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "per user"
+   ]
+  },
+  {
+   "id": "apps.store-apps",
+   "category": "apps",
+   "title": "List Microsoft Store apps",
+   "command": "Get-AppxPackage | Select-Object -First 20 Name, Version",
+   "explain": "Store apps for the current user.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "uwp",
+    "appx"
+   ]
+  },
+  {
+   "id": "apps.winget-search",
+   "category": "apps",
+   "title": "Search for an app with winget",
+   "command": "winget search vscode",
+   "aliases": [
+    "apt search",
+    "brew search"
+   ],
+   "explain": "Searches the winget catalog.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "find app"
+   ]
+  },
+  {
+   "id": "apps.winget-install",
+   "category": "apps",
+   "title": "Install an app with winget",
+   "command": "winget install --id Microsoft.VisualStudioCode -e",
+   "aliases": [
+    "apt install",
+    "brew install"
+   ],
+   "explain": "Downloads and installs the app.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "setup"
+   ]
+  },
+  {
+   "id": "apps.winget-list",
+   "category": "apps",
+   "title": "List installed apps with winget",
+   "command": "winget list",
+   "aliases": [
+    "apt list --installed"
+   ],
+   "explain": "Shows names, IDs and available updates.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "apps.winget-upgrade",
+   "category": "apps",
+   "title": "Show apps that have updates",
+   "command": "winget upgrade",
+   "aliases": [
+    "apt list --upgradable"
+   ],
+   "explain": "Lists apps that have updates. Add --all to install them.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "outdated"
+   ]
+  },
+  {
+   "id": "apps.winget-upgrade-all",
+   "category": "apps",
+   "title": "Update every app",
+   "command": "winget upgrade --all",
+   "aliases": [
+    "apt upgrade"
+   ],
+   "explain": "Installs all available updates.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "update all"
+   ]
+  },
+  {
+   "id": "apps.winget-uninstall",
+   "category": "apps",
+   "title": "Uninstall an app with winget",
+   "command": "winget uninstall --id Microsoft.VisualStudioCode",
+   "aliases": [
+    "apt remove"
+   ],
+   "explain": "Removes the app.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "apps.uninstall-string",
+   "category": "apps",
+   "title": "Find how a program uninstalls itself",
+   "command": "Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Where-Object DisplayName -like '*Edge*' | Select-Object DisplayName, UninstallString",
+   "explain": "Shows the command Windows would run.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "silent uninstall"
+   ]
+  },
+  {
+   "id": "apps.default-apps",
+   "category": "apps",
+   "title": "Open default app settings",
+   "command": "Start-Process ms-settings:defaultapps",
+   "explain": "Opens Settings at default apps.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "file association"
+   ]
+  },
+  {
+   "id": "apps.run-at-startup",
+   "category": "apps",
+   "title": "List startup apps",
+   "command": "Get-CimInstance Win32_StartupCommand | Select-Object Name, Command, Location",
+   "explain": "Programs that start with Windows.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "autostart"
+   ]
+  },
+  {
+   "id": "apps.assoc",
+   "category": "apps",
+   "title": "Show which program opens a file type",
+   "command": "cmd /c assoc .txt",
+   "aliases": [
+    "assoc",
+    "ftype"
+   ],
+   "explain": "Shows the file type name for an extension.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "default program"
+   ]
+  },
+  {
+   "id": "apps.scoop-choco",
+   "category": "apps",
+   "title": "Find out whether Chocolatey or Scoop is installed",
+   "command": "Get-Command choco, scoop -ErrorAction SilentlyContinue",
+   "explain": "Prints the ones that exist.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "package manager"
+   ]
+  },
+  {
+   "id": "git.version",
+   "category": "git",
+   "title": "Check that git is installed",
+   "command": "git --version",
+   "explain": "Prints the version, or an error when git is missing.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "installed"
+   ]
+  },
+  {
+   "id": "git.status",
+   "category": "git",
+   "title": "See what changed",
+   "command": "git status --short",
+   "aliases": [
+    "svn status"
+   ],
+   "explain": "M modified, ?? new file, D deleted.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "changes",
+    "dirty"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "git.log",
+   "category": "git",
+   "title": "Show recent commits",
+   "command": "git log --oneline -10",
+   "explain": "One line per commit.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "history"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "git.branch",
+   "category": "git",
+   "title": "Show the current branch",
+   "command": "git branch --show-current",
+   "explain": "Prints the branch name.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "which branch"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "git.branches",
+   "category": "git",
+   "title": "List all branches",
+   "command": "git branch -a",
+   "explain": "The current branch has a star.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "runIn": "repo"
+  },
+  {
+   "id": "git.diff",
+   "category": "git",
+   "title": "Show what you changed",
+   "command": "git diff",
+   "explain": "Add --staged to see what is ready to commit.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "compare"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "git.diff-stat",
+   "category": "git",
+   "title": "Summarise changes",
+   "command": "git diff --stat",
+   "explain": "Files changed and lines added or removed.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "runIn": "repo"
+  },
+  {
+   "id": "git.remote",
+   "category": "git",
+   "title": "Show the remote address",
+   "command": "git remote -v",
+   "explain": "Where git push and pull go.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "origin",
+    "url"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "git.commit-all",
+   "category": "git",
+   "title": "Commit all changes",
+   "command": "git add -A; git commit -m 'Describe the change'",
+   "explain": "Stages everything and commits.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "save"
+   ]
+  },
+  {
+   "id": "git.pull",
+   "category": "git",
+   "title": "Get the latest changes",
+   "command": "git pull",
+   "explain": "Fetches and merges the remote branch.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "update",
+    "sync"
+   ]
+  },
+  {
+   "id": "git.undo-file",
+   "category": "git",
+   "title": "Throw away changes in one file",
+   "command": "git restore .\\file.txt",
+   "aliases": [
+    "git checkout -- file"
+   ],
+   "explain": "Gets the last committed version back. Your edits are lost.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1",
+   "keywords": [
+    "revert",
+    "discard"
+   ]
+  },
+  {
+   "id": "git.clean-preview",
+   "category": "git",
+   "title": "Preview untracked files git would delete",
+   "command": "git clean -n -d",
+   "explain": "-n means dry run. Nothing is deleted.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "untracked"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "git.clean",
+   "category": "git",
+   "title": "Delete untracked files",
+   "command": "git clean -fd",
+   "explain": "Removes new files and folders that git does not track. This cannot be undone.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1",
+   "keywords": [
+    "remove untracked"
+   ]
+  },
+  {
+   "id": "git.who-changed",
+   "category": "git",
+   "title": "Show who last changed each line",
+   "command": "git blame .\\README.md",
+   "explain": "Shows author and commit per line.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "blame",
+    "author"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "git.ignored",
+   "category": "git",
+   "title": "List files git ignores",
+   "command": "git status --ignored --short",
+   "explain": "Shows ignored files with !!.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "gitignore"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "git.size",
+   "category": "git",
+   "title": "Find big files in the history",
+   "command": "git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' | Sort-Object { [int]($_ -split ' ')[2] } -Descending | Select-Object -First 5",
+   "explain": "Helps when a repository grew too large.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "large files"
+   ],
+   "runIn": "repo"
+  },
+  {
+   "id": "strings.replace",
+   "category": "strings",
+   "title": "Replace text in a string",
+   "command": "'hello world' -replace 'world','there'",
+   "aliases": [
+    "sed s/a/b/"
+   ],
+   "explain": "-replace uses regular expressions, .Replace() does a plain search.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "substitute"
+   ]
+  },
+  {
+   "id": "strings.replace-plain",
+   "category": "strings",
+   "title": "Replace plain text without regex",
+   "command": "'a.b.c'.Replace('.', '-')",
+   "explain": "Dots and other special characters are treated as normal text.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "literal"
+   ]
+  },
+  {
+   "id": "strings.split",
+   "category": "strings",
+   "title": "Split a string",
+   "command": "'a,b,c' -split ','",
+   "aliases": [
+    "cut -d,",
+    "awk -F,"
+   ],
+   "explain": "Returns an array of pieces.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "separate"
+   ]
+  },
+  {
+   "id": "strings.join",
+   "category": "strings",
+   "title": "Join pieces with a separator",
+   "command": "'a','b','c' -join '; '",
+   "explain": "The opposite of -split.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "concatenate",
+    "merge"
+   ]
+  },
+  {
+   "id": "strings.format",
+   "category": "strings",
+   "title": "Insert values into text",
+   "command": "'{0} has {1} files' -f 'src', 12",
+   "aliases": [
+    "printf"
+   ],
+   "explain": "-f fills numbered placeholders. Add :N2 for two decimals.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "template",
+    "printf"
+   ]
+  },
+  {
+   "id": "strings.interpolate",
+   "category": "strings",
+   "title": "Put variables inside text",
+   "command": "$n = 'src'; \"Folder: $n\"",
+   "explain": "Double quotes expand variables, single quotes do not.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "variable in string"
+   ]
+  },
+  {
+   "id": "strings.trim",
+   "category": "strings",
+   "title": "Remove spaces at the ends",
+   "command": "'  hello  '.Trim()",
+   "aliases": [
+    "xargs"
+   ],
+   "explain": "TrimStart() and TrimEnd() cut one side.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "whitespace"
+   ]
+  },
+  {
+   "id": "strings.upper-lower",
+   "category": "strings",
+   "title": "Change case",
+   "command": "'Hello'.ToUpper(); 'Hello'.ToLower()",
+   "aliases": [
+    "tr a-z A-Z"
+   ],
+   "explain": "Also .Normalize() for accented letters.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "capitals"
+   ]
+  },
+  {
+   "id": "strings.substring",
+   "category": "strings",
+   "title": "Take part of a string",
+   "command": "'abcdef'.Substring(1, 3)",
+   "aliases": [
+    "cut -c"
+   ],
+   "explain": "Start position first (from 0), then length.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "slice"
+   ]
+  },
+  {
+   "id": "strings.contains",
+   "category": "strings",
+   "title": "Check whether text contains something",
+   "command": "'hello world' -like '*world*'",
+   "aliases": [
+    "grep -q"
+   ],
+   "explain": "-like uses wildcards. .Contains() is an exact match.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "includes"
+   ]
+  },
+  {
+   "id": "strings.regex-match",
+   "category": "strings",
+   "title": "Pull a value out with a regex",
+   "command": "'Order 4521 shipped' -match '\\d+'; $Matches[0]",
+   "aliases": [
+    "grep -o"
+   ],
+   "explain": "After -match, $Matches holds what was found.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "extract",
+    "number"
+   ]
+  },
+  {
+   "id": "strings.pad",
+   "category": "strings",
+   "title": "Pad a number with zeros",
+   "command": "'{0:D4}' -f 7",
+   "aliases": [
+    "printf %04d"
+   ],
+   "explain": "Gives 0007. Handy for file names.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "leading zeros"
+   ]
+  },
+  {
+   "id": "strings.length",
+   "category": "strings",
+   "title": "Count characters",
+   "command": "'hello'.Length",
+   "aliases": [
+    "wc -c",
+    "${#var}"
+   ],
+   "explain": "Length is the number of characters.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "strings.lines-count",
+   "category": "strings",
+   "title": "Count the lines in a file",
+   "command": "(Get-Content .\\docs\\readme.md).Count",
+   "aliases": [
+    "wc -l"
+   ],
+   "explain": "One item per line.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "number of lines"
+   ]
+  },
+  {
+   "id": "strings.base64",
+   "category": "strings",
+   "title": "Encode text as Base64",
+   "command": "[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('hello'))",
+   "aliases": [
+    "base64"
+   ],
+   "explain": "Gives aGVsbG8=.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "encode"
+   ]
+  },
+  {
+   "id": "strings.base64-decode",
+   "category": "strings",
+   "title": "Decode Base64 text",
+   "command": "[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('aGVsbG8='))",
+   "aliases": [
+    "base64 -d"
+   ],
+   "explain": "Gives hello.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "decode"
+   ]
+  },
+  {
+   "id": "strings.url-encode",
+   "category": "strings",
+   "title": "Encode text for a web address",
+   "command": "[uri]::EscapeDataString('a b&c')",
+   "explain": "Gives a%20b%26c.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "percent",
+    "escape"
+   ]
+  },
+  {
+   "id": "strings.url-decode",
+   "category": "strings",
+   "title": "Decode a web address",
+   "command": "[uri]::UnescapeDataString('a%20b%26c')",
+   "explain": "Gives a b&c.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "unescape"
+   ]
+  },
+  {
+   "id": "strings.here-string",
+   "category": "strings",
+   "title": "Write several lines in a script",
+   "command": "@'\nline one\nline two\n'@",
+   "explain": "A here-string keeps line breaks and quotes as they are.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "multiline",
+    "heredoc"
+   ]
+  },
+  {
+   "id": "strings.reverse",
+   "category": "strings",
+   "title": "Reverse a string",
+   "command": "-join ('hello'[-1..-5])",
+   "aliases": [
+    "rev"
+   ],
+   "explain": "Reads the characters backwards.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "strings.sort-lines",
+   "category": "strings",
+   "title": "Sort lines of text",
+   "command": "'b','a','c' | Sort-Object",
+   "aliases": [
+    "sort"
+   ],
+   "explain": "Add -Descending to reverse.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "strings.slug",
+   "category": "strings",
+   "title": "Turn a title into a file-friendly name",
+   "command": "('My new report!' -replace '[^a-zA-Z0-9]+', '-').Trim('-').ToLower()",
+   "explain": "Gives my-new-report.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "kebab",
+    "clean name"
+   ]
+  },
+  {
+   "id": "dates.now",
+   "category": "dates",
+   "title": "Show the current date and time",
+   "command": "Get-Date",
+   "aliases": [
+    "date",
+    "date /t"
+   ],
+   "explain": "Date and time in your local format.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "today"
+   ]
+  },
+  {
+   "id": "dates.format",
+   "category": "dates",
+   "title": "Format a date",
+   "command": "Get-Date -Format 'yyyy-MM-dd HH:mm'",
+   "aliases": [
+    "date +%F"
+   ],
+   "explain": "yyyy year, MM month, dd day, HH hour (24h), mm minute.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "iso",
+    "timestamp"
+   ]
+  },
+  {
+   "id": "dates.file-stamp",
+   "category": "dates",
+   "title": "Make a file-name-safe timestamp",
+   "command": "Get-Date -Format 'yyyyMMdd-HHmmss'",
+   "explain": "No colons or slashes, so it works in file names.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "backup name"
+   ]
+  },
+  {
+   "id": "dates.add-days",
+   "category": "dates",
+   "title": "Add or subtract days",
+   "command": "(Get-Date).AddDays(-7)",
+   "aliases": [
+    "date -d '7 days ago'"
+   ],
+   "explain": "Also AddHours, AddMonths and AddYears.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "yesterday",
+    "last week"
+   ]
+  },
+  {
+   "id": "dates.diff",
+   "category": "dates",
+   "title": "Find the days between two dates",
+   "command": "(New-TimeSpan -Start '2026-01-01' -End '2026-03-01').Days",
+   "explain": "Returns a TimeSpan with Days, Hours and more.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "difference",
+    "duration"
+   ]
+  },
+  {
+   "id": "dates.parse",
+   "category": "dates",
+   "title": "Turn text into a date",
+   "command": "[datetime]'2026-01-15 10:30'",
+   "explain": "Understands many formats.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "convert",
+    "string to date"
+   ]
+  },
+  {
+   "id": "dates.parse-exact",
+   "category": "dates",
+   "title": "Read a date in a fixed format",
+   "command": "[datetime]::ParseExact('15/01/2026', 'dd/MM/yyyy', $null)",
+   "explain": "Needed when day and month could be swapped.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "dd/mm/yyyy"
+   ]
+  },
+  {
+   "id": "dates.utc",
+   "category": "dates",
+   "title": "Show the time in UTC",
+   "command": "(Get-Date).ToUniversalTime()",
+   "explain": "Local time converted to UTC.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "gmt",
+    "zulu"
+   ]
+  },
+  {
+   "id": "dates.unix",
+   "category": "dates",
+   "title": "Convert to Unix time",
+   "command": "[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()",
+   "aliases": [
+    "date +%s"
+   ],
+   "explain": "Seconds since 1970.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "epoch"
+   ]
+  },
+  {
+   "id": "dates.from-unix",
+   "category": "dates",
+   "title": "Convert Unix time to a date",
+   "command": "[DateTimeOffset]::FromUnixTimeSeconds(1700000000).LocalDateTime",
+   "explain": "Turns seconds since 1970 into your local time.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "epoch"
+   ]
+  },
+  {
+   "id": "dates.weekday",
+   "category": "dates",
+   "title": "Find the day of the week",
+   "command": "(Get-Date '2026-01-15').DayOfWeek",
+   "explain": "Gives Thursday.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "monday"
+   ]
+  },
+  {
+   "id": "dates.first-day",
+   "category": "dates",
+   "title": "Find the first day of the month",
+   "command": "Get-Date -Day 1 -Hour 0 -Minute 0 -Second 0 -Millisecond 0",
+   "explain": "Also useful for month-end reports.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "month start"
+   ]
+  },
+  {
+   "id": "dates.age",
+   "category": "dates",
+   "title": "Work out an age in years",
+   "command": "[math]::Floor(((Get-Date) - [datetime]'1990-05-20').TotalDays / 365.25)",
+   "explain": "Close enough for most uses.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "birthday"
+   ]
+  },
+  {
+   "id": "dates.timezones",
+   "category": "dates",
+   "title": "List time zones",
+   "command": "Get-TimeZone -ListAvailable | Select-Object -First 10 Id, DisplayName",
+   "explain": "Shows Windows time zone IDs.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "tz"
+   ]
+  },
+  {
+   "id": "dates.timezone-convert",
+   "category": "dates",
+   "title": "Convert a time to another time zone",
+   "command": "[TimeZoneInfo]::ConvertTimeBySystemTimeZoneId((Get-Date), 'Tokyo Standard Time')",
+   "explain": "Use the IDs from Get-TimeZone.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "tokyo",
+    "new york"
+   ]
+  },
+  {
+   "id": "dates.calendar",
+   "category": "dates",
+   "title": "Print a month calendar",
+   "command": "1..[DateTime]::DaysInMonth(2026,2) | ForEach-Object { (Get-Date -Year 2026 -Month 2 -Day $_).ToString('ddd dd') }",
+   "aliases": [
+    "cal"
+   ],
+   "explain": "Days of the month with weekday names.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "math.calc",
+   "category": "math",
+   "title": "Use PowerShell as a calculator",
+   "command": "(12 + 8) * 3 / 4",
+   "aliases": [
+    "bc",
+    "calc"
+   ],
+   "explain": "Operators + - * / % work directly.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "arithmetic"
+   ]
+  },
+  {
+   "id": "math.round",
+   "category": "math",
+   "title": "Round a number",
+   "command": "[math]::Round(3.14159, 2)",
+   "explain": "Second value is the number of decimals.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "decimals"
+   ]
+  },
+  {
+   "id": "math.power",
+   "category": "math",
+   "title": "Powers and roots",
+   "command": "[math]::Pow(2, 10); [math]::Sqrt(144)",
+   "explain": "Gives 1024 and 12.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "square root",
+    "exponent"
+   ]
+  },
+  {
+   "id": "math.size-units",
+   "category": "math",
+   "title": "Use KB, MB and GB in numbers",
+   "command": "5MB / 1KB",
+   "explain": "PowerShell knows these suffixes, so this gives 5120.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "bytes",
+    "units"
+   ]
+  },
+  {
+   "id": "math.bytes-human",
+   "category": "math",
+   "title": "Show bytes as KB, MB or GB",
+   "command": "'{0:N1} MB' -f (123456789 / 1MB)",
+   "explain": "Divide, then format with N1 for one decimal.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "readable size"
+   ]
+  },
+  {
+   "id": "math.hex",
+   "category": "math",
+   "title": "Convert to hexadecimal",
+   "command": "'{0:X}' -f 255",
+   "aliases": [
+    "printf %x"
+   ],
+   "explain": "Gives FF.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "hex"
+   ]
+  },
+  {
+   "id": "math.from-hex",
+   "category": "math",
+   "title": "Convert hexadecimal to a number",
+   "command": "[Convert]::ToInt32('FF', 16)",
+   "explain": "Gives 255.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "parse hex"
+   ]
+  },
+  {
+   "id": "math.binary",
+   "category": "math",
+   "title": "Convert to binary",
+   "command": "[Convert]::ToString(10, 2)",
+   "explain": "Gives 1010.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "bits"
+   ]
+  },
+  {
+   "id": "math.random",
+   "category": "math",
+   "title": "Pick a random number",
+   "command": "Get-Random -Minimum 1 -Maximum 101",
+   "aliases": [
+    "$RANDOM",
+    "shuf -i"
+   ],
+   "explain": "1 up to 100.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "dice"
+   ]
+  },
+  {
+   "id": "math.random-item",
+   "category": "math",
+   "title": "Pick a random item",
+   "command": "'red','green','blue' | Get-Random",
+   "aliases": [
+    "shuf -n1"
+   ],
+   "explain": "One item chosen at random.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "choose"
+   ]
+  },
+  {
+   "id": "math.shuffle",
+   "category": "math",
+   "title": "Shuffle a list",
+   "command": "1..5 | Get-Random -Count 5",
+   "aliases": [
+    "shuf"
+   ],
+   "explain": "Returns the items in a random order.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "math.percent",
+   "category": "math",
+   "title": "Work out a percentage",
+   "command": "[math]::Round(45 / 120 * 100, 1)",
+   "explain": "Gives 37.5.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "ratio"
+   ]
+  },
+  {
+   "id": "math.range",
+   "category": "math",
+   "title": "Make a list of numbers",
+   "command": "1..10",
+   "aliases": [
+    "seq 1 10"
+   ],
+   "explain": "Counts up (or down with 10..1).",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "sequence",
+    "count"
+   ]
+  },
+  {
+   "id": "math.sum-list",
+   "category": "math",
+   "title": "Add up a list",
+   "command": "(1..10 | Measure-Object -Sum).Sum",
+   "aliases": [
+    "paste -sd+ | bc"
+   ],
+   "explain": "Gives 55.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "total"
+   ]
+  },
+  {
+   "id": "math.celsius",
+   "category": "math",
+   "title": "Convert temperature",
+   "command": "[math]::Round((98.6 - 32) * 5 / 9, 1)",
+   "explain": "Fahrenheit to Celsius.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "fahrenheit"
+   ]
+  },
+  {
+   "id": "math.bigint",
+   "category": "math",
+   "title": "Work with very large numbers",
+   "command": "[bigint]::Pow(2, 100)",
+   "explain": "Normal numbers overflow, bigint does not.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "huge",
+    "factorial"
+   ]
+  },
+  {
+   "id": "remoting.enter",
+   "category": "remoting",
+   "title": "Open a session on another computer",
+   "command": "Enter-PSSession -ComputerName server01",
+   "aliases": [
+    "ssh"
+   ],
+   "explain": "Your prompt runs commands there until you type exit.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "remote shell"
+   ]
+  },
+  {
+   "id": "remoting.invoke",
+   "category": "remoting",
+   "title": "Run a command on another computer",
+   "command": "Invoke-Command -ComputerName server01 -ScriptBlock { Get-Service Spooler }",
+   "explain": "Returns the result to your window.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "remote",
+    "run on server"
+   ]
+  },
+  {
+   "id": "remoting.invoke-many",
+   "category": "remoting",
+   "title": "Run a command on several computers",
+   "command": "Invoke-Command -ComputerName pc1,pc2,pc3 -ScriptBlock { hostname }",
+   "explain": "Runs on all of them in parallel.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "fleet",
+    "multiple"
+   ]
+  },
+  {
+   "id": "remoting.enable",
+   "category": "remoting",
+   "title": "Allow remoting on this computer",
+   "command": "Enable-PSRemoting -Force",
+   "explain": "Run as administrator. It opens a firewall port for PowerShell.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "winrm"
+   ],
+   "admin": true
+  },
+  {
+   "id": "remoting.trusted-hosts",
+   "category": "remoting",
+   "title": "Allow connecting to computers outside a domain",
+   "command": "Set-Item WSMan:\\localhost\\Client\\TrustedHosts -Value 'server01'",
+   "explain": "Needed in a workgroup. Run as administrator.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "remoting.credential",
+   "category": "remoting",
+   "title": "Connect with another account",
+   "command": "Enter-PSSession -ComputerName server01 -Credential (Get-Credential)",
+   "explain": "Asks for the user name and password.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "remoting.session",
+   "category": "remoting",
+   "title": "Keep a session open and reuse it",
+   "command": "$s = New-PSSession -ComputerName server01; Invoke-Command -Session $s -ScriptBlock { $x = 1 }",
+   "explain": "Variables stay in the remote session.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "persistent"
+   ]
+  },
+  {
+   "id": "remoting.copy-to",
+   "category": "remoting",
+   "title": "Copy a file to another computer",
+   "command": "Copy-Item .\\a.txt -Destination C:\\temp -ToSession $s",
+   "aliases": [
+    "scp"
+   ],
+   "explain": "Uses an existing session.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "remoting.copy-from",
+   "category": "remoting",
+   "title": "Copy a file from another computer",
+   "command": "Copy-Item C:\\temp\\a.txt -Destination .\\ -FromSession $s",
+   "aliases": [
+    "scp"
+   ],
+   "explain": "The other direction.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "remoting.ssh",
+   "category": "remoting",
+   "title": "Use SSH from PowerShell",
+   "command": "ssh user@server",
+   "aliases": [
+    "ssh"
+   ],
+   "explain": "Windows 10 and 11 include the OpenSSH client.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "secure shell"
+   ]
+  },
+  {
+   "id": "remoting.close",
+   "category": "remoting",
+   "title": "Close remote sessions",
+   "command": "Get-PSSession | Remove-PSSession",
+   "explain": "Cleans up open connections.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "remoting.test-wsman",
+   "category": "remoting",
+   "title": "Check whether a computer accepts remoting",
+   "command": "Test-WSMan server01",
+   "explain": "Fails when remoting is off or blocked.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "winrm",
+    "check"
+   ]
+  },
+  {
+   "id": "remoting.remote-reboot",
+   "category": "remoting",
+   "title": "Restart another computer",
+   "command": "Restart-Computer -ComputerName server01 -Force",
+   "explain": "Restarts immediately. Needs administrator rights on that computer.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "destructive",
+   "minVersion": "5.1",
+   "admin": true
+  },
+  {
+   "id": "profile.path",
+   "category": "profile",
+   "title": "Show where your profile file is",
+   "command": "$PROFILE",
+   "aliases": [
+    ".bashrc",
+    "~/.profile"
+   ],
+   "explain": "The script that runs when PowerShell starts.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "startup script",
+    "where"
+   ]
+  },
+  {
+   "id": "profile.exists",
+   "category": "profile",
+   "title": "Check whether your profile exists",
+   "command": "Test-Path $PROFILE",
+   "explain": "False means you have not created one yet.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "missing"
+   ]
+  },
+  {
+   "id": "profile.create",
+   "category": "profile",
+   "title": "Create your profile",
+   "command": "if (-not (Test-Path $PROFILE)) { New-Item -ItemType Directory -Path (Split-Path $PROFILE) -ErrorAction SilentlyContinue | Out-Null; New-Item -Path $PROFILE -ItemType File }",
+   "explain": "Creates the profile file and its folder, and leaves an existing profile alone.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "setup"
+   ]
+  },
+  {
+   "id": "profile.edit",
+   "category": "profile",
+   "title": "Edit your profile",
+   "command": "notepad $PROFILE",
+   "aliases": [
+    "nano ~/.bashrc"
+   ],
+   "explain": "Opens it in Notepad. Use code $PROFILE for VS Code.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1"
+  },
+  {
+   "id": "profile.alias",
+   "category": "profile",
+   "title": "Create a shortcut name",
+   "command": "Set-Alias -Name np -Value notepad",
+   "aliases": [
+    "alias np=notepad"
+   ],
+   "explain": "Only lasts for this window unless you add it to your profile.",
+   "example": "Set-Alias -Name np -Value notepad; (Get-Alias np).Definition",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "shortcut"
+   ]
+  },
+  {
+   "id": "profile.function",
+   "category": "profile",
+   "title": "Create your own command",
+   "command": "function Up { Set-Location .. }",
+   "explain": "Add it to your profile to keep it.",
+   "example": "function Up { Set-Location .. }; Up; Get-Location",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "custom",
+    "shortcut"
+   ]
+  },
+  {
+   "id": "profile.aliases",
+   "category": "profile",
+   "title": "List aliases",
+   "command": "Get-Alias | Select-Object -First 15 Name, Definition",
+   "aliases": [
+    "alias"
+   ],
+   "explain": "Shows what short names stand for.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "short names"
+   ]
+  },
+  {
+   "id": "profile.find-module",
+   "category": "profile",
+   "title": "Find a module",
+   "command": "Find-Module -Name PSReadLine",
+   "explain": "Searches the PowerShell Gallery.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "gallery",
+    "search"
+   ]
+  },
+  {
+   "id": "profile.install-module",
+   "category": "profile",
+   "title": "Install a module for yourself",
+   "command": "Install-Module -Name PSReadLine -Scope CurrentUser",
+   "aliases": [
+    "pip install",
+    "npm install"
+   ],
+   "explain": "No administrator rights needed with -Scope CurrentUser.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "modifies",
+   "minVersion": "5.1",
+   "keywords": [
+    "gallery"
+   ]
+  },
+  {
+   "id": "profile.modules",
+   "category": "profile",
+   "title": "List installed modules",
+   "command": "Get-Module -ListAvailable | Select-Object -First 15 Name, Version",
+   "explain": "Modules PowerShell can load.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "available"
+   ]
+  },
+  {
+   "id": "profile.import-module",
+   "category": "profile",
+   "title": "Load a module",
+   "command": "Import-Module PSReadLine",
+   "explain": "Most modules load on demand automatically.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "load"
+   ]
+  },
+  {
+   "id": "profile.history",
+   "category": "profile",
+   "title": "Show the commands you typed",
+   "command": "Get-History",
+   "aliases": [
+    "history",
+    "h"
+   ],
+   "explain": "Only for this window. The saved history is below.",
+   "example": "Get-History",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "previous commands"
+   ]
+  },
+  {
+   "id": "profile.history-file",
+   "category": "profile",
+   "title": "Open your saved command history",
+   "command": "(Get-PSReadLineOption).HistorySavePath",
+   "explain": "The file keeps commands from earlier sessions.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "related": [
+    "profile.history"
+   ],
+   "keywords": [
+    "ctrl+r",
+    "previous"
+   ]
+  },
+  {
+   "id": "profile.history-search",
+   "category": "profile",
+   "title": "Search your command history",
+   "command": "Get-Content (Get-PSReadLineOption).HistorySavePath | Select-String 'docker'",
+   "aliases": [
+    "history | grep",
+    "Ctrl+R"
+   ],
+   "explain": "Or press Ctrl+R in the console and type part of a command.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "find command"
+   ]
+  },
+  {
+   "id": "profile.prompt",
+   "category": "profile",
+   "title": "Change your prompt",
+   "command": "function prompt { 'PS ' + (Split-Path -Leaf (Get-Location)) + '> ' }",
+   "explain": "Shows only the folder name.",
+   "example": "function prompt { 'PS ' + (Split-Path -Leaf (Get-Location)) + '> ' }; prompt",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "ps1",
+    "customize"
+   ]
+  },
+  {
+   "id": "profile.help",
+   "category": "profile",
+   "title": "Read the built-in help",
+   "command": "Get-Help Get-ChildItem -Examples",
+   "aliases": [
+    "man",
+    "help"
+   ],
+   "explain": "-Examples shows common uses. Run Update-Help once for the full text.",
+   "safeToRun": false,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "manual",
+    "docs"
+   ]
+  },
+  {
+   "id": "profile.find-command",
+   "category": "profile",
+   "title": "Find a command by what it does",
+   "command": "Get-Command *service*",
+   "aliases": [
+    "apropos"
+   ],
+   "explain": "Wildcards work on names.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "discover",
+    "search commands"
+   ]
+  },
+  {
+   "id": "profile.version-7",
+   "category": "profile",
+   "title": "Check that PowerShell 7 is installed",
+   "command": "Get-Command pwsh -ErrorAction SilentlyContinue",
+   "explain": "Prints the location when it is installed.",
+   "safeToRun": true,
+   "expectError": false,
+   "risk": "safe",
+   "minVersion": "5.1",
+   "keywords": [
+    "pwsh"
+   ]
+  }
+ ],
+ "translations": {
+  "cmd": [
+   {
+    "from": "dir",
+    "to": "Get-ChildItem",
+    "note": "Alias: dir, ls, gci"
+   },
+   {
+    "from": "dir /s /b",
+    "to": "Get-ChildItem -Recurse -Name",
+    "note": "-Name returns relative paths"
+   },
+   {
+    "from": "dir /a",
+    "to": "Get-ChildItem -Force",
+    "note": "-Force shows hidden and system items"
+   },
+   {
+    "from": "dir /ad",
+    "to": "Get-ChildItem -Directory",
+    "note": "Folders only"
+   },
+   {
+    "from": "dir *.txt",
+    "to": "Get-ChildItem -Filter *.txt"
+   },
+   {
+    "from": "dir /o:-s",
+    "to": "Get-ChildItem | Sort-Object Length -Descending",
+    "note": "Largest first"
+   },
+   {
+    "from": "cd",
+    "to": "Get-Location",
+    "note": "With no argument cmd prints the folder"
+   },
+   {
+    "from": "cd /d D:\\work",
+    "to": "Set-Location D:\\work",
+    "note": "No /d needed, drive changes automatically"
+   },
+   {
+    "from": "cd ..",
+    "to": "Set-Location .."
+   },
+   {
+    "from": "pushd C:\\temp",
+    "to": "Push-Location C:\\temp",
+    "note": "popd is Pop-Location"
+   },
+   {
+    "from": "copy a.txt b.txt",
+    "to": "Copy-Item a.txt b.txt"
+   },
+   {
+    "from": "xcopy src dst /e /i",
+    "to": "Copy-Item src dst -Recurse",
+    "note": "Use robocopy for large or repeat copies"
+   },
+   {
+    "from": "robocopy src dst /mir",
+    "to": "robocopy src dst /mir",
+    "note": "robocopy works the same in PowerShell, /mir deletes extra files at the target"
+   },
+   {
+    "from": "move a.txt b.txt",
+    "to": "Move-Item a.txt b.txt"
+   },
+   {
+    "from": "ren a.txt b.txt",
+    "to": "Rename-Item a.txt b.txt"
+   },
+   {
+    "from": "del a.txt",
+    "to": "Remove-Item a.txt",
+    "note": "Permanent, add -WhatIf to preview"
+   },
+   {
+    "from": "del /s /q *.tmp",
+    "to": "Remove-Item *.tmp -Recurse -Force",
+    "note": "Be careful with -Recurse"
+   },
+   {
+    "from": "rd /s /q build",
+    "to": "Remove-Item build -Recurse -Force"
+   },
+   {
+    "from": "md folder",
+    "to": "New-Item folder -ItemType Directory",
+    "note": "mkdir works as well"
+   },
+   {
+    "from": "type file.txt",
+    "to": "Get-Content file.txt"
+   },
+   {
+    "from": "type nul > empty.txt",
+    "to": "New-Item empty.txt -ItemType File"
+   },
+   {
+    "from": "echo hello",
+    "to": "Write-Output 'hello'",
+    "note": "echo is an alias of Write-Output"
+   },
+   {
+    "from": "echo hello > f.txt",
+    "to": "'hello' | Set-Content f.txt",
+    "note": "> works too but writes UTF-16 in Windows PowerShell 5.1"
+   },
+   {
+    "from": "echo hello >> f.txt",
+    "to": "Add-Content f.txt 'hello'"
+   },
+   {
+    "from": "find \"text\" file.txt",
+    "to": "Select-String -Pattern 'text' -Path file.txt"
+   },
+   {
+    "from": "findstr /s /i /n \"text\" *.txt",
+    "to": "Get-ChildItem -Recurse -Filter *.txt | Select-String 'text'",
+    "note": "Select-String ignores case by default"
+   },
+   {
+    "from": "where notepad",
+    "to": "Get-Command notepad",
+    "note": "where.exe also works"
+   },
+   {
+    "from": "set",
+    "to": "Get-ChildItem Env:"
+   },
+   {
+    "from": "set NAME=value",
+    "to": "$env:NAME = 'value'",
+    "note": "Only for this window"
+   },
+   {
+    "from": "echo %PATH%",
+    "to": "$env:Path"
+   },
+   {
+    "from": "setx NAME value",
+    "to": "[Environment]::SetEnvironmentVariable('NAME','value','User')",
+    "note": "Permanent for your account"
+   },
+   {
+    "from": "tasklist",
+    "to": "Get-Process"
+   },
+   {
+    "from": "taskkill /im notepad.exe /f",
+    "to": "Stop-Process -Name notepad -Force"
+   },
+   {
+    "from": "taskkill /pid 1234 /f",
+    "to": "Stop-Process -Id 1234 -Force"
+   },
+   {
+    "from": "net start",
+    "to": "Get-Service | Where-Object Status -eq Running"
+   },
+   {
+    "from": "net start spooler",
+    "to": "Start-Service Spooler",
+    "note": "Administrator"
+   },
+   {
+    "from": "sc query spooler",
+    "to": "Get-Service Spooler"
+   },
+   {
+    "from": "ipconfig",
+    "to": "Get-NetIPAddress -AddressFamily IPv4",
+    "note": "ipconfig also works unchanged"
+   },
+   {
+    "from": "ipconfig /flushdns",
+    "to": "Clear-DnsClientCache",
+    "note": "Administrator"
+   },
+   {
+    "from": "ping example.com",
+    "to": "Test-Connection example.com",
+    "note": "ping works unchanged"
+   },
+   {
+    "from": "nslookup example.com",
+    "to": "Resolve-DnsName example.com"
+   },
+   {
+    "from": "netstat -ano",
+    "to": "Get-NetTCPConnection",
+    "note": "Add | Select LocalPort, OwningProcess"
+   },
+   {
+    "from": "tracert example.com",
+    "to": "Test-NetConnection example.com -TraceRoute"
+   },
+   {
+    "from": "systeminfo",
+    "to": "Get-ComputerInfo",
+    "note": "systeminfo.exe is faster"
+   },
+   {
+    "from": "ver",
+    "to": "[Environment]::OSVersion.VersionString"
+   },
+   {
+    "from": "hostname",
+    "to": "$env:COMPUTERNAME",
+    "note": "hostname.exe also works"
+   },
+   {
+    "from": "whoami",
+    "to": "[Security.Principal.WindowsIdentity]::GetCurrent().Name",
+    "note": "whoami.exe works too"
+   },
+   {
+    "from": "date /t",
+    "to": "Get-Date -Format d"
+   },
+   {
+    "from": "time /t",
+    "to": "Get-Date -Format t"
+   },
+   {
+    "from": "timeout /t 5",
+    "to": "Start-Sleep -Seconds 5"
+   },
+   {
+    "from": "cls",
+    "to": "Clear-Host"
+   },
+   {
+    "from": "attrib +h file.txt",
+    "to": "(Get-Item file.txt).Attributes += 'Hidden'"
+   },
+   {
+    "from": "reg query HKCU\\Software",
+    "to": "Get-ChildItem HKCU:\\Software"
+   },
+   {
+    "from": "assoc .txt",
+    "to": "cmd /c assoc .txt",
+    "note": "assoc is a cmd built-in, so call cmd"
+   },
+   {
+    "from": "start .",
+    "to": "Invoke-Item ."
+   },
+   {
+    "from": "for %f in (*.txt) do echo %f",
+    "to": "Get-ChildItem *.txt | ForEach-Object { $_.Name }"
+   },
+   {
+    "from": "if exist file.txt echo yes",
+    "to": "if (Test-Path file.txt) { 'yes' }"
+   },
+   {
+    "from": "more file.txt",
+    "to": "Get-Content file.txt | Out-Host -Paging"
+   },
+   {
+    "from": "sort file.txt",
+    "to": "Get-Content file.txt | Sort-Object"
+   },
+   {
+    "from": "fc a.txt b.txt",
+    "to": "Compare-Object (Get-Content a.txt) (Get-Content b.txt)"
+   },
+   {
+    "from": "clip < file.txt",
+    "to": "Get-Content file.txt | Set-Clipboard"
+   }
+  ],
+  "bash": [
+   {
+    "from": "ls",
+    "to": "Get-ChildItem",
+    "note": "ls is an alias in Windows PowerShell"
+   },
+   {
+    "from": "ls -la",
+    "to": "Get-ChildItem -Force | Format-List Mode, LastWriteTime, Length, Name",
+    "note": "-Force includes hidden items"
+   },
+   {
+    "from": "ls -lh",
+    "to": "Get-ChildItem | Select-Object Mode, LastWriteTime, @{n='Size';e={'{0:N1} KB' -f ($_.Length/1KB)}}, Name"
+   },
+   {
+    "from": "ls -t",
+    "to": "Get-ChildItem | Sort-Object LastWriteTime -Descending",
+    "note": "Newest first"
+   },
+   {
+    "from": "ls -R",
+    "to": "Get-ChildItem -Recurse"
+   },
+   {
+    "from": "pwd",
+    "to": "Get-Location"
+   },
+   {
+    "from": "cd ~",
+    "to": "Set-Location ~"
+   },
+   {
+    "from": "cd -",
+    "to": "Pop-Location",
+    "note": "Use Push-Location before you leave"
+   },
+   {
+    "from": "mkdir -p a/b/c",
+    "to": "New-Item a/b/c -ItemType Directory -Force"
+   },
+   {
+    "from": "touch file.txt",
+    "to": "New-Item file.txt -ItemType File -Force",
+    "note": "Updates the time instead if the file exists: (Get-Item file.txt).LastWriteTime = Get-Date"
+   },
+   {
+    "from": "cp a b",
+    "to": "Copy-Item a b"
+   },
+   {
+    "from": "cp -r src dst",
+    "to": "Copy-Item src dst -Recurse"
+   },
+   {
+    "from": "mv a b",
+    "to": "Move-Item a b"
+   },
+   {
+    "from": "rm file",
+    "to": "Remove-Item file"
+   },
+   {
+    "from": "rm -rf dir",
+    "to": "Remove-Item dir -Recurse -Force",
+    "note": "No undo, try -WhatIf first"
+   },
+   {
+    "from": "ln -s target link",
+    "to": "New-Item -ItemType SymbolicLink -Path link -Target target",
+    "note": "Needs Developer Mode or administrator rights"
+   },
+   {
+    "from": "cat file",
+    "to": "Get-Content file"
+   },
+   {
+    "from": "cat a b > c",
+    "to": "Get-Content a, b | Set-Content c"
+   },
+   {
+    "from": "head -n 5 file",
+    "to": "Get-Content file -TotalCount 5"
+   },
+   {
+    "from": "tail -n 5 file",
+    "to": "Get-Content file -Tail 5"
+   },
+   {
+    "from": "tail -f log",
+    "to": "Get-Content log -Tail 10 -Wait"
+   },
+   {
+    "from": "less file",
+    "to": "Get-Content file | Out-Host -Paging"
+   },
+   {
+    "from": "wc -l file",
+    "to": "(Get-Content file).Count",
+    "note": "Or Get-Content file | Measure-Object -Line"
+   },
+   {
+    "from": "wc -w file",
+    "to": "(Get-Content file -Raw | Measure-Object -Word).Words"
+   },
+   {
+    "from": "grep text file",
+    "to": "Select-String -Pattern 'text' -Path file"
+   },
+   {
+    "from": "grep -i text file",
+    "to": "Select-String -Pattern 'text' -Path file",
+    "note": "Select-String ignores case by default, add -CaseSensitive to match exactly"
+   },
+   {
+    "from": "grep -rn \"TODO\" .",
+    "to": "Get-ChildItem -Recurse -File | Select-String -Pattern 'TODO'",
+    "note": "Or: rg -n TODO when ripgrep is installed"
+   },
+   {
+    "from": "grep -v text file",
+    "to": "Select-String -Pattern 'text' -Path file -NotMatch"
+   },
+   {
+    "from": "grep -c text file",
+    "to": "(Select-String -Pattern 'text' -Path file).Count"
+   },
+   {
+    "from": "grep -l text *",
+    "to": "Select-String -Pattern 'text' -Path * -List | Select-Object -ExpandProperty Path"
+   },
+   {
+    "from": "find . -name \"*.py\"",
+    "to": "Get-ChildItem -Recurse -Filter *.py"
+   },
+   {
+    "from": "find . -type f -mtime -1",
+    "to": "Get-ChildItem -Recurse -File | Where-Object LastWriteTime -gt (Get-Date).AddDays(-1)"
+   },
+   {
+    "from": "find . -size +1M",
+    "to": "Get-ChildItem -Recurse -File | Where-Object Length -gt 1MB"
+   },
+   {
+    "from": "find . -type d",
+    "to": "Get-ChildItem -Recurse -Directory"
+   },
+   {
+    "from": "du -sh *",
+    "to": "Get-ChildItem | ForEach-Object { '{0}  {1:N1} MB' -f $_.Name, ((Get-ChildItem $_.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum / 1MB) }"
+   },
+   {
+    "from": "df -h",
+    "to": "Get-PSDrive -PSProvider FileSystem"
+   },
+   {
+    "from": "which git",
+    "to": "Get-Command git"
+   },
+   {
+    "from": "sort file",
+    "to": "Get-Content file | Sort-Object"
+   },
+   {
+    "from": "sort | uniq -c",
+    "to": "Group-Object | Select-Object Count, Name",
+    "note": "Pipe lines in, for example Get-Content file | Group-Object"
+   },
+   {
+    "from": "sort -u",
+    "to": "Sort-Object -Unique"
+   },
+   {
+    "from": "uniq",
+    "to": "Get-Unique",
+    "note": "Input must be sorted"
+   },
+   {
+    "from": "cut -d, -f1",
+    "to": "ForEach-Object { ($_ -split ',')[0] }",
+    "note": "For real CSV use Import-Csv"
+   },
+   {
+    "from": "awk '{print $1}'",
+    "to": "ForEach-Object { ($_ -split '\\s+')[0] }"
+   },
+   {
+    "from": "sed 's/a/b/g'",
+    "to": "ForEach-Object { $_ -replace 'a','b' }",
+    "note": "-replace uses regular expressions"
+   },
+   {
+    "from": "sed -i 's/a/b/g' file",
+    "to": "(Get-Content file -Raw) -replace 'a','b' | Set-Content file -NoNewline"
+   },
+   {
+    "from": "tr a-z A-Z",
+    "to": "ForEach-Object { $_.ToUpper() }"
+   },
+   {
+    "from": "xargs",
+    "to": "ForEach-Object { Write-Output $_ }",
+    "note": "Pipe items to ForEach-Object and use $_ for each one"
+   },
+   {
+    "from": "tee file",
+    "to": "Tee-Object -FilePath file"
+   },
+   {
+    "from": "diff a b",
+    "to": "Compare-Object (Get-Content a) (Get-Content b)"
+   },
+   {
+    "from": "echo hello",
+    "to": "Write-Output 'hello'"
+   },
+   {
+    "from": "echo hello > f",
+    "to": "'hello' | Set-Content f"
+   },
+   {
+    "from": "echo hello >> f",
+    "to": "Add-Content f 'hello'"
+   },
+   {
+    "from": "export NAME=value",
+    "to": "$env:NAME = 'value'",
+    "note": "Permanent: [Environment]::SetEnvironmentVariable('NAME','value','User')"
+   },
+   {
+    "from": "echo $NAME",
+    "to": "$env:NAME"
+   },
+   {
+    "from": "env",
+    "to": "Get-ChildItem Env:"
+   },
+   {
+    "from": "printenv PATH",
+    "to": "$env:Path"
+   },
+   {
+    "from": "alias ll='ls -la'",
+    "to": "Set-Alias ll Get-ChildItem",
+    "note": "Aliases cannot hold arguments, use a function instead"
+   },
+   {
+    "from": "history",
+    "to": "Get-History"
+   },
+   {
+    "from": "history | grep ssh",
+    "to": "Get-History | Where-Object CommandLine -like '*ssh*'",
+    "note": "Saved history: Get-Content (Get-PSReadLineOption).HistorySavePath"
+   },
+   {
+    "from": "!!",
+    "to": "Invoke-History",
+    "note": "Or press the Up arrow"
+   },
+   {
+    "from": "ps aux",
+    "to": "Get-Process"
+   },
+   {
+    "from": "ps aux | grep node",
+    "to": "Get-Process -Name node*"
+   },
+   {
+    "from": "top",
+    "to": "Get-Process | Sort-Object CPU -Descending | Select-Object -First 15"
+   },
+   {
+    "from": "kill -9 1234",
+    "to": "Stop-Process -Id 1234 -Force"
+   },
+   {
+    "from": "pkill name",
+    "to": "Stop-Process -Name name"
+   },
+   {
+    "from": "lsof -i :3000",
+    "to": "Get-NetTCPConnection -LocalPort 3000",
+    "note": "Add | ForEach-Object { Get-Process -Id $_.OwningProcess }"
+   },
+   {
+    "from": "netstat -tulpn",
+    "to": "Get-NetTCPConnection -State Listen"
+   },
+   {
+    "from": "curl -O url",
+    "to": "Invoke-WebRequest url -OutFile file",
+    "note": "curl.exe is also available"
+   },
+   {
+    "from": "curl url",
+    "to": "Invoke-RestMethod url",
+    "note": "Use curl.exe to avoid the alias"
+   },
+   {
+    "from": "wget url",
+    "to": "Invoke-WebRequest url -OutFile file"
+   },
+   {
+    "from": "ping -c 4 host",
+    "to": "Test-Connection host -Count 4"
+   },
+   {
+    "from": "dig host",
+    "to": "Resolve-DnsName host"
+   },
+   {
+    "from": "ssh user@host",
+    "to": "ssh user@host",
+    "note": "OpenSSH is included in Windows"
+   },
+   {
+    "from": "scp file host:/path",
+    "to": "scp file host:/path"
+   },
+   {
+    "from": "chmod +x file",
+    "to": "# no equivalent",
+    "note": "Windows decides by extension"
+   },
+   {
+    "from": "chmod 644 file",
+    "to": "icacls file /grant:r Users:R",
+    "note": "Permissions work differently on Windows"
+   },
+   {
+    "from": "chown user file",
+    "to": "takeown /F file",
+    "note": "Administrator"
+   },
+   {
+    "from": "tar -czf a.tar.gz dir",
+    "to": "tar -czf a.tar.gz dir",
+    "note": "tar.exe is included in Windows 10 and 11"
+   },
+   {
+    "from": "tar -xzf a.tar.gz",
+    "to": "tar -xzf a.tar.gz"
+   },
+   {
+    "from": "zip -r a.zip dir",
+    "to": "Compress-Archive dir a.zip"
+   },
+   {
+    "from": "unzip a.zip",
+    "to": "Expand-Archive a.zip -DestinationPath ."
+   },
+   {
+    "from": "sha256sum file",
+    "to": "Get-FileHash file",
+    "note": "SHA-256 is the default"
+   },
+   {
+    "from": "md5sum file",
+    "to": "Get-FileHash file -Algorithm MD5"
+   },
+   {
+    "from": "base64 file",
+    "to": "[Convert]::ToBase64String([IO.File]::ReadAllBytes('file'))"
+   },
+   {
+    "from": "date",
+    "to": "Get-Date"
+   },
+   {
+    "from": "date +%F",
+    "to": "Get-Date -Format 'yyyy-MM-dd'"
+   },
+   {
+    "from": "date +%s",
+    "to": "[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()"
+   },
+   {
+    "from": "sleep 5",
+    "to": "Start-Sleep -Seconds 5"
+   },
+   {
+    "from": "watch -n 2 cmd",
+    "to": "while ($true) { Clear-Host; cmd; Start-Sleep 2 }",
+    "note": "Press Ctrl+C to stop"
+   },
+   {
+    "from": "time cmd",
+    "to": "Measure-Command { cmd }"
+   },
+   {
+    "from": "uname -a",
+    "to": "Get-CimInstance Win32_OperatingSystem | Select-Object Caption, Version, OSArchitecture"
+   },
+   {
+    "from": "whoami",
+    "to": "whoami",
+    "note": "Works in PowerShell too"
+   },
+   {
+    "from": "hostname",
+    "to": "hostname",
+    "note": "$env:COMPUTERNAME"
+   },
+   {
+    "from": "uptime",
+    "to": "(Get-Date) - (Get-CimInstance Win32_OperatingSystem).LastBootUpTime"
+   },
+   {
+    "from": "free -h",
+    "to": "Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize, FreePhysicalMemory",
+    "note": "Values are in KB"
+   },
+   {
+    "from": "man cmd",
+    "to": "Get-Help cmd -Online",
+    "note": "Or Get-Help cmd -Examples"
+   },
+   {
+    "from": "seq 1 10",
+    "to": "1..10"
+   },
+   {
+    "from": "shuf -n 1",
+    "to": "Get-Random"
+   },
+   {
+    "from": "for f in *.txt; do echo $f; done",
+    "to": "Get-ChildItem *.txt | ForEach-Object { $_.Name }"
+   },
+   {
+    "from": "if [ -f file ]; then echo yes; fi",
+    "to": "if (Test-Path file -PathType Leaf) { 'yes' }"
+   },
+   {
+    "from": "cmd1 && cmd2",
+    "to": "cmd1; if ($?) { cmd2 }",
+    "note": "PowerShell 7 supports && and ||"
+   },
+   {
+    "from": "$(command)",
+    "to": "$(command)",
+    "note": "Same syntax for command substitution"
+   },
+   {
+    "from": "sudo cmd",
+    "to": "Start-Process powershell -Verb RunAs",
+    "note": "Opens an elevated window"
+   },
+   {
+    "from": "open .",
+    "to": "Invoke-Item ."
+   },
+   {
+    "from": "pbcopy",
+    "to": "Set-Clipboard"
+   },
+   {
+    "from": "pbpaste",
+    "to": "Get-Clipboard"
+   }
+  ]
+ },
+ "commands": []
+}
