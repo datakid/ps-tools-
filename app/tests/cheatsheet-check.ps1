@@ -10,6 +10,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+trap { Write-Host ('TRAP ' + $_.Exception.Message); Write-Host $_.InvocationInfo.PositionMessage; Write-Host $_.ScriptStackTrace; exit 1 }
 $modern = $PSVersionTable.PSVersion.Major -ge 6
 if (-not $modern) {
     Add-Type -AssemblyName System.Web.Extensions

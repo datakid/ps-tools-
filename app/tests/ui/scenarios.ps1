@@ -641,11 +641,14 @@ function Get-ListNames($root) {
 }
 
 function Get-EditValue($root, [string]$name) {
-    $el = Find-Named $root $name ([System.Windows.Automation.ControlType]::Edit)
-    if (-not $el) { $el = Find-Named $root $name $null }
-    if (-not $el) { return $null }
-    try { return $el.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value } catch { }
-    try { return $el.GetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern).DocumentRange.GetText(-1) } catch { return $null }
+    $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name)
+    foreach ($el in $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $cond)) {
+        $v = $null
+        try { $v = $el.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value } catch { }
+        if (-not $v) { try { $v = $el.GetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern).DocumentRange.GetText(-1) } catch { } }
+        if ($v) { return $v }
+    }
+    return ''
 }
 
 $envC = New-Env 'cheat'
