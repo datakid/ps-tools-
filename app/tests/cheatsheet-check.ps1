@@ -141,7 +141,9 @@ foreach ($i in $items) {
 
 function Invoke-Exe([string[]]$arguments) {
     if ($ExeRunner) { return & $ExeRunner $Exe @arguments }
-    return & $Exe @arguments
+    $quoted = foreach ($a in $arguments) { if ($a -match '\s') { '"' + $a + '"' } else { $a } }
+    $p = Start-Process -FilePath $Exe -ArgumentList ($quoted -join ' ') -PassThru -NoNewWindow -Wait
+    return $p.ExitCode
 }
 
 $riskChecked = 0

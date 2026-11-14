@@ -514,7 +514,7 @@ namespace PSTools
         readonly Label title = new Label { Text = "Cheat sheet", AutoSize = false, AccessibleName = "Cheat sheet title" };
         readonly FSegment tabs = new FSegment { AccessibleName = "Cheat sheet section" };
         readonly FSearchBox search = new FSearchBox("Search tasks, commands and aliases, for example grep, port 3000, ls -la");
-        readonly FTreeList categories = new FTreeList { AccessibleName = "Categories" };
+        readonly FTreeList categories = new FTreeList { AccessibleName = "Categories", CompactSecondary = true };
         readonly FEntryList list = new FEntryList();
         readonly CheatDetail detail = new CheatDetail();
         readonly FInfoBar info = new FInfoBar { Visible = false };
@@ -782,10 +782,11 @@ namespace PSTools
             if (info.Visible) { info.SetBounds(pad, y, w, UI.S(44)); y += UI.S(44) + gap; }
             int bottom = ClientSize.Height - pad;
             bool showCats = tabs.SelectedIndex == 0;
-            int catW = showCats ? UI.S(200) : 0;
+            int catW = showCats ? UI.S(232) : 0;
             int detW = UI.S(360);
             categories.Visible = showCats;
             categories.SetBounds(pad, y, catW, Math.Max(40, bottom - y));
+            if (showCats && categories.Selected >= 0) categories.Select(categories.Selected);
             int listX = pad + (showCats ? catW + gap : 0);
             int detX = ClientSize.Width - pad - detW;
             list.SetBounds(listX, y, Math.Max(100, detX - gap - listX), Math.Max(40, bottom - y));

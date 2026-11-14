@@ -642,8 +642,10 @@ function Get-ListNames($root) {
 
 function Get-EditValue($root, [string]$name) {
     $el = Find-Named $root $name ([System.Windows.Automation.ControlType]::Edit)
+    if (-not $el) { $el = Find-Named $root $name $null }
     if (-not $el) { return $null }
-    try { return $el.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value } catch { return $null }
+    try { return $el.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value } catch { }
+    try { return $el.GetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern).DocumentRange.GetText(-1) } catch { return $null }
 }
 
 $envC = New-Env 'cheat'

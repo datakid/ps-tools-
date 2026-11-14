@@ -23,7 +23,7 @@
   },
   {
    "id": "format",
-   "label": "Formatting & export",
+   "label": "Formatting",
    "icon": "E8A5"
   },
   {
@@ -78,7 +78,7 @@
   },
   {
    "id": "perm",
-   "label": "Permissions & ownership",
+   "label": "Permissions",
    "icon": "EA18"
   },
   {
@@ -113,7 +113,7 @@
   },
   {
    "id": "math",
-   "label": "Math & conversions",
+   "label": "Math",
    "icon": "E8EF"
   },
   {
