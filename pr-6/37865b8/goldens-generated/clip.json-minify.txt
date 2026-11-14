@@ -1,0 +1,4 @@
+[clipboard]
+{"a":1,"b":[1,2]}
+[toast]
+JSON minified

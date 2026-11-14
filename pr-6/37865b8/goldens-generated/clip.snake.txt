@@ -1,0 +1,5 @@
+[clipboard]
+hello_world_foo
+foo_bar_baz
+[toast]
+Converted to snake_case

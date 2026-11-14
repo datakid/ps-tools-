@@ -1,0 +1,50 @@
+[clipboard]
+# tree-basic
+
+```text
+tree-basic/
+├── bin/
+│   └── out.dll
+├── docs/
+│   └── readme.md
+├── empty/
+├── node_modules/
+│   └── pkg/
+│       └── index.js
+└── src/
+    ├── app/
+    │   ├── main.py
+    │   └── util.py
+    └── lib/
+```
+
+### docs/readme.md
+
+```markdown
+# Readme
+
+Sample project.
+```
+
+### node_modules/pkg/index.js
+
+```javascript
+module.exports = 1;
+```
+
+### src/app/main.py
+
+```python
+print('hello')
+```
+
+### src/app/util.py
+
+```python
+def add(a, b):
+    return a + b
+```
+
+Skipped: 1 binary (bin/out.dll)
+[toast]
+Copied 4 files (285 B, about 72 tokens)

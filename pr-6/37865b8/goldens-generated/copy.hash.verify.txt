@@ -1,0 +1,4 @@
+[dialog]
+MATCH (SHA-256)
+
+lf.txt is identical to the published checksum.
