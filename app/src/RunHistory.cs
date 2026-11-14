@@ -137,6 +137,25 @@ namespace PSTools
             "ipconfig", "netstat", "tasklist", "taskkill", "findstr", "where", "tree", "xcopy", "attrib", "icacls", "systeminfo"
         };
 
+        static List<string> everything;
+
+        static List<string> AllCommands()
+        {
+            if (everything != null) return everything;
+            var seen = new HashSet<string>(Commands, StringComparer.OrdinalIgnoreCase);
+            var extra = new List<string>();
+            var sheet = CheatSheetData.Current;
+            foreach (string c in sheet.Commands) if (seen.Add(c)) extra.Add(c);
+            foreach (var e in sheet.Entries)
+            {
+                string first = e.Command.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                if (first != null && first.Length > 3 && first.IndexOf('-') > 0 && char.IsLetter(first[0]) && seen.Add(first)) extra.Add(first);
+            }
+            extra.Sort(StringComparer.OrdinalIgnoreCase);
+            everything = Commands.Concat(extra).ToList();
+            return everything;
+        }
+
         public static int TokenStart(string text, int caret)
         {
             int i = Math.Min(caret, text.Length);
@@ -164,7 +183,7 @@ namespace PSTools
             bool firstWord = text.Substring(0, start).Trim().Length == 0 || text.Substring(0, start).TrimEnd().EndsWith("|");
             if (firstWord)
             {
-                foreach (var c in Commands)
+                foreach (var c in AllCommands())
                     if (c.StartsWith(token, StringComparison.OrdinalIgnoreCase) && !result.Contains(c) && result.Count < 8) result.Add(c);
                 foreach (var h in RunHistory.All)
                 {
@@ -173,7 +192,7 @@ namespace PSTools
                 }
             }
             else
-                foreach (var c in Commands)
+                foreach (var c in AllCommands())
                     if (c.StartsWith(token, StringComparison.OrdinalIgnoreCase) && !result.Contains(c) && result.Count < 8) result.Add(c);
             return result;
         }

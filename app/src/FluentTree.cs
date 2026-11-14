@@ -178,6 +178,7 @@ namespace PSTools
         public event EventHandler<EventArgs> Activated;
         public event EventHandler<MouseEventArgs> RowRightClicked;
         public bool ShowDigits;
+        public bool CompactSecondary;
 
         public List<int> VisibleSelectable()
         {
@@ -494,7 +495,7 @@ namespace PSTools
                 }
                 if (row.Secondary.Length > 0)
                 {
-                    int secW = Math.Min(UI.S(150), Math.Max(UI.S(60), (right - textLeft) / 3));
+                    int secW = CompactSecondary ? UI.S(32) : Math.Min(UI.S(150), Math.Max(UI.S(60), (right - textLeft) / 3));
                     FGfx.Text(g, row.Secondary, Tok.Caption, new Rectangle(right - secW, inner.Y, secW, inner.Height), Tok.TextSecondary, FGfx.Line | TextFormatFlags.Right);
                     right -= secW + Tok.S2;
                 }

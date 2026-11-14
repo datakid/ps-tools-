@@ -75,6 +75,7 @@ namespace PSTools
             rail.Items.Add(new NavRail.Item { Text = "Recipes", Glyph = Fx.List });
             rail.Items.Add(new NavRail.Item { Text = "Undo history", Glyph = Fx.History });
             rail.Items.Add(new NavRail.Item { Text = "Space map", Glyph = Fx.Folder });
+            rail.Items.Add(new NavRail.Item { Text = "Cheat sheet", Glyph = Fx.Code });
             rail.Items.Add(new NavRail.Item { Divider = true });
             rail.Items.Add(new NavRail.Item { Text = "Setup guide", Glyph = Fx.Help });
             rail.ItemClicked += i =>
@@ -88,7 +89,8 @@ namespace PSTools
                     if (Directory.Exists(Path0)) new SpaceForm(Path0).Show(this);
                     else SetStatus("Folder not found: " + Path0);
                 }
-                else if (i == 7) new FirstRunForm(true).Show(this);
+                else if (i == 6) new CheatSheetForm(Path0, null).Show(this);
+                else if (i == 8) new FirstRunForm(true).Show(this);
             };
 
             var top = new BTable { Dock = DockStyle.Top, Height = 62, ColumnCount = 3, Padding = new Padding(0, 14, 0, 8) };

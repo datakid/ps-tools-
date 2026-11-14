@@ -28,7 +28,12 @@ namespace PSTools
 
         static readonly HashSet<string> ReadOnlyVerbs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "new-object", "new-guid", "new-timespan", "set-location", "set-variable", "set-strictmode", "set-psdebug", "set-clipboard", "add-type", "add-member", "set-alias", "new-variable", "new-alias"
+            "new-object", "new-guid", "new-timespan", "set-location", "set-variable", "set-strictmode", "set-psdebug", "set-clipboard", "add-type", "add-member", "set-alias", "new-variable", "new-alias", "clear-host", "clear-variable"
+        };
+
+        static readonly HashSet<string> LightVerbs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "clear-dnsclientcache", "clear-history", "remove-pssession", "remove-job", "remove-variable", "remove-module", "remove-psdrive"
         };
 
         static readonly Regex Quoted = new Regex("\"([^\"`]|`.)*\"|'([^']|'')*'", RegexOptions.Compiled);
@@ -96,6 +101,11 @@ namespace PSTools
                 else if (ModifyingExact.Contains(lower))
                 {
                     Mark(r, Risk.Modifies, w + " creates or changes files", w);
+                    modifyingVerb = true;
+                }
+                else if (LightVerbs.Contains(lower))
+                {
+                    Mark(r, Risk.Modifies, w + " changes the session or caches", w);
                     modifyingVerb = true;
                 }
                 else if (!ReadOnlyVerbs.Contains(lower) && Regex.IsMatch(lower, "^(new|set|move|rename|copy|add|remove|clear|save|export|install|uninstall|update)-"))

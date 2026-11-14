@@ -45,6 +45,12 @@ namespace PSTools
                 try { AttachConsole(-1); } catch { }
                 return TestTools.ListActions(args);
             }
+            if (args.Length >= 1 && args[0] == "--risk-classify-json")
+            {
+                Quiet = true;
+                try { AttachConsole(-1); } catch { }
+                return TestTools.RiskClassifyJson(args);
+            }
             if (args.Length >= 1 && args[0] == "--test-actions")
             {
                 Quiet = true;
@@ -72,6 +78,15 @@ namespace PSTools
             if (args.Length >= 1 && args[0] == "--install") { Settings.MarkConfigured(); Shell.Install(); Msg("Explorer menu installed.\n\nWindows 11: right-click > Show more options (or turn on the classic menu in the System module)."); return 0; }
             if (args.Length >= 1 && args[0] == "--uninstall") { Msg(Shell.UninstallAll()); return 0; }
             if (args.Length >= 1 && args[0] == "--status") { Msg(Shell.Status()); return 0; }
+            if (args.Length >= 1 && args[0] == "cheatsheet")
+            {
+                string startDir = args.Length >= 2 && !args[1].StartsWith("--") ? Clean(args[1]) : Environment.CurrentDirectory;
+                var sheetForm = new CheatSheetForm(startDir, null);
+                string startQuery = TestTools.Option(args, "--query");
+                if (startQuery != null) sheetForm.SetQuery(startQuery);
+                Application.Run(sheetForm);
+                return 0;
+            }
             if (args.Length >= 1 && args[0] == "--repair")
             {
                 if (!Shell.IsInstalled()) { Msg("The Explorer menu is not installed."); return 1; }

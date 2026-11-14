@@ -70,6 +70,18 @@ jobs:
         run: |
           app\tests\ci\run-logged.ps1 -Script app\tools\snippet-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\snippet-check.txt
           exit $LASTEXITCODE
+      - name: Generate PowerShell command list (Windows PowerShell 5.1)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tools\gen-commands-list.ps1 -Params @{ Out = 'app\out\commands-list.json' } -Log app\out\logs\commands-list.txt
+          exit $LASTEXITCODE
+      - name: Cheat sheet check (parse all, run safe entries)
+        if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\cheatsheet-check.ps1 -Params @{ Fixtures = "$env:RUNNER_TEMP\fx"; File = 'app\cheatsheet.json'; Exe = 'app\out\PSTools.exe'; Report = 'app\out\cheatsheet-report.json' } -Log app\out\logs\cheatsheet-check.txt
+          exit $LASTEXITCODE
       - name: Layout lint (v3 has known issues, see docs/v4/FINDINGS.md)
         continue-on-error: true
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}

@@ -481,7 +481,11 @@ namespace PSTools
                 new object[] { "git pull", Risk.Modifies },
                 new object[] { "npm install", Risk.Modifies },
                 new object[] { "winget install Git.Git", Risk.Modifies },
-                new object[] { "Start-Process notepad -Verb RunAs", Risk.Modifies }
+                new object[] { "Start-Process notepad -Verb RunAs", Risk.Modifies },
+                new object[] { "Clear-Host", Risk.Safe },
+                new object[] { "Clear-DnsClientCache", Risk.Modifies },
+                new object[] { "Get-PSSession | Remove-PSSession", Risk.Modifies },
+                new object[] { "Remove-Variable x", Risk.Modifies }
             };
             var problems = new List<string>();
             foreach (var c in cases)
@@ -493,6 +497,45 @@ namespace PSTools
             var cmd = RiskScan.Classify("del /q *.tmp", ActionShell.Cmd);
             if (cmd.Risk != Risk.Destructive) problems.Add("cmd del must be destructive");
             Report("RiskScan: " + cases.Length + " commands classified", problems, "");
+        }
+
+        static void CheckCheatSheet()
+        {
+            var problems = new List<string>();
+            var sheet = CheatSheetData.Load(CheatSheetData.DefaultPath);
+            if (sheet.Error.Length > 0) { Report("Cheat sheet: data", new List<string> { sheet.Error }, ""); return; }
+            if (sheet.Entries.Count < 300) problems.Add("only " + sheet.Entries.Count + " entries");
+            if (sheet.Cmd.Count < 40) problems.Add("only " + sheet.Cmd.Count + " cmd rows");
+            if (sheet.Bash.Count < 60) problems.Add("only " + sheet.Bash.Count + " bash rows");
+            if (sheet.Categories.Count < 25) problems.Add("only " + sheet.Categories.Count + " categories");
+            var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var e in sheet.Entries)
+            {
+                if (!ids.Add(e.Id)) problems.Add("duplicate id " + e.Id);
+                if (!sheet.Categories.Any(c => c.Id == e.Category)) problems.Add(e.Id + " has an unknown category");
+                if (e.Explain.Length == 0) problems.Add(e.Id + " has no explanation");
+                if (e.SafeToRun && e.Risk != "safe") problems.Add(e.Id + " is safeToRun but risk is " + e.Risk);
+                if (CheatSheetData.MenuFor(e.Category).Length == 0) problems.Add(e.Id + " has no menu mapping");
+                foreach (string r in e.Related) if (sheet.Find(r) == null) problems.Add(e.Id + " relates to missing " + r);
+                if (e.Template != null)
+                {
+                    foreach (string t in Placeholders.Tokens(e.Template.Command)) if (t.Length == 0) problems.Add(e.Id + " has an empty placeholder");
+                    if (Placeholders.Tokens(e.Command).Count > 0 || Placeholders.Tokens(e.Example).Count > 0) problems.Add(e.Id + " uses a placeholder outside actionTemplate");
+                }
+                else if (Placeholders.Tokens(e.Command).Count > 0 || Placeholders.Tokens(e.Example).Count > 0) problems.Add(e.Id + " uses a placeholder outside actionTemplate");
+            }
+            var watch = Stopwatch.StartNew();
+            var grep = sheet.Search("grep", null);
+            for (int i = 0; i < 50; i++) sheet.Search("find text", null);
+            watch.Stop();
+            if (watch.ElapsedMilliseconds > 500) problems.Add("search is slow: " + watch.ElapsedMilliseconds + " ms for 51 queries");
+            if (!grep.Any(e => e.Command.IndexOf("Select-String", StringComparison.OrdinalIgnoreCase) >= 0)) problems.Add("'grep' does not find a Select-String entry");
+            if (sheet.SearchTranslations(sheet.Bash, "grep").Count == 0) problems.Add("'grep' does not find a bash row");
+            if (sheet.SearchTranslations(sheet.Cmd, "dir").Count == 0) problems.Add("'dir' does not find a cmd row");
+            if (sheet.Search("largest files", null).Count == 0 || sheet.Search("largest files", null)[0].Id != "files.largest") problems.Add("'largest files' does not rank files.largest first");
+            if (sheet.Search("zzqxzz", null).Count != 0) problems.Add("nonsense query matched something");
+            if (sheet.Search("", "git").Count != sheet.CountIn("git")) problems.Add("category filter is wrong");
+            Report("Cheat sheet: " + sheet.Entries.Count + " entries, " + sheet.Cmd.Count + " cmd rows, " + sheet.Bash.Count + " bash rows", problems, "");
         }
 
         static void CheckRunTools()

@@ -27,7 +27,9 @@ if [ -d "$art" ]; then
   for part in shots ui-report logs goldens-generated; do
     [ -d "$art/$part" ] && cp -r "$art/$part" "$work/g/$dest/$part"
   done
-  [ -f "$art/action-report.json" ] && cp "$art/action-report.json" "$work/g/$dest/"
+  for single in action-report.json commands-list.json cheatsheet-report.json; do
+    [ -f "$art/$single" ] && cp "$art/$single" "$work/g/$dest/"
+  done
 fi
 
 ls -1dt "$work/g/pr-${PR}"/*/ 2>/dev/null | tail -n +4 | xargs -r rm -rf
