@@ -5,7 +5,7 @@ param(
     [string]$ExeRunner = '',
     [string]$Report = '',
     [switch]$SkipRun,
-    [int]$Parallel = 3,
+    [int]$Parallel = 2,
     [int]$TimeoutSec = 10
 )
 
