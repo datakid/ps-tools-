@@ -1,0 +1,17 @@
+[clipboard]
+"RelativePath","Name","Ext","Size","Modified"
+"bin","bin","","","2026-01-15T10:30:00"
+"bin\out.dll","out.dll",".dll","2048","2026-01-15T10:30:00"
+"docs","docs","","","2026-01-15T10:30:00"
+"docs\readme.md","readme.md",".md","26","2026-01-15T10:30:00"
+"empty","empty","","","2026-01-15T10:30:00"
+"node_modules","node_modules","","","2026-01-15T10:30:00"
+"node_modules\pkg","pkg","","","2026-01-15T10:30:00"
+"node_modules\pkg\index.js","index.js",".js","20","2026-01-15T10:30:00"
+"src","src","","","2026-01-15T10:30:00"
+"src\app","app","","","2026-01-15T10:30:00"
+"src\app\main.py","main.py",".py","15","2026-01-15T10:30:00"
+"src\app\util.py","util.py",".py","32","2026-01-15T10:30:00"
+"src\lib","lib","","","2026-01-15T10:30:00"
+[toast]
+Copied 14 lines from Listing as CSV

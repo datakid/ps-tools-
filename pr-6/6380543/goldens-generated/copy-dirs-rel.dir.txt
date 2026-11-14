@@ -1,0 +1,11 @@
+[clipboard]
+bin
+docs
+empty
+node_modules
+node_modules\pkg
+src
+src\app
+src\lib
+[toast]
+Copied 8 lines from All subfolder paths (relative)

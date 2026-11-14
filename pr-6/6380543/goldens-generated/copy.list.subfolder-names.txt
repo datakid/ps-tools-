@@ -1,0 +1,8 @@
+[clipboard]
+bin
+docs
+empty
+node_modules
+src
+[toast]
+Copied 5 lines from All subfolder names

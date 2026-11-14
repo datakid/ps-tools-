@@ -1,0 +1,35 @@
+
+
+Actions page                        980 x 640  ok
+
+Menu page                           980 x 640  ISSUES
+
+Actions page                        860 x 520  ISSUES
+
+Menu page                           860 x 520  ISSUES
+
+Actions page                       1200 x 760  ok
+
+Menu page                          1200 x 760  ISSUES
+Menu preview                        480 x 560  ok
+First run                           588 x 540  ok
+Command library                    1000 x 620  ok
+Command library (minimum)           760 x 480  ISSUES
+Recipe editor                       960 x 620  ok
+Recipe editor (minimum)             820 x 520  ok
+Recipe step picker                  640 x 520  ok
+Undo history                        860 x 560  ok
+Undo history (minimum)              700 x 440  ok
+Space map                          1000 x 660  ok
+Space map (minimum)                 640 x 420  ISSUES
+
+Menu page  text clipped: '17 actions, 11 entries at the top level ' needs 80 has 44
+Actions page  overflow: FButton 'Pinned to menu...' (304 x 38) in (258 x 38)
+Menu page  text clipped: '17 actions, 11 entries at the top level ' needs 80 has 44
+Menu page  text clipped: '17 actions, 11 entries at the top level ' needs 64 has 44
+Command library (minimum)  overflow: FButton 'Copy' (375 x 41) in (284 x 46)
+Command library (minimum)  overflow: FButton 'Pin to menu' (491 x 41) in (284 x 46)
+Space map (minimum)  text clipped: 'Links and junctions are skipped. Large f' needs 38 has 30
+
+7 layout problems found.
+exit code 1

@@ -1,0 +1,7 @@
+[table]
+1 duplicate sets, 4.0 KB reclaimable. Copies are pre-ticked; the shortest path in each set is kept.
+	Set	Size	Path
+	#1	4.0 KB	<FX>\dups\a.bin
+x	#1	4.0 KB	<FX>\dups\a-copy.bin
+[dialog]
+1 duplicate sets, 4.0 KB reclaimable. Copies are pre-ticked; the shortest path in each set is kept.
