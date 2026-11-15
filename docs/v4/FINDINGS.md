@@ -142,3 +142,40 @@ UI Automation scenarios, menu snapshot, cheat sheet checks, startup timing probe
 - **PowerShell 5.1 quirk:** `@($list)` on a `List[object]` of hashtables throws "Argument types do not match" in 5.1; the check iterates `ToArray()`.
 - **Category labels** were shortened where the list pane truncated them (for example "Permissions", "Formatting", "Math"); the list control got a `CompactSecondary` option so the entry count takes 32 px instead of 60.
 - **Not verified in CI:** entries marked `safeToRun: false` (network, administrator, modifying and GUI entries) are parsed and risk-linted but never executed. The 7.0 entries run only when pwsh exists on the runner.
+
+## Phase 6
+
+### What changed
+- **New main window** (`MainWindow.cs`, `HomePage.cs`, `ActionsPage.cs`, `SettingsPage.cs`, `Cards.cs`, `ScrollPage.cs`). The rail is Home, Actions, Run, Cheat sheet, History, Settings. Home, Actions and Settings are pages in the window; Run, Cheat sheet and History open their own windows (the Run console and Cheat sheet stay standalone because they are also launched from the command line and the Explorer menu).
+- **Home:** working folder (type, Browse, drop), Suggested here, Favorites, Recent (actions and Run console commands, both re-runnable), a dismissible Get started list, and More tools (Recipes, Space map, Undo history, Setup guide). Two columns when the window is at least 1000 px wide and the page has room, one column otherwise.
+- **Actions:** the same tree and search as the Power menu, larger, with a details card (what it does, where it shows, what it changes, the PowerShell behind it) and Run, Add to menu, Run console, Copy, Duplicate (or Edit file for your own scripts) and Hide. Ctrl+D stars, Right drills in, Left and Backspace go back. Below 620 px the details card moves under the list.
+- **Settings:** Appearance, Explorer menu (install, remove, favorites with up, down and remove, a preview of what Explorer will show for a folder, empty space or a file), Actions folder (open, reload, show hidden, problems), Run console (default shell, ask before commands that change files, import and clear history), Data and privacy (data folder, full uninstall), About.
+- **First run** is one screen with two choices and no presets. The presets screen and the separate menu preview window were removed (`PreviewForm.cs`).
+- **Keyboard:** Ctrl+1 Home, Ctrl+2 Actions (focuses search), Ctrl+3 Run, Ctrl+4 Cheat sheet, Ctrl+5 History, Ctrl+6 or Ctrl+, Settings, Ctrl+K Power menu, Ctrl+F search actions. A UI Automation scenario walks Home, Actions search, details, Power menu and Settings with the keyboard only, and another one stars an action and checks Home.
+- **Visual baselines:** `app/tests/ui/baseline` now holds the reviewed CI screenshots (light and dark, 100% and 150%) and a changed pixel fails CI. Pixel lint is strict for the v4 screens (`main-`, `popup-`, `run-`, `cheatsheet`, `save-action`, `first-run`).
+
+### Decisions and deviations
+- **Scrolling:** Home and Settings use a small themed scroll host (`ScrollPage`) instead of the native scrollbar, which the pixel lint flags as a default grey control in both themes. It scrolls with the wheel and by tabbing into off-screen controls.
+- **Pane widths:** minimum pane widths are 240 px (the spec says 320) because the minimum window at 880 px leaves 616 px beside the rail.
+- **Settings that do not exist as toggles:** the plan lists "full tree as native submenus" and "favorites at top level" and a history size. Shell.Write has one layout and the history size is fixed (500), so these are shown as facts (the preview and a note) and not as switches.
+- **Visual lint is not zero on legacy dialogs.** The v3 dialogs v4 does not redesign (Recipes, Rename, Search, Structure, Library, Results grid, Space map) still have default WinForms controls. The compare step lists them as warnings and fails only for the v4 screens.
+- **Run and Cheat sheet as separate windows** (see above) is a deviation from "pages in the main window".
+- **Version string:** 4.0.0-rc1 in the first release candidate, then 4.0.0.
+
+## Phase 7
+
+- **README.md** rewritten for v4 with the 30-second tour, install, the actions folder, safety, the command line, footprint, migration, testing and layout.
+- **docs/USER_ACTIONS.md** documents every header key and placeholder and has ten copy-paste examples. The examples live as files in `docs/examples/actions/`; `app/tests/user-actions-check.ps1` loads all of them with the real parser in CI and parses every PowerShell body, so the examples cannot drift from the program.
+- **Release workflow** (`.github/workflows/release.yml`): pushing a branch named `release/vX.Y.Z[-suffix]` builds, runs the self-test, packages `PSTools-vX.Y.Z.zip` and `SHA256.txt`, creates a draft release (a pre-release when the name has a suffix) and copies the zip to the `ui-gallery` branch under `release-assets/`. It refuses to run when `UI.Version` does not match the branch name. Nothing is published automatically.
+
+## Definition of done (V4_PLAN section 14), as verified
+
+1. Right-click, Power menu, type `tree`, Enter: covered by the popup scenarios and action tests. Cold start to visible popup measured at a median 466-475 ms on CI (first launch of a fresh exe 698 ms), hard limit 1.5 s. Not measured on real hardware.
+2. Starring an action updates the Explorer menu without a settings page: `Shell.RefreshIfInstalled` runs on every star; covered by the menu goldens and the favorite scenario.
+3. A `.ps1` with a header in `actions\Git\` appears under Git: covered by the user action tests and the example check.
+4. Run, Save as action, appears in the menu with `{dir}`: covered by the Save as action tests and scenario.
+5. At least 300 searchable cheat sheet entries, each can be tried and saved: 399 entries, UI scenarios for both.
+6. Every PR had a green CI run, a gallery and a rubric.
+7. v3 pins become favorites, recipes and undo history are untouched: covered by the migration tests in Phase 2.
+
+Not verified, because there is no Windows hardware in the authoring environment: how Windows 11 shows the entries in the modern menu on a real machine (`Show more options` unless the classic menu switch is on), and any behaviour that differs between `windows-latest` and a user's PC.
