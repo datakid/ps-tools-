@@ -1,0 +1,4 @@
+[clipboard]
+main.py
+[toast]
+Copied: main.py

@@ -1,0 +1,9 @@
+[clipboard]
+repo/
+├── src/
+│   └── app/
+│       └── main.py
+├── .gitignore
+└── README.md
+[toast]
+Copied 6 lines from Tree (respect .gitignore)

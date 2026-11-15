@@ -1,0 +1,8 @@
+[table]
+3 differences.  Marked: <FX>\tree-basic\src   Here: <FX>\tree-basic\docs
+Status	Relative path	Marked	Here	Path
+Only in marked	app\main.py	15 B		<FX>\tree-basic\src\app\main.py
+Only in marked	app\util.py	32 B		<FX>\tree-basic\src\app\util.py
+Only here	readme.md		26 B	<FX>\tree-basic\docs\readme.md
+[dialog]
+3 differences.  Marked: <FX>\tree-basic\src   Here: <FX>\tree-basic\docs

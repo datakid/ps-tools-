@@ -1,0 +1,6 @@
+[toast]
+Created repo.zip with 3 files
+[dialog]
+ASK: Run "Zip (respect .gitignore)"?
+
+It may change files.

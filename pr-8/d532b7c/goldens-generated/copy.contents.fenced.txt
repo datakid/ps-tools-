@@ -1,0 +1,7 @@
+[clipboard]
+```python
+def add(a, b):
+    return a + b
+```
+[toast]
+Copied 4 lines from Contents as code block
