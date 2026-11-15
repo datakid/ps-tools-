@@ -106,7 +106,7 @@ app/src/DevActions.cs    Dev, Disk
 app/src/SystemActions.cs System module
 app/src/Classic.cs       Organize/Clean/...
 app/src/MainForm.cs, FirstRunForm.cs, SearchForm.cs, ResultsForm.cs, RenameForm.cs, LibraryForm.cs, StructureForm.cs, ToolForms.cs, UI.cs
-app/src/PaletteForm.cs  Ctrl+K command palette       app/src/PreviewForm.cs  right-click menu preview
+app/src/PaletteForm.cs  Ctrl+K command palette     
 app/src/MenuPlan.cs     planned menu (shared)        app/src/Suggest.cs      suggestions for the folder
 app/src/PsCatalog.cs    PowerShell equivalents       app/src/SelfTest.cs     --selftest and --dump-snippets
 app/src/Recipes.cs      recipe data and runner       app/src/RecipesForm.cs  recipe editor and step picker
