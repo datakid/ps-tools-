@@ -125,20 +125,35 @@ namespace PSTools
         public void DoLayout()
         {
             int pad = Tok.S4;
-            int w = Math.Max(UI.S(280), ContentWidth - Tok.S2);
+            int w = Math.Max(UI.S(160), ContentWidth - Tok.S2);
             int gap = Tok.S3;
             title.SetBounds(0, 0, w, UI.S(40));
             int y = UI.S(48);
-            folderCard.SetBounds(0, y, w, UI.S(132));
-            var fi = folderCard.Inner;
+            var fi0 = Rectangle.Empty;
             int btnW = UI.S(104);
-            folderField.SetBounds(fi.X, V4Card.HeaderHeight, Math.Max(100, fi.Width - btnW * 2 - Tok.S2 * 2), Tok.InputHeight);
-            browse.SetBounds(folderField.Right + Tok.S2, V4Card.HeaderHeight - 1, btnW, UI.S(32));
-            openExplorer.SetBounds(browse.Right + Tok.S2, V4Card.HeaderHeight - 1, btnW, UI.S(32));
-            dropHint.SetBounds(fi.X, V4Card.HeaderHeight + UI.S(40), fi.Width, UI.S(20));
+            int innerW = w - Tok.S3 * 2;
+            bool narrow = innerW < btnW * 2 + UI.S(240);
+            int fieldH = Tok.InputHeight;
+            int rowsH = fieldH + (narrow ? Tok.S2 + UI.S(32) : 0);
+            int hintH = UI.S(44);
+            folderCard.SetBounds(0, y, w, V4Card.HeaderHeight + rowsH + Tok.S2 + hintH + Tok.S3);
+            int fx = Tok.S3;
+            if (narrow)
+            {
+                folderField.SetBounds(fx, V4Card.HeaderHeight, innerW, fieldH);
+                browse.SetBounds(fx, V4Card.HeaderHeight + fieldH + Tok.S2, btnW, UI.S(32));
+                openExplorer.SetBounds(browse.Right + Tok.S2, browse.Top, btnW, UI.S(32));
+            }
+            else
+            {
+                folderField.SetBounds(fx, V4Card.HeaderHeight, innerW - btnW * 2 - Tok.S2 * 2, fieldH);
+                browse.SetBounds(folderField.Right + Tok.S2, V4Card.HeaderHeight - 1, btnW, UI.S(32));
+                openExplorer.SetBounds(browse.Right + Tok.S2, V4Card.HeaderHeight - 1, btnW, UI.S(32));
+            }
+            dropHint.SetBounds(fx, V4Card.HeaderHeight + rowsH + Tok.S2, innerW, hintH);
             y += folderCard.Height + gap;
             var cards = new List<RowCard> { suggested, favorites, recent, start, tools }.Where(c => c.Visible).ToList();
-            bool two = main.ClientSize.Width >= UI.S(1000) && w >= UI.S(560);
+            bool two = main.ClientSize.Width >= UI.S(1000) && w >= UI.S(560) && ContentWidth >= UI.S(700);
             int cols = two ? 2 : 1;
             int colW = (w - gap * (cols - 1)) / cols;
             var heights = new int[cols];

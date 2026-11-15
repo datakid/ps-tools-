@@ -90,7 +90,7 @@ namespace PSTools
                 home.SetFolderText(Directory.Exists(p) ? p : Path.GetDirectoryName(p));
             };
             KeyDown += OnKey;
-            Shown += (s, e) => { LayoutPages(); StartScan(); ActiveControl = rail; };
+            Shown += (s, e) => { LayoutPages(); StartScan(); home.FolderBox.Focus(); home.FolderBox.Select(home.FolderBox.TextLength, 0); };
             Resize += (s, e) => LayoutPages();
             FormClosing += (s, e) => SaveWindow();
 

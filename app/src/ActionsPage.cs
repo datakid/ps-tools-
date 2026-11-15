@@ -340,40 +340,38 @@ namespace PSTools
             title.SetBounds(0, 0, Width, UI.S(40));
             int y = UI.S(48);
             int total = Width;
-            int minPane = UI.S(280);
-            int left = Math.Max(minPane, Math.Min(total - minPane - gap, total * 45 / 100));
-            int right = total - left - gap;
+            bool stacked = total < UI.S(620);
+            int left = stacked ? total : Math.Max(UI.S(240), Math.Min(total - UI.S(240) - gap, total * 45 / 100));
+            int right = stacked ? total : total - left - gap;
             search.SetBounds(0, y, left, Tok.InputHeight);
             int top = y + Tok.InputHeight + Tok.S2;
             if (crumbs.Visible) { crumbs.SetBounds(0, top, left, UI.S(28)); top += UI.S(28) + Tok.S1; }
             int infoH = 0;
             if (info.Visible) { info.SetBounds(0, Height - UI.S(44), total, UI.S(44)); infoH = UI.S(44) + gap; }
             int bottom = Height - infoH;
-            list.SetBounds(0, top, left, Math.Max(60, bottom - top));
-            card.SetBounds(left + gap, y, right, Math.Max(100, bottom - y));
-            var inner = card.Inner;
-            int bh = Tok.ButtonHeight;
-            var rowOne = new[] { run, star, hide };
-            var rowTwo = new[] { console, copy, duplicate };
-            int by2 = card.Height - Tok.S3 - bh;
-            int by1 = by2 - Tok.S2 - bh;
-            PlaceRow(rowOne, inner.X, by1, inner.Width);
-            PlaceRow(rowTwo, inner.X, by2, inner.Width);
-            detail.SetBounds(inner.X, Tok.S3, inner.Width, Math.Max(40, by1 - Tok.S3 - Tok.S2));
-        }
-
-        static void PlaceRow(FButton[] buttons, int x, int y, int room)
-        {
-            int gap = Tok.S2;
-            var widths = buttons.Select(b => Math.Max(b.GetPreferredSize(Size.Empty).Width, UI.S(84))).ToArray();
-            int avail = room - gap * (buttons.Length - 1);
-            int sum = widths.Sum();
-            for (int i = 0; i < buttons.Length; i++)
+            int btnRows = 3;
+            int btnArea = btnRows * Tok.ButtonHeight + (btnRows - 1) * Tok.S2 + Tok.S3 * 2;
+            if (stacked)
             {
-                int bw = sum > avail ? widths[i] * avail / sum : widths[i];
-                buttons[i].SetBounds(x, y, bw, Tok.ButtonHeight);
-                x += bw + gap;
+                int cardH = Math.Max(btnArea + UI.S(80), (bottom - top) * 48 / 100);
+                list.SetBounds(0, top, left, Math.Max(60, bottom - top - cardH - gap));
+                card.SetBounds(0, list.Bottom + gap, right, Math.Max(100, bottom - list.Bottom - gap));
             }
+            else
+            {
+                list.SetBounds(0, top, left, Math.Max(60, bottom - top));
+                card.SetBounds(left + gap, y, right, Math.Max(100, bottom - y));
+            }
+            var inner = card.Inner;
+            int colW = (inner.Width - Tok.S2) / 2;
+            var grid = new[] { run, star, console, copy, duplicate, hide };
+            int firstY = card.Height - Tok.S3 - btnRows * Tok.ButtonHeight - (btnRows - 1) * Tok.S2;
+            for (int i = 0; i < grid.Length; i++)
+            {
+                int col = i % 2, rowIdx = i / 2;
+                grid[i].SetBounds(inner.X + col * (colW + Tok.S2), firstY + rowIdx * (Tok.ButtonHeight + Tok.S2), colW, Tok.ButtonHeight);
+            }
+            detail.SetBounds(inner.X, Tok.S3, inner.Width, Math.Max(40, firstY - Tok.S3 - Tok.S2));
         }
     }
 }

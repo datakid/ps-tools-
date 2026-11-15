@@ -14,6 +14,7 @@ namespace PSTools
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.SupportsTransparentBackColor, true);
             SetStyle(ControlStyles.Selectable, false);
             TabStop = false;
+            Tag = "overlay";
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -45,7 +46,7 @@ namespace PSTools
 
         public static int ThumbWidth { get { return UI.S(12); } }
 
-        protected int ContentWidth { get { return Math.Max(UI.S(300), ClientSize.Width - ThumbWidth); } }
+        protected int ContentWidth { get { return Math.Max(UI.S(160), ClientSize.Width - ThumbWidth); } }
 
         public int ScrollOffset { get { return offset; } }
 

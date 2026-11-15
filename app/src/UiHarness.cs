@@ -310,7 +310,7 @@ namespace PSTools
                     { "parent", string.IsNullOrEmpty(parent.Name) ? parent.GetType().Name : parent.Name },
                     { "ellipsis", label != null && label.AutoEllipsis },
                     { "autosize", label != null && label.AutoSize },
-                    { "scrolls", c is ScrollableControl && ((ScrollableControl)c).AutoScroll },
+                    { "scrolls", c is ScrollPage || (c is ScrollableControl && ((ScrollableControl)c).AutoScroll) },
                     { "tag", c.Tag as string ?? "" },
                     { "dock", c.Dock.ToString() }
                 };

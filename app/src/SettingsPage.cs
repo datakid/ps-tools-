@@ -251,54 +251,64 @@ namespace PSTools
             Refresh2();
         }
 
-        static int Block(Control c, int x, int y, int w, int h)
+        static int Fit(Label l, int x, int y, int w)
         {
-            c.SetBounds(x, y, w, h);
-            return y + h;
+            string text = l.Text.Length == 0 ? " " : l.Text;
+            int h = Math.Max(UI.S(24), TextRenderer.MeasureText(text, Tok.Body, new Size(w, 0), TextFormatFlags.NoPrefix | TextFormatFlags.WordBreak).Height + UI.S(6));
+            l.SetBounds(x, y, w, h);
+            return h;
         }
 
-        static void Line(int x, int y, int gap, params Control[] items)
+        static int Line(int x, int y, int gap, int right, params Control[] items)
         {
+            int left = x;
+            int rowH = Tok.ButtonHeight;
+            int used = 0;
             foreach (var c in items)
             {
                 if (!c.Visible) continue;
-                int w = Math.Max(c.GetPreferredSize(Size.Empty).Width, UI.S(96));
-                c.SetBounds(x, y, w, Tok.ButtonHeight);
+                int w = Math.Min(Math.Max(c.GetPreferredSize(Size.Empty).Width, UI.S(96)), right - left);
+                if (x > left && x + w > right) { x = left; y += rowH + gap; used += rowH + gap; }
+                c.SetBounds(x, y, w, rowH);
                 x += w + gap;
             }
+            return used + rowH;
         }
 
         public void DoLayout()
         {
-            int w = Math.Max(UI.S(300), ContentWidth - Tok.S2);
+            int w = Math.Max(UI.S(160), ContentWidth - Tok.S2);
             int gap = Tok.S3;
             int pad = Tok.S3;
             int hh = V4Card.HeaderHeight;
             int inner = w - pad * 2;
-            int cap = UI.S(22);
+            int right = pad + inner;
             int row = Tok.ButtonHeight;
+            foreach (var l in new[] { themeNote, menuState, favCount, folderPath, problemsHead, shellLabel, historyNote, dataPath, dataNote, aboutText })
+            {
+                l.Font = Tok.Body;
+                l.ForeColor = (l == themeNote || l == historyNote || l == dataNote) ? Tok.TextSecondary : Tok.Text;
+            }
             title.SetBounds(0, 0, w, UI.S(40));
             int y = UI.S(48);
 
-            appearance.SetBounds(0, y, w, hh + row + Tok.S2 + cap * 2 + pad);
-            themeSeg.SetBounds(pad, hh, Math.Min(inner, UI.S(320)), row);
-            themeNote.SetBounds(pad, hh + row + Tok.S2, inner, cap * 2);
+            int ya0 = hh;
+            themeSeg.SetBounds(pad, ya0, Math.Min(inner, UI.S(320)), row);
+            ya0 += row + Tok.S2;
+            ya0 += Fit(themeNote, pad, ya0, inner);
+            appearance.SetBounds(0, y, w, ya0 + pad);
             y += appearance.Height + gap;
 
             int favRows = Math.Max(1, Math.Min(Shell.MaxFavoritesPerContext, favList.Rows.Count));
             int favH = favList.Rows.Count == 0 ? 0 : favRows * Tok.RowHeight;
             int previewH = UI.S(190);
             int ym = hh;
-            menuState.SetBounds(pad, ym, inner, cap);
-            ym += cap + Tok.S1;
-            Line(pad, ym, Tok.S2, install, remove);
-            ym += row + Tok.S3;
-            favCount.SetBounds(pad, ym, inner, cap);
-            ym += cap + Tok.S1;
+            ym += Fit(menuState, pad, ym, inner) + Tok.S1;
+            ym += Line(pad, ym, Tok.S2, right, install, remove) + Tok.S3;
+            ym += Fit(favCount, pad, ym, inner) + Tok.S1;
             favList.Visible = favH > 0;
             if (favH > 0) { favList.SetBounds(pad, ym, inner, favH); ym += favH + Tok.S2; }
-            Line(pad, ym, Tok.S2, favUp, favDown, favRemove);
-            ym += row + Tok.S3;
+            ym += Line(pad, ym, Tok.S2, right, favUp, favDown, favRemove) + Tok.S3;
             previewSeg.SetBounds(pad, ym, Math.Min(inner, UI.S(360)), row);
             ym += row + Tok.S2;
             preview.SetBounds(pad, ym, inner, previewH);
@@ -307,12 +317,9 @@ namespace PSTools
             y += menu.Height + gap;
 
             int yf = hh;
-            folderPath.SetBounds(pad, yf, inner, cap);
-            yf += cap + Tok.S2;
-            Line(pad, yf, Tok.S2, openFolder, reload, unhide);
-            yf += row + Tok.S2;
-            problemsHead.SetBounds(pad, yf, inner, cap);
-            yf += cap + Tok.S1;
+            yf += Fit(folderPath, pad, yf, inner) + Tok.S2;
+            yf += Line(pad, yf, Tok.S2, right, openFolder, reload, unhide) + Tok.S2;
+            yf += Fit(problemsHead, pad, yf, inner) + Tok.S1;
             bool hasProblems = problems.Text.Length > 0;
             problems.Visible = hasProblems;
             if (hasProblems) { problems.SetBounds(pad, yf, inner, UI.S(90)); yf += UI.S(90) + Tok.S1; }
@@ -320,44 +327,41 @@ namespace PSTools
             y += folderCard.Height + gap;
 
             int yr = hh;
-            shellLabel.SetBounds(pad, yr + UI.S(4), UI.S(120), cap);
-            shellSeg.SetBounds(pad + UI.S(128), yr, Math.Min(inner - UI.S(128), UI.S(380)), row);
+            bool stackShell = inner < UI.S(520);
+            if (stackShell)
+            {
+                yr += Fit(shellLabel, pad, yr, inner);
+                shellSeg.SetBounds(pad, yr, Math.Min(inner, UI.S(380)), row);
+            }
+            else
+            {
+                shellLabel.SetBounds(pad, yr + UI.S(4), UI.S(120), UI.S(24));
+                shellSeg.SetBounds(pad + UI.S(128), yr, Math.Min(inner - UI.S(128), UI.S(380)), row);
+            }
             yr += row + Tok.S3;
             confirm.SetBounds(pad, yr, inner, UI.S(28));
             yr += UI.S(28) + Tok.S2;
-            historyNote.SetBounds(pad, yr, inner, cap * 2);
-            yr += cap * 2 + Tok.S1;
-            Line(pad, yr, Tok.S2, importHistory, clearHistory);
-            yr += row + pad;
+            yr += Fit(historyNote, pad, yr, inner) + Tok.S1;
+            yr += Line(pad, yr, Tok.S2, right, importHistory, clearHistory) + pad;
             runCard.SetBounds(0, y, w, yr);
             y += runCard.Height + gap;
 
             int yd = hh;
-            dataPath.SetBounds(pad, yd, inner, cap);
-            yd += cap + Tok.S1;
-            dataNote.SetBounds(pad, yd, inner, cap * 2);
-            yd += cap * 2 + Tok.S1;
-            Line(pad, yd, Tok.S2, openData, uninstall);
-            yd += row + pad;
+            yd += Fit(dataPath, pad, yd, inner) + Tok.S1;
+            yd += Fit(dataNote, pad, yd, inner) + Tok.S1;
+            yd += Line(pad, yd, Tok.S2, right, openData, uninstall) + pad;
             data.SetBounds(0, y, w, yd);
             y += data.Height + gap;
 
             int ya = hh;
-            aboutText.SetBounds(pad, ya, inner, cap * 3);
-            ya += cap * 3 + Tok.S2;
-            Line(pad, ya, Tok.S2, github, setup);
-            ya += row + pad;
+            ya += Fit(aboutText, pad, ya, inner) + Tok.S2;
+            ya += Line(pad, ya, Tok.S2, right, github, setup) + pad;
             about.SetBounds(0, y, w, ya);
             y += about.Height + gap;
 
             foreach (var c in cards) c.Skin();
             canvas.SetBounds(0, -ScrollOffset, w, y);
             SetContentHeight(y + Tok.S3);
-            foreach (var l in new[] { themeNote, menuState, favCount, folderPath, problemsHead, shellLabel, historyNote, dataPath, dataNote, aboutText })
-            {
-                l.Font = Tok.Body;
-                l.ForeColor = (l == themeNote || l == historyNote || l == dataNote) ? Tok.TextSecondary : Tok.Text;
-            }
         }
     }
 }
