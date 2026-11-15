@@ -281,7 +281,7 @@ namespace PSTools
                 string msg = "This command can destroy data:\n\n" + script.Trim() + "\n\n" + string.Join("\n", risk.Reasons.ToArray()) + "\n\nWorking folder: " + dir;
                 if (!Program.Ask(msg)) { SetStatus("Not run", Tok.TextSecondary); return; }
             }
-            else if (risk.Risk == Risk.Modifies && !RunHistory.Approved.Contains(approvalKey))
+            else if (risk.Risk == Risk.Modifies && Settings.ConfirmModifies && !RunHistory.Approved.Contains(approvalKey))
             {
                 string verbs = string.Join(", ", risk.Verbs.ToArray());
                 pendingApproval = true;

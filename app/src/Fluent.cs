@@ -15,7 +15,7 @@ namespace PSTools
         public const string FolderOpen = "\uE838", Folder = "\uE8B7", Play = "\uE768", Settings = "\uE713", Search = "\uE721", Undo = "\uE7A7",
             History = "\uE81C", Copy = "\uE8C8", Add = "\uE710", Delete = "\uE74D", Image = "\uE91B", Package = "\uE7B8", Share = "\uE72D",
             Link = "\uE71B", Code = "\uE943", List = "\uE8FD", Edit = "\uE70F", OpenWindow = "\uE8A7", Accept = "\uE8FB", Up = "\uE74A",
-            Refresh = "\uE72C", Warning = "\uE7BA", Pin = "\uE718", Save = "\uE74E", Download = "\uE896", Cancel = "\uE711", Help = "\uE897";
+            Refresh = "\uE72C", Warning = "\uE7BA", Pin = "\uE718", Save = "\uE74E", Download = "\uE896", Cancel = "\uE711", Help = "\uE897", Home = "\uE80F";
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode)]
         static extern uint GetGlyphIndicesW(IntPtr hdc, string text, int count, ushort[] indices, uint flags);

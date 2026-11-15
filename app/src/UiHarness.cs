@@ -85,12 +85,13 @@ namespace PSTools
         static List<Scenario> Scenarios()
         {
             var l = new List<Scenario>();
-            l.Add(new Scenario { Name = "main-actions", Build = () => { var f = Create<MainForm>(WorkFolder()); Show(f); Invoke(f, "ShowPage", true); return f; } });
-            l.Add(new Scenario { Name = "main-menu", Build = () => { var f = Create<MainForm>(WorkFolder()); Show(f); Invoke(f, "ShowPage", false); return f; } });
+            l.Add(new Scenario { Name = "main-home", Build = () => { var f = Create<MainForm>(WorkFolder()); Show(f); f.ShowPage(MainForm.PageHome); return f; } });
+            l.Add(new Scenario { Name = "main-actions", Build = () => { var f = Create<MainForm>(WorkFolder()); Show(f); f.ShowPage(MainForm.PageActions); return f; } });
+            l.Add(new Scenario { Name = "main-actions-detail", Build = () => { var f = Create<MainForm>(WorkFolder()); Show(f); f.ShowPage(MainForm.PageActions); f.ActionsPageControl.SelectTitle("Copy full path"); return f; } });
+            l.Add(new Scenario { Name = "main-settings", Build = () => { var f = Create<MainForm>(WorkFolder()); Show(f); f.ShowPage(MainForm.PageSettings); return f; } });
             l.Add(new Scenario { Name = "first-run", Build = () => Show(new FirstRunForm()) });
             l.Add(new Scenario { Name = "results-grid", Build = () => Show(new ResultsForm("Largest files  -  " + WorkFolder(), SampleResult())) });
             l.Add(new Scenario { Name = "history", Build = () => Show(new UndoHistoryForm()) });
-            l.Add(new Scenario { Name = "preview", Build = () => Show(new PreviewForm(Settings.DefaultState())) });
             l.Add(new Scenario { Name = "recipes", Build = () => Show(new RecipesForm()) });
             l.Add(new Scenario { Name = "structure", Build = () => Show(new StructureForm(WorkFolder())) });
             l.Add(new Scenario { Name = "search", Build = () => Show(new SearchForm(WorkFolder())) });

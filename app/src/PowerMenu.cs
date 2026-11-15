@@ -270,13 +270,13 @@ namespace PSTools
             { "Library", "\uE8F1" }
         };
 
-        static string GlyphForFolder(string top)
+        internal static string GlyphForFolder(string top)
         {
             string g;
             return FolderGlyphs.TryGetValue(top, out g) ? g : "\uE8B7";
         }
 
-        static string GlyphFor(ActionSpec s)
+        internal static string GlyphFor(ActionSpec s)
         {
             if (s.Icon.Length > 0 && s.Icon.Length <= 2) return s.Icon;
             string[] parts = s.MenuParts;

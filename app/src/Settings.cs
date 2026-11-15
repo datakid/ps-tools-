@@ -25,6 +25,8 @@ namespace PSTools
         public HashSet<string> GroupPins = new HashSet<string>();
         public HashSet<string> LibPins = new HashSet<string>();
         public string Win;
+        public bool StartedDismissed;
+        public bool ConfirmModifies = true;
         public List<string> Recent = new List<string>();
 
         public SettingsData()
@@ -55,6 +57,8 @@ namespace PSTools
                 else if (k == "win") d.Win = v;
                 else if (k == "recent" && d.Recent.Count < 8) d.Recent.Add(v);
                 else if (k == "schema") { int n; if (int.TryParse(v, out n)) d.Schema = n; }
+                else if (k == "started") d.StartedDismissed = v == "1";
+                else if (k == "confirm") d.ConfirmModifies = v != "0";
                 else if (k == "favorite") { if (v.Length > 0 && !d.Favorites.Contains(v)) d.Favorites.Add(v); }
                 else if (k == "hidden") { if (v.Length > 0) d.Hidden.Add(v); }
                 else if (k == "override")
@@ -95,6 +99,8 @@ namespace PSTools
             if (Schema >= SchemaVersion)
             {
                 sb.AppendLine("schema=" + Schema);
+                if (StartedDismissed) sb.AppendLine("started=1");
+                if (!ConfirmModifies) sb.AppendLine("confirm=0");
                 foreach (var f in Favorites) sb.AppendLine("favorite=" + f);
                 foreach (var h in Hidden.OrderBy(x => x, StringComparer.Ordinal)) sb.AppendLine("hidden=" + h);
                 foreach (var kv in Edits.OrderBy(x => x.Key, StringComparer.Ordinal))
@@ -569,6 +575,32 @@ namespace PSTools
             Defaults();
             data.Configured = true;
             Save();
+        }
+
+        public static List<string> HiddenIds { get { EnsureLoaded(); return data.Hidden.OrderBy(x => x, StringComparer.Ordinal).ToList(); } }
+
+        public static void MoveFavorite(string id, int delta)
+        {
+            EnsureLoaded();
+            int i = data.Favorites.FindIndex(f => string.Equals(f, id, StringComparison.OrdinalIgnoreCase));
+            int j = i + delta;
+            if (i < 0 || j < 0 || j >= data.Favorites.Count) return;
+            string x = data.Favorites[i];
+            data.Favorites.RemoveAt(i);
+            data.Favorites.Insert(j, x);
+            Save();
+        }
+
+        public static bool StartedDismissed
+        {
+            get { EnsureLoaded(); return data.StartedDismissed; }
+            set { EnsureLoaded(); data.StartedDismissed = value; Save(); }
+        }
+
+        public static bool ConfirmModifies
+        {
+            get { EnsureLoaded(); return data.ConfirmModifies; }
+            set { EnsureLoaded(); data.ConfirmModifies = value; Save(); }
         }
 
         public static void SetTheme(string t) { EnsureLoaded(); data.Theme = t; Save(); }
