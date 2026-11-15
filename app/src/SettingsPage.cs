@@ -8,10 +8,9 @@ using System.Windows.Forms;
 
 namespace PSTools
 {
-    class SettingsPage : Panel
+    class SettingsPage : ScrollPage
     {
         readonly MainForm main;
-        readonly Panel canvas = new Panel();
         readonly Label title = new Label { Text = "Settings", AutoSize = false, AccessibleName = "Settings title" };
 
         readonly V4Card appearance = new V4Card { Title = "Appearance", AccessibleName = "Appearance" };
@@ -65,10 +64,8 @@ namespace PSTools
         {
             main = owner;
             Dock = DockStyle.Fill;
-            AutoScroll = true;
             AccessibleName = "Settings";
             title.Font = UI.Title;
-            Controls.Add(canvas);
             canvas.Controls.Add(title);
             cards = new[] { appearance, menu, folderCard, runCard, data, about };
             foreach (var c in cards) canvas.Controls.Add(c);
@@ -273,7 +270,7 @@ namespace PSTools
 
         public void DoLayout()
         {
-            int w = Math.Max(UI.S(300), ClientSize.Width - Tok.S4);
+            int w = Math.Max(UI.S(300), ContentWidth - Tok.S2);
             int gap = Tok.S3;
             int pad = Tok.S3;
             int hh = V4Card.HeaderHeight;
@@ -354,8 +351,8 @@ namespace PSTools
             y += about.Height + gap;
 
             foreach (var c in cards) c.Skin();
-            canvas.SetBounds(0, 0, w, y);
-            AutoScrollMinSize = new Size(0, y + Tok.S3);
+            canvas.SetBounds(0, -ScrollOffset, w, y);
+            SetContentHeight(y + Tok.S3);
             foreach (var l in new[] { themeNote, menuState, favCount, folderPath, problemsHead, shellLabel, historyNote, dataPath, dataNote, aboutText })
             {
                 l.Font = Tok.Body;

@@ -7,10 +7,9 @@ using System.Windows.Forms;
 
 namespace PSTools
 {
-    class HomePage : Panel
+    class HomePage : ScrollPage
     {
         readonly MainForm main;
-        readonly Panel canvas = new Panel();
         readonly Label title = new Label { Text = "Home", AutoSize = false, AccessibleName = "Home title" };
         readonly V4Card folderCard = new V4Card { Title = "Working folder", AccessibleName = "Working folder" };
         readonly FSearchBox folderField = new FSearchBox("Folder path") { ShowGlyph = false, AccessibleName = "Working folder path" };
@@ -30,11 +29,9 @@ namespace PSTools
         {
             main = owner;
             Dock = DockStyle.Fill;
-            AutoScroll = true;
             AccessibleName = "Home";
             title.Font = UI.Title;
             canvas.Location = Point.Empty;
-            Controls.Add(canvas);
             canvas.Controls.Add(title);
             folderField.Input.AccessibleName = "Working folder path";
             folderCard.Controls.Add(folderField);
@@ -128,8 +125,7 @@ namespace PSTools
         public void DoLayout()
         {
             int pad = Tok.S4;
-            int viewW = Math.Max(UI.S(300), ClientSize.Width - (VerticalScroll.Visible ? 0 : 0));
-            int w = Math.Max(UI.S(280), viewW - pad);
+            int w = Math.Max(UI.S(280), ContentWidth - Tok.S2);
             int gap = Tok.S3;
             title.SetBounds(0, 0, w, UI.S(40));
             int y = UI.S(48);
@@ -164,8 +160,8 @@ namespace PSTools
             foreach (var c in cards) c.Skin();
             start.Skin();
             int total = heights.Max();
-            canvas.SetBounds(0, 0, w, total);
-            AutoScrollMinSize = new Size(0, total + Tok.S3);
+            canvas.SetBounds(0, -ScrollOffset, w, total);
+            SetContentHeight(total + Tok.S3);
         }
     }
 }
