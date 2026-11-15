@@ -160,6 +160,9 @@ namespace PSTools
                 heights[col] += c.Height + gap;
             }
             if (start.Visible) dismiss.SetBounds(start.Width - UI.S(96) - Tok.S3, UI.S(8), UI.S(96), UI.S(32));
+            folderCard.Skin();
+            foreach (var c in cards) c.Skin();
+            start.Skin();
             int total = heights.Max();
             canvas.SetBounds(0, 0, w, total);
             AutoScrollMinSize = new Size(0, total + Tok.S3);

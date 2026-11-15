@@ -31,7 +31,7 @@ namespace PSTools
         protected override void OnPaint(PaintEventArgs e)
         {
             var g = e.Graphics;
-            g.Clear(Parent == null ? Tok.Surface : Parent.BackColor);
+            g.Clear(Tok.Surface);
             int w = Math.Max(20, Width);
             int y = 0;
             const TextFormatFlags wrap = TextFormatFlags.NoPrefix | TextFormatFlags.WordBreak;
@@ -83,9 +83,9 @@ namespace PSTools
         readonly ActionDetail detail = new ActionDetail();
         readonly FButton run = new FButton { Text = "Run", Kind = FButton.Look.Accent, AccessibleName = "Run" };
         readonly FButton star = new FButton { Text = "Add to menu", AccessibleName = "Favorite" };
-        readonly FButton console = new FButton { Text = "Open in Run console", AccessibleName = "Open in Run console" };
-        readonly FButton copy = new FButton { Text = "Copy command", AccessibleName = "Copy command" };
-        readonly FButton duplicate = new FButton { Text = "Duplicate as my action", AccessibleName = "Duplicate as my action" };
+        readonly FButton console = new FButton { Text = "Run console", AccessibleName = "Open in Run console" };
+        readonly FButton copy = new FButton { Text = "Copy", AccessibleName = "Copy command" };
+        readonly FButton duplicate = new FButton { Text = "Duplicate", AccessibleName = "Duplicate as my action" };
         readonly FButton hide = new FButton { Text = "Hide", AccessibleName = "Hide" };
         readonly FInfoBar info = new FInfoBar { Visible = false };
         readonly List<MenuNode> stack = new List<MenuNode>();
@@ -236,7 +236,7 @@ namespace PSTools
             duplicate.Enabled = has && Code(s).Length > 0;
             hide.Enabled = has;
             star.Text = has && Settings.IsFavorite(s.Id) ? "Remove from menu" : "Add to menu";
-            duplicate.Text = has && s.Source == SpecSource.User && s.SourceFile.Length > 0 ? "Edit file" : "Duplicate as my action";
+            duplicate.Text = has && s.Source == SpecSource.User && s.SourceFile.Length > 0 ? "Edit file" : "Duplicate";
             DoLayout();
         }
 

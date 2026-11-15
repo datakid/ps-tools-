@@ -19,6 +19,12 @@ namespace PSTools
 
         public static int HeaderHeight { get { return UI.S(48); } }
 
+        public void Skin()
+        {
+            foreach (Control c in Controls)
+                if (c is Label || c is FToggle || c is FSegment) c.BackColor = Tok.Surface;
+        }
+
         public Rectangle Inner
         {
             get
@@ -70,6 +76,7 @@ namespace PSTools
             List.Visible = rows.Count > 0;
             Height = Needed;
             Relayout();
+            Skin();
         }
 
         public int Needed

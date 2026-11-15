@@ -353,6 +353,7 @@ namespace PSTools
             about.SetBounds(0, y, w, ya);
             y += about.Height + gap;
 
+            foreach (var c in cards) c.Skin();
             canvas.SetBounds(0, 0, w, y);
             AutoScrollMinSize = new Size(0, y + Tok.S3);
             foreach (var l in new[] { themeNote, menuState, favCount, folderPath, problemsHead, shellLabel, historyNote, dataPath, dataNote, aboutText })
