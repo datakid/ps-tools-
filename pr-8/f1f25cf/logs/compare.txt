@@ -1,0 +1,186 @@
+Images checked: 100
+LINT text-clip       main-home.dark.1.5.png: Label 'You can also drop a folder anywhe...' needs 48 px of height, has 30
+LINT out-of-bounds   main-home.dark.1.5.png: FButton 'Open' {X=846,Y=228,Width=156,Height=48} exceeds parent V4Card 
+{X=548,Y=157,Width=426,Height=198}
+LINT dark-white-box  main-home.dark.1.5.png: light region 453x1 at 25,307 (453 px) in a dark screenshot
+LINT dark-white-box  main-home.dark.1.5.png: light region 455x1 at 24,361 (455 px) in a dark screenshot
+LINT alignment       main-actions.dark.1.5.png: FButton 'Remove from menu' and FButton 'Copy' left edges differ by 2 px
+LINT out-of-bounds   main-actions.dark.1.5.png: ActionDetail '' {X=1004,Y=175,Width=10,Height=335} exceeds parent 
+V4Card {X=986,Y=157,Width=0,Height=491}
+LINT dark-white-box  main-actions.dark.1.5.png: light region 453x1 at 25,307 (453 px) in a dark screenshot
+LINT dark-white-box  main-actions.dark.1.5.png: light region 455x1 at 24,361 (455 px) in a dark screenshot
+LINT alignment       main-actions-detail.dark.1.5.png: FButton 'Remove from menu' and FButton 'Copy' left edges differ 
+by 2 px
+LINT out-of-bounds   main-actions-detail.dark.1.5.png: ActionDetail '' {X=1004,Y=175,Width=10,Height=335} exceeds 
+parent V4Card {X=986,Y=157,Width=0,Height=491}
+LINT dark-white-box  main-actions-detail.dark.1.5.png: light region 453x1 at 25,307 (453 px) in a dark screenshot
+LINT dark-white-box  main-actions-detail.dark.1.5.png: light region 455x1 at 24,361 (455 px) in a dark screenshot
+LINT text-clip       main-settings.dark.1.5.png: Label 'Favorites in menu: 8 of 8  (6 mor...' needs 54 px of height, 
+has 33
+LINT text-clip       main-settings.dark.1.5.png: Label 'PS Tools 4.0.0-rc1 PSTools.exe: D...' needs 108 px of height, 
+has 99
+LINT out-of-bounds   main-settings.dark.1.5.png: FButton 'Remove' {X=892,Y=1051,Width=144,Height=48} exceeds parent 
+V4Card {X=548,Y=391,Width=450,Height=1089}
+LINT out-of-bounds   main-settings.dark.1.5.png: FButton 'Show hidden actions' {X=893,Y=1615,Width=235,Height=48} 
+exceeds parent V4Card {X=548,Y=1498,Width=450,Height=234}
+LINT out-of-bounds   main-settings.dark.1.5.png: FButton 'Clear run history' {X=857,Y=2014,Width=197,Height=48} 
+exceeds parent V4Card {X=548,Y=1750,Width=450,Height=330}
+LINT dark-white-box  main-settings.dark.1.5.png: light region 453x1 at 25,307 (453 px) in a dark screenshot
+LINT dark-white-box  main-settings.dark.1.5.png: light region 455x1 at 24,361 (455 px) in a dark screenshot
+LINT dark-white-box  recipes.dark.1.png: light region 505x269 at 302,279 (135845 px) in a dark screenshot
+LINT default-grey    recipes.dark.1.png: default WinForms grey region 38x269 at 302,279
+LINT default-grey    recipes.dark.1.png: default WinForms grey region 353x269 at 342,279
+LINT default-grey    recipes.dark.1.png: default WinForms grey region 108x269 at 697,279
+LINT out-of-bounds   structure.dark.1.png: FCard '' {X=358,Y=46,Width=32,Height=31} exceeds parent NumericUpDown 
+{X=356,Y=44,Width=52,Height=25}
+LINT out-of-bounds   structure.dark.1.png: UpDownEdit '0' {X=360,Y=48,Width=32,Height=21} exceeds parent FCard 
+{X=358,Y=46,Width=32,Height=31}
+LINT out-of-bounds   search.dark.1.png: FCheck 'Also search inside text files' {X=794,Y=48,Width=52,Height=103} 
+exceeds parent TableLayoutPanel {X=20,Y=31,Width=956,Height=54}
+LINT out-of-bounds   search.dark.1.png: FCard '' {X=35,Y=45,Width=744,Height=103} exceeds parent TableLayoutPanel 
+{X=20,Y=31,Width=956,Height=54}
+LINT out-of-bounds   rename.dark.1.png: FCard '' {X=440,Y=132,Width=44,Height=31} exceeds parent NumericUpDown 
+{X=438,Y=130,Width=64,Height=25}
+LINT out-of-bounds   rename.dark.1.png: UpDownEdit '1' {X=442,Y=134,Width=44,Height=21} exceeds parent FCard 
+{X=440,Y=132,Width=44,Height=31}
+LINT out-of-bounds   rename.dark.1.png: FCard '' {X=552,Y=132,Width=24,Height=31} exceeds parent NumericUpDown 
+{X=550,Y=130,Width=44,Height=25}
+LINT out-of-bounds   rename.dark.1.png: UpDownEdit '3' {X=554,Y=134,Width=24,Height=21} exceeds parent FCard 
+{X=552,Y=132,Width=24,Height=31}
+LINT text-clip       main-home.light.1.5.png: Label 'You can also drop a folder anywhe...' needs 48 px of height, has 
+30
+LINT out-of-bounds   main-home.light.1.5.png: FButton 'Open' {X=846,Y=228,Width=156,Height=48} exceeds parent V4Card 
+{X=548,Y=157,Width=426,Height=198}
+LINT light-dark-box  main-home.light.1.5.png: dark region 451x1 at 26,307 (451 px) in a light screenshot
+LINT light-dark-box  main-home.light.1.5.png: dark region 455x1 at 24,361 (455 px) in a light screenshot
+LINT default-grey    main-home.light.1.5.png: default WinForms grey region 434x563 at 548,85
+LINT alignment       main-actions.light.1.5.png: FButton 'Remove from menu' and FButton 'Copy' left edges differ by 2 
+px
+LINT out-of-bounds   main-actions.light.1.5.png: ActionDetail '' {X=1004,Y=175,Width=10,Height=335} exceeds parent 
+V4Card {X=986,Y=157,Width=0,Height=491}
+LINT light-dark-box  main-actions.light.1.5.png: dark region 451x1 at 26,307 (451 px) in a light screenshot
+LINT light-dark-box  main-actions.light.1.5.png: dark region 455x1 at 24,361 (455 px) in a light screenshot
+LINT alignment       main-actions-detail.light.1.5.png: FButton 'Remove from menu' and FButton 'Copy' left edges 
+differ by 2 px
+LINT out-of-bounds   main-actions-detail.light.1.5.png: ActionDetail '' {X=1004,Y=175,Width=10,Height=335} exceeds 
+parent V4Card {X=986,Y=157,Width=0,Height=491}
+LINT light-dark-box  main-actions-detail.light.1.5.png: dark region 451x1 at 26,307 (451 px) in a light screenshot
+LINT light-dark-box  main-actions-detail.light.1.5.png: dark region 455x1 at 24,361 (455 px) in a light screenshot
+LINT text-clip       main-settings.light.1.5.png: Label 'Favorites in menu: 8 of 8  (6 mor...' needs 54 px of height, 
+has 33
+LINT text-clip       main-settings.light.1.5.png: Label 'PS Tools 4.0.0-rc1 PSTools.exe: D...' needs 108 px of height, 
+has 99
+LINT out-of-bounds   main-settings.light.1.5.png: FButton 'Remove' {X=892,Y=1051,Width=144,Height=48} exceeds parent 
+V4Card {X=548,Y=391,Width=450,Height=1089}
+LINT out-of-bounds   main-settings.light.1.5.png: FButton 'Show hidden actions' {X=893,Y=1615,Width=235,Height=48} 
+exceeds parent V4Card {X=548,Y=1498,Width=450,Height=234}
+LINT out-of-bounds   main-settings.light.1.5.png: FButton 'Clear run history' {X=857,Y=2014,Width=197,Height=48} 
+exceeds parent V4Card {X=548,Y=1750,Width=450,Height=330}
+LINT light-dark-box  main-settings.light.1.5.png: dark region 451x1 at 26,307 (451 px) in a light screenshot
+LINT light-dark-box  main-settings.light.1.5.png: dark region 455x1 at 24,361 (455 px) in a light screenshot
+LINT default-grey    main-settings.light.1.5.png: default WinForms grey region 434x563 at 548,85
+LINT default-grey    main-home.light.1.png: default WinForms grey region 16x548 at 952,55
+LINT default-grey    main-settings.light.1.png: default WinForms grey region 16x548 at 952,55
+LINT default-grey    results-grid.light.1.png: default WinForms grey region 926x484 at 25,74
+LINT default-grey    recipes.light.1.png: default WinForms grey region 16x46 at 926,135
+LINT default-grey    recipes.light.1.png: default WinForms grey region 38x269 at 302,279
+LINT default-grey    recipes.light.1.png: default WinForms grey region 353x269 at 342,279
+LINT default-grey    recipes.light.1.png: default WinForms grey region 108x269 at 697,279
+LINT out-of-bounds   structure.light.1.png: FCard '' {X=358,Y=46,Width=32,Height=31} exceeds parent NumericUpDown 
+{X=356,Y=44,Width=52,Height=25}
+LINT out-of-bounds   structure.light.1.png: UpDownEdit '0' {X=360,Y=48,Width=32,Height=21} exceeds parent FCard 
+{X=358,Y=46,Width=32,Height=31}
+LINT default-grey    structure.light.1.png: default WinForms grey region 844x488 at 16,87
+LINT out-of-bounds   search.light.1.png: FCheck 'Also search inside text files' {X=794,Y=48,Width=52,Height=103} 
+exceeds parent TableLayoutPanel {X=20,Y=31,Width=956,Height=54}
+LINT out-of-bounds   search.light.1.png: FCard '' {X=35,Y=45,Width=744,Height=103} exceeds parent TableLayoutPanel 
+{X=20,Y=31,Width=956,Height=54}
+LINT out-of-bounds   rename.light.1.png: FCard '' {X=440,Y=132,Width=44,Height=31} exceeds parent NumericUpDown 
+{X=438,Y=130,Width=64,Height=25}
+LINT out-of-bounds   rename.light.1.png: UpDownEdit '1' {X=442,Y=134,Width=44,Height=21} exceeds parent FCard 
+{X=440,Y=132,Width=44,Height=31}
+LINT out-of-bounds   rename.light.1.png: FCard '' {X=552,Y=132,Width=24,Height=31} exceeds parent NumericUpDown 
+{X=550,Y=130,Width=44,Height=25}
+LINT out-of-bounds   rename.light.1.png: UpDownEdit '3' {X=554,Y=134,Width=24,Height=21} exceeds parent FCard 
+{X=552,Y=132,Width=24,Height=31}
+LINT default-grey    library.light.1.png: default WinForms grey region 16x566 at 427,80
+LINT default-grey    library.light.1.png: default WinForms grey region 508x324 at 476,198
+LINT default-grey    palette.light.1.png: default WinForms grey region 16x326 at 538,60
+DIFF new          main-home.dark.1.5.png (0.00%)
+DIFF size-differs main-actions.dark.1.5.png (100.00%)
+DIFF new          main-actions-detail.dark.1.5.png (0.00%)
+DIFF new          main-settings.dark.1.5.png (0.00%)
+DIFF new          popup-root.dark.1.5.png (0.00%)
+DIFF new          popup-details.dark.1.5.png (0.00%)
+DIFF new          popup-input.dark.1.5.png (0.00%)
+DIFF new          cheatsheet.dark.1.5.png (0.00%)
+DIFF new          cheatsheet-search.dark.1.5.png (0.00%)
+DIFF new          cheatsheet-bash.dark.1.5.png (0.00%)
+DIFF new          main-home.dark.1.png (0.00%)
+DIFF size-differs main-actions.dark.1.png (100.00%)
+DIFF new          main-actions-detail.dark.1.png (0.00%)
+DIFF new          main-settings.dark.1.png (0.00%)
+DIFF size-differs first-run.dark.1.png (100.00%)
+DIFF new          popup-root.dark.1.png (0.00%)
+DIFF new          popup-drill.dark.1.png (0.00%)
+DIFF new          popup-search.dark.1.png (0.00%)
+DIFF new          popup-details.dark.1.png (0.00%)
+DIFF new          popup-200.dark.1.png (0.00%)
+DIFF new          popup-input.dark.1.png (0.00%)
+DIFF new          run-idle.dark.1.png (0.00%)
+DIFF new          run-output.dark.1.png (0.00%)
+DIFF new          run-error.dark.1.png (0.00%)
+DIFF new          run-risk.dark.1.png (0.00%)
+DIFF new          run-modifies.dark.1.png (0.00%)
+DIFF new          run-history.dark.1.png (0.00%)
+DIFF new          save-action.dark.1.png (0.00%)
+DIFF new          cheatsheet.dark.1.png (0.00%)
+DIFF new          cheatsheet-search.dark.1.png (0.00%)
+DIFF new          cheatsheet-cmd.dark.1.png (0.00%)
+DIFF new          cheatsheet-bash.dark.1.png (0.00%)
+DIFF new          cheatsheet-min.dark.1.png (0.00%)
+DIFF new          cheatsheet-empty.dark.1.png (0.00%)
+DIFF new          cheatsheet-params.dark.1.png (0.00%)
+DIFF new          popup-empty.dark.1.png (0.00%)
+DIFF new          popup-many.dark.1.png (0.00%)
+DIFF new          main-home.light.1.5.png (0.00%)
+DIFF size-differs main-actions.light.1.5.png (100.00%)
+DIFF new          main-actions-detail.light.1.5.png (0.00%)
+DIFF new          main-settings.light.1.5.png (0.00%)
+DIFF new          popup-root.light.1.5.png (0.00%)
+DIFF new          popup-details.light.1.5.png (0.00%)
+DIFF new          popup-input.light.1.5.png (0.00%)
+DIFF new          cheatsheet.light.1.5.png (0.00%)
+DIFF new          cheatsheet-search.light.1.5.png (0.00%)
+DIFF new          cheatsheet-bash.light.1.5.png (0.00%)
+DIFF new          main-home.light.1.png (0.00%)
+DIFF size-differs main-actions.light.1.png (100.00%)
+DIFF new          main-actions-detail.light.1.png (0.00%)
+DIFF new          main-settings.light.1.png (0.00%)
+DIFF size-differs first-run.light.1.png (100.00%)
+DIFF new          popup-root.light.1.png (0.00%)
+DIFF new          popup-drill.light.1.png (0.00%)
+DIFF new          popup-search.light.1.png (0.00%)
+DIFF new          popup-details.light.1.png (0.00%)
+DIFF new          popup-200.light.1.png (0.00%)
+DIFF new          popup-input.light.1.png (0.00%)
+DIFF new          run-idle.light.1.png (0.00%)
+DIFF new          run-output.light.1.png (0.00%)
+DIFF new          run-error.light.1.png (0.00%)
+DIFF new          run-risk.light.1.png (0.00%)
+DIFF new          run-modifies.light.1.png (0.00%)
+DIFF new          run-history.light.1.png (0.00%)
+DIFF new          save-action.light.1.png (0.00%)
+DIFF new          cheatsheet.light.1.png (0.00%)
+DIFF new          cheatsheet-search.light.1.png (0.00%)
+DIFF new          cheatsheet-cmd.light.1.png (0.00%)
+DIFF new          cheatsheet-bash.light.1.png (0.00%)
+DIFF new          cheatsheet-min.light.1.png (0.00%)
+DIFF new          cheatsheet-empty.light.1.png (0.00%)
+DIFF new          cheatsheet-params.light.1.png (0.00%)
+DIFF new          popup-empty.light.1.png (0.00%)
+DIFF new          popup-many.light.1.png (0.00%)
+71 lint issues, 6 images differ from baseline, 68 new
+::warning title=ui-lint::pixel/layout lint reported issues (warn-only for the unchanged v3 UI)
+::warning title=ui-diff::screenshots differ from the baseline (warn-only before Phase 6)
+exit code 0
