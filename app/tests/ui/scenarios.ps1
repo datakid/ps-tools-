@@ -740,7 +740,7 @@ else {
     $backHome = [bool](Find-Named $mainWin 'Working folder path' $null)
 
     Send-Keys $mainWin '^k'
-    $pal = Find-Window 'PS Tools Power menu' 8000
+    $pal = Find-Dialog $mainWin 'PS Tools Power menu' 8000
     $paletteOk = [bool]$pal
     if ($pal) { Snap $pal '33-main-power-menu'; Send-Keys $pal '{ESC}'; Start-Sleep -Milliseconds 400 }
 
@@ -760,16 +760,21 @@ else {
     Start-Sleep -Milliseconds 800
     Send-Keys $mainF '^2'
     Start-Sleep -Milliseconds 600
-    Send-Keys $mainF 'zip'
+    Send-Keys $mainF 'hash'
+    Start-Sleep -Milliseconds 500
+    $first = (Get-RowNames $mainF | Where-Object { $_ -match 'hash|Hash' } | Select-Object -First 1)
+    Send-Keys $mainF '^1'
+    Start-Sleep -Milliseconds 600
+    $before = [bool](Get-RowNames $mainF | Where-Object { $_ -eq $first })
+    Send-Keys $mainF '^2'
     Start-Sleep -Milliseconds 500
     Send-Keys $mainF '^d'
     Start-Sleep -Milliseconds 600
     Send-Keys $mainF '^1'
     Start-Sleep -Milliseconds 700
-    $favCard = Find-Named $mainF 'Favorites' $null
-    $favRows = Get-RowNames $mainF
+    $after = [bool](Get-RowNames $mainF | Where-Object { $_ -eq $first })
     Snap $mainF '35-main-home-favorite'
-    Add-Result 'main-favorite-toggle' ([bool]($favRows | Where-Object { $_ -match 'zip|Zip' })) ('rows on home after Ctrl+D: ' + (($favRows | Select-Object -First 6) -join ' | '))
+    Add-Result 'main-favorite-toggle' ($first -and ($before -ne $after)) ('"' + $first + '" on Home before Ctrl+D: ' + $before + ', after: ' + $after)
 }
 Stop-All
 
