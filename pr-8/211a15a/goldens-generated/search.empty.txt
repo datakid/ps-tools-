@@ -1,0 +1,5 @@
+[table]
+2 rows
+Folder	FullName
+empty	<FX>\tree-basic\empty
+src\lib	<FX>\tree-basic\src\lib

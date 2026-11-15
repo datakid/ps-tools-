@@ -1,0 +1,4 @@
+[clipboard]
+main
+[toast]
+Copied 1 line from Branch name

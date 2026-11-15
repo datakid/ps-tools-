@@ -1,0 +1,5 @@
+[clipboard]
+main.py
+util.py
+[toast]
+Copied 2 items
