@@ -12,7 +12,7 @@ $issues = New-Object System.Collections.Generic.List[string]
 
 function Scan($parent, $label) {
     foreach ($k in $parent.Controls) {
-        $scrolls = ($parent -is [System.Windows.Forms.ScrollableControl]) -and $parent.AutoScroll
+        $scrolls = (($parent -is [System.Windows.Forms.ScrollableControl]) -and $parent.AutoScroll) -or ($parent.GetType().Name -eq 'ScrollPage') -or ($parent.GetType().BaseType.Name -eq 'ScrollPage')
         if ($k.Visible -and -not $scrolls) {
             $limitH = $parent.ClientSize.Height + 1
             $limitW = $parent.ClientSize.Width + 1
