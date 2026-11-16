@@ -1,0 +1,4 @@
+[clipboard]
+C:/a/b/c.txt
+[toast]
+Slashes flipped

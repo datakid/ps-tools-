@@ -1,0 +1,5 @@
+
+entries 399, categories 25, cmd rows 61, bash rows 106, commands 957
+parsed 589/589 texts (0 errors), risk scans 422, ran 224, skipped 175, failed 0
+cheat sheet check passed
+exit code 0

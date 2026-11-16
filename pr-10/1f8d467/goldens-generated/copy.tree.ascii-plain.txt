@@ -1,0 +1,17 @@
+[clipboard]
+tree-basic/
++-- bin/
+|   \-- out.dll
++-- docs/
+|   \-- readme.md
++-- empty/
++-- node_modules/
+|   \-- pkg/
+|       \-- index.js
+\-- src/
+    +-- app/
+    |   +-- main.py
+    |   \-- util.py
+    \-- lib/
+[toast]
+Copied 14 lines from Tree (plain ASCII)

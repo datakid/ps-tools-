@@ -1,0 +1,17 @@
+[clipboard]
+# Selection (2 files)
+
+### main.py
+
+```python
+print('hello')
+```
+
+### util.py
+
+```python
+def add(a, b):
+    return a + b
+```
+[toast]
+Copied 2 files (103 B, about 26 tokens)

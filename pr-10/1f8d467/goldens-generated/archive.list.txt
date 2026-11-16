@@ -1,0 +1,5 @@
+[table]
+2 rows
+Name	Size	Packed
+proj/a.txt	2	4
+proj/sub/b.txt	2	4

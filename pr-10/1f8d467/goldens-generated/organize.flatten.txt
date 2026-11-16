@@ -1,0 +1,7 @@
+[toast]
+Copied 6 files to <FX>\tree-basic-flat
+[dialog]
+ASK: Copy every file under
+<FX>\tree-basic
+into
+<FX>\tree-basic-flat ?
