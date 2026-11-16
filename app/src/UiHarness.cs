@@ -247,6 +247,9 @@ namespace PSTools
 
         static Bitmap Grab(Form f, out string method)
         {
+            var corner = Screen.PrimaryScreen.Bounds;
+            Cursor.Position = new Point(corner.Right - 1, corner.Bottom - 1);
+            Pump();
             int w = Math.Max(1, f.Width), h = Math.Max(1, f.Height);
             var bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
             using (var g = Graphics.FromImage(bmp))
