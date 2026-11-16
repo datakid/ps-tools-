@@ -167,6 +167,7 @@ namespace PSTools
         public bool Header, Folder, Favorite, Admin, Extended;
         public Risk Risk = Risk.Safe;
         public MenuNode Node;
+        public object Tag;
     }
 
     class FTreeList : Control
@@ -179,6 +180,7 @@ namespace PSTools
         public event EventHandler<MouseEventArgs> RowRightClicked;
         public bool ShowDigits;
         public bool CompactSecondary;
+        public bool ClickActivates = true;
 
         public List<int> VisibleSelectable()
         {
@@ -403,7 +405,13 @@ namespace PSTools
             Invalidate();
             RaiseSelection();
             if (e.Button == MouseButtons.Right) { if (RowRightClicked != null) RowRightClicked(this, e); return; }
-            if (Activated != null) Activated(this, EventArgs.Empty);
+            if (ClickActivates && Activated != null) Activated(this, EventArgs.Empty);
+        }
+
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
+        {
+            base.OnMouseDoubleClick(e);
+            if (!ClickActivates && e.Button == MouseButtons.Left && IndexAt(e.Y) >= 0 && Activated != null) Activated(this, EventArgs.Empty);
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)

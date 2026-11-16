@@ -270,13 +270,13 @@ namespace PSTools
             { "Library", "\uE8F1" }
         };
 
-        static string GlyphForFolder(string top)
+        internal static string GlyphForFolder(string top)
         {
             string g;
             return FolderGlyphs.TryGetValue(top, out g) ? g : "\uE8B7";
         }
 
-        static string GlyphFor(ActionSpec s)
+        internal static string GlyphFor(ActionSpec s)
         {
             if (s.Icon.Length > 0 && s.Icon.Length <= 2) return s.Icon;
             string[] parts = s.MenuParts;
@@ -294,7 +294,7 @@ namespace PSTools
             int crumbH = crumbsOn && inputPanel == null ? UI.S(28) : 0;
             int belowH = below ? UI.S(190) : 0;
             int fixedH = headerH + searchH + crumbH + footerH + belowH + 2;
-            int fits = Math.Max(3, (area.Height - fixedH - UI.S(24)) / Tok.RowHeight);
+            int fits = Math.Max(3, (area.Height - fixedH - UI.S(24) - UI.S(64)) / Tok.RowHeight);
             int minList = Tok.RowHeight * Math.Min(4, fits), maxList = Tok.RowHeight * Math.Min(12, fits);
             int content = inputPanel != null ? inputPanel.ContentHeight : emptyOn ? minList : list.ContentHeight;
             int listH = Math.Max(minList, Math.Min(maxList, content));

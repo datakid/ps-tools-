@@ -143,7 +143,13 @@ foreach ($i in $items) {
 function Invoke-Exe([string[]]$arguments) {
     if ($ExeRunner) { return & $ExeRunner $Exe @arguments }
     $quoted = foreach ($a in $arguments) { if ($a -match '\s') { '"' + $a + '"' } else { $a } }
-    $p = Start-Process -FilePath $Exe -ArgumentList ($quoted -join ' ') -PassThru -NoNewWindow -Wait
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $Exe
+    $psi.Arguments = ($quoted -join ' ')
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $p = [System.Diagnostics.Process]::Start($psi)
+    if (-not $p.WaitForExit(60000)) { try { $p.Kill() } catch { } throw 'PSTools.exe did not finish within 60 seconds' }
     return $p.ExitCode
 }
 

@@ -714,6 +714,70 @@ else {
 }
 Stop-All
 
+$envM = New-Env 'mainwin'
+$procM = Start-Process -FilePath $Exe -ArgumentList ('open "{0}" --data-dir "{1}"' -f $treeBasic, $envM.Dir) -PassThru
+$mainWin = Find-Window 'PS Tools' 20000
+if (-not $mainWin) { Add-Result 'main-keyboard-tour' $false 'main window did not appear' }
+else {
+    Start-Sleep -Milliseconds 900
+    Snap $mainWin '31-main-home'
+    $homeOk = [bool](Find-Named $mainWin 'Working folder path' $null) -and [bool](Find-Named $mainWin 'Suggested here' $null)
+
+    Send-Keys $mainWin '^2'
+    Start-Sleep -Milliseconds 700
+    Send-Keys $mainWin 'zip'
+    Start-Sleep -Milliseconds 600
+    $rows = Get-RowNames $mainWin
+    Snap $mainWin '32-main-actions-search'
+    $actionsOk = [bool]($rows | Where-Object { $_ -match 'zip|Zip' })
+
+    Send-Keys $mainWin '{DOWN}'
+    Start-Sleep -Milliseconds 300
+    $detailOk = [bool](Find-Named $mainWin 'Action details' $null)
+
+    Send-Keys $mainWin '^1'
+    Start-Sleep -Milliseconds 500
+    $backHome = [bool](Find-Named $mainWin 'Working folder path' $null)
+
+    Send-Keys $mainWin '^k'
+    $pal = Find-Dialog $mainWin 'PS Tools Power menu' 8000
+    $paletteOk = [bool]$pal
+    if ($pal) { Snap $pal '33-main-power-menu'; Send-Keys $pal '{ESC}'; Start-Sleep -Milliseconds 400 }
+
+    Send-Keys $mainWin '^6'
+    Start-Sleep -Milliseconds 900
+    Snap $mainWin '34-main-settings'
+    $settingsOk = [bool](Find-Named $mainWin 'Explorer menu state' $null) -and [bool](Find-Named $mainWin 'Default shell' $null)
+
+    Add-Result 'main-keyboard-tour' ($homeOk -and $actionsOk -and $detailOk -and $backHome -and $paletteOk -and $settingsOk) ('home ' + $homeOk + ', actions search ' + $actionsOk + ', details ' + $detailOk + ', back home ' + $backHome + ', power menu ' + $paletteOk + ', settings ' + $settingsOk)
+}
+Stop-All
+
+$procF = Start-Process -FilePath $Exe -ArgumentList ('open "{0}" --data-dir "{1}"' -f $treeBasic, $envM.Dir) -PassThru
+$mainF = Find-Window 'PS Tools' 20000
+if (-not $mainF) { Add-Result 'main-favorite-toggle' $false 'main window did not appear' }
+else {
+    Start-Sleep -Milliseconds 800
+    Send-Keys $mainF '^2'
+    Start-Sleep -Milliseconds 600
+    Send-Keys $mainF 'hash'
+    Start-Sleep -Milliseconds 500
+    $first = (Get-RowNames $mainF | Where-Object { $_ -match 'hash|Hash' } | Select-Object -First 1)
+    Send-Keys $mainF '^1'
+    Start-Sleep -Milliseconds 600
+    $before = [bool](Get-RowNames $mainF | Where-Object { $_ -eq $first })
+    Send-Keys $mainF '^2'
+    Start-Sleep -Milliseconds 500
+    Send-Keys $mainF '^d'
+    Start-Sleep -Milliseconds 600
+    Send-Keys $mainF '^1'
+    Start-Sleep -Milliseconds 700
+    $after = [bool](Get-RowNames $mainF | Where-Object { $_ -eq $first })
+    Snap $mainF '35-main-home-favorite'
+    Add-Result 'main-favorite-toggle' ($first -and ($before -ne $after)) ('"' + $first + '" on Home before Ctrl+D: ' + $before + ', after: ' + $after)
+}
+Stop-All
+
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 $failed = @($results | Where-Object { -not $_.Ok }).Count
 Write-Host ('{0} scenarios, {1} failed' -f $results.Count, $failed)

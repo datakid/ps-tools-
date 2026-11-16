@@ -82,6 +82,12 @@ jobs:
         run: |
           app\tests\ci\run-logged.ps1 -Script app\tests\cheatsheet-check.ps1 -Params @{ Fixtures = "$env:RUNNER_TEMP\fx"; File = 'app\cheatsheet.json'; Exe = 'app\out\PSTools.exe'; Report = 'app\out\cheatsheet-report.json' } -Log app\out\logs\cheatsheet-check.txt
           exit $LASTEXITCODE
+      - name: User action examples load and parse
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\user-actions-check.ps1 -Params @{ Examples = 'docs\examples\actions'; Exe = 'app\out\PSTools.exe' } -Log app\out\logs\user-actions.txt
+          exit $LASTEXITCODE
       - name: Layout lint (v3 has known issues, see docs/v4/FINDINGS.md)
         continue-on-error: true
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
@@ -107,7 +113,7 @@ jobs:
         if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
         shell: powershell
         run: |
-          app\tests\ci\run-logged.ps1 -Script app\tests\ui\compare.ps1 -Params @{ Shots = 'app\out\shots'; Baseline = 'app\tests\ui\baseline-v3'; Out = 'app\out\ui-report'; LintWarnOnly = $true } -Log app\out\logs\compare.txt
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\compare.ps1 -Params @{ Shots = 'app\out\shots'; Baseline = 'app\tests\ui\baseline'; Out = 'app\out\ui-report'; StrictPattern = '^(main-|popup-|run-|cheatsheet|save-action|first-run)'; DiffFails = $true } -Log app\out\logs\compare.txt
           exit $LASTEXITCODE
       - name: Footprint check
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}

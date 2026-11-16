@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory = $true)][string]$Baseline,
     [Parameter(Mandatory = $true)][string]$Out,
     [switch]$LintWarnOnly,
+    [string]$StrictPattern = "",
     [switch]$DiffFails
 )
 
@@ -41,9 +42,12 @@ foreach ($d in $report.Diffs) { if ($d.Status -ne 'same') { Write-Host ('DIFF {0
 Write-Host ('{0} lint issues, {1} images differ from baseline, {2} new' -f $report.Issues.Count, @($report.Diffs | Where-Object { $_.Status -in 'changed', 'size-differs' }).Count, @($report.Diffs | Where-Object { $_.Status -eq 'new' }).Count)
 
 $fail = $false
-if ($report.Issues.Count -gt 0) {
-    if ($LintWarnOnly) { Write-Host '::warning title=ui-lint::pixel/layout lint reported issues (warn-only for the unchanged v3 UI)' }
-    else { $fail = $true }
+$strictIssues = if ($StrictPattern) { @($report.Issues | Where-Object { $_.Image -match $StrictPattern }) } else { @($report.Issues) }
+$legacyIssues = $report.Issues.Count - $strictIssues.Count
+if ($legacyIssues -gt 0) { Write-Host ('::warning title=ui-lint::{0} lint issues on v3 dialogs that v4 does not redesign (listed above)' -f $legacyIssues) }
+if ($strictIssues.Count -gt 0) {
+    if ($LintWarnOnly) { Write-Host '::warning title=ui-lint::pixel/layout lint reported issues (warn-only)' }
+    else { $fail = $true; Write-Host ('{0} lint issues on v4 screens' -f $strictIssues.Count) }
 }
 $changed = @($report.Diffs | Where-Object { $_.Status -in 'changed', 'size-differs' }).Count
 if ($changed -gt 0) {

@@ -8,111 +8,104 @@ namespace PSTools
 {
     class FirstRunForm : Form
     {
-        readonly List<FToggle> choices = new List<FToggle>();
-        readonly FToggle classic = new FCheck { AutoSize = true, Checked = true };
-        bool installed;
+        readonly FToggle addMenu = new FCheck { Text = "Add PS Tools to the Explorer right-click menu", Checked = true, AutoSize = true, AccessibleName = "Add to Explorer menu" };
+        readonly FToggle classic = new FCheck { Text = "Use the classic right-click menu on Windows 11", AutoSize = true, AccessibleName = "Use the classic menu" };
+        readonly FButton go = new FButton { Text = "Get started", Kind = FButton.Look.Accent, AccessibleName = "Get started" };
+        readonly Label heading = new Label { Text = "Welcome to PS Tools", AutoSize = false, AccessibleName = "Welcome" };
+        readonly Label[] bullets = new Label[3];
+        readonly Label classicNote = new Label { AutoSize = false, Text = "Windows 11 hides new menu items behind Show more options. The classic menu shows them straight away. Explorer restarts once.", AccessibleName = "Classic menu note" };
         readonly bool again;
+        readonly bool win11;
+        bool installed;
 
         public FirstRunForm() : this(false) { }
 
         public FirstRunForm(bool reopened)
         {
             again = reopened;
-            bool win11 = Tweaks.IsWindows11;
-            Text = "PS Tools"; Font = UI.Font; FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = false;
+            win11 = Tweaks.IsWindows11;
+            Text = "PS Tools";
+            AccessibleName = "Welcome to PS Tools";
+            Font = UI.Font;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
-            AutoSize = true; AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            ClientSize = new Size(UI.S(640), UI.S(480));
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
-            int content = UI.S(540);
-            var table = new TableLayoutPanel { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 1, Padding = new Padding(UI.S(24), UI.S(20), UI.S(24), UI.S(20)), Dock = DockStyle.Fill };
-            table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, content));
-
-            Action<Control, Padding> add = (c, margin) =>
+            heading.Font = UI.Title;
+            string[] lines =
             {
-                c.Margin = margin;
-                table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-                table.Controls.Add(c, 0, table.RowStyles.Count - 1);
+                "Power menu. Right-click, open the PS Tools menu, type two or three letters and press Enter.",
+                "Run anything. A small console that shows output, keeps history and warns before it changes files.",
+                "Save commands as actions. Turn a command you ran into a menu entry, with the folder filled in for you."
             };
-
-            add(new Label { Text = again ? "Set up the right-click menu" : "Add PS Tools to your right-click menu", Font = UI.Title, AutoSize = true, MaximumSize = new Size(content, 0) }, new Padding(0, 0, 0, UI.S(10)));
-            string intro = again
-                ? "Choose a starting point for the right-click menu. Your pinned actions are kept if you want them to be; fine-tune afterwards on the Menu page. Nothing runs in the background, and Full uninstall puts everything back."
-                : "Pick how much goes in the menu. You can change it any time on the Menu page. Nothing runs in the background, and Full uninstall puts everything back.";
-            string start = again && Array.IndexOf(Presets.Names, Settings.CurrentPreset) >= 0 ? Settings.CurrentPreset : "Everyday";
-            add(new Label { Text = intro, ForeColor = UI.Muted, AutoSize = true, MaximumSize = new Size(content, 0) }, new Padding(0, 0, 0, UI.S(14)));
-
-            foreach (var name in Presets.Names)
+            for (int i = 0; i < 3; i++)
             {
-                var rb = new FRadio { Text = name, Font = UI.Bold, AutoSize = true, Checked = name == start, Tag = name };
-                choices.Add(rb);
-                add(rb, new Padding(0, UI.S(2), 0, 0));
-                add(new Label { Text = Presets.Describe(name), ForeColor = UI.Muted, AutoSize = true, MaximumSize = new Size(content - UI.S(30), 0) }, new Padding(UI.S(30), 0, 0, UI.S(10)));
+                bullets[i] = new Label { Text = lines[i], AutoSize = false, Font = UI.Font, AccessibleName = "Feature " + (i + 1) };
+                Controls.Add(bullets[i]);
             }
-
-            if (win11)
-            {
-                classic.Checked = again ? Tweaks.Classic : true;
-                classic.Text = "Use the classic right-click menu. Windows 11 hides PS Tools behind \"Show more options\" otherwise.";
-                classic.MaximumSize = new Size(content, 0);
-                add(classic, new Padding(0, UI.S(4), 0, UI.S(6)));
-            }
-
-            var install = new FButton { Text = again ? "Apply" : "Install", Width = UI.S(130), Height = UI.S(34), Margin = new Padding(0, 0, UI.S(10), 0) };
-            UI.Primary(install);
-            install.Click += (s, e) => DoInstall();
-            var later = new FButton { Text = again ? "Close" : "Not now", Width = UI.S(110), Height = UI.S(34), Margin = new Padding(0, 0, UI.S(10), 0) };
-            later.Click += (s, e) => Close();
-            var preview = new FButton { Text = "Preview menu", Width = UI.S(130), Height = UI.S(34), Margin = new Padding(0) };
-            preview.Click += (s, e) => ShowPreview();
-            var buttons = new FlowLayoutPanel { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = false, FlowDirection = FlowDirection.LeftToRight };
-            buttons.Controls.Add(install); buttons.Controls.Add(later); buttons.Controls.Add(preview);
-            add(buttons, new Padding(0, UI.S(10), 0, 0));
-
-            Controls.Add(table);
-            AcceptButton = install; CancelButton = later;
+            Controls.Add(heading);
+            Controls.Add(addMenu);
+            Controls.Add(classic);
+            Controls.Add(classicNote);
+            Controls.Add(go);
+            classic.Visible = win11;
+            classicNote.Visible = win11;
+            classic.Checked = win11 && again && Tweaks.Classic;
+            addMenu.Checked = !again || !Shell.IsInstalled();
+            if (again && Shell.IsInstalled()) addMenu.Text = "Keep PS Tools in the Explorer right-click menu";
+            go.Click += (s, e) => Finish();
+            AcceptButton = go;
             UI.Apply(this, false);
-            classic.ForeColor = UI.Text;
+            BackColor = Tok.Window;
+            foreach (var l in bullets) { l.ForeColor = Tok.Text; l.Font = Tok.Body; }
+            classicNote.ForeColor = Tok.TextSecondary;
+            classicNote.Font = Tok.Caption;
+            heading.ForeColor = Tok.Text;
+            LayoutAll();
             FormClosed += (s, e) => { if (!installed && !again) { try { Settings.MarkConfigured(); } catch { } } };
         }
 
-        void ShowPreview()
+        void LayoutAll()
         {
-            var state = SettingsData.ForPreset(Chosen(), null, false);
-            using (var f = new PreviewForm(state)) f.ShowDialog(this);
+            int pad = UI.S(32);
+            int w = ClientSize.Width - pad * 2;
+            int y = pad;
+            heading.SetBounds(pad, y, w, UI.S(44));
+            y += UI.S(60);
+            foreach (var l in bullets)
+            {
+                l.SetBounds(pad, y, w, UI.S(48));
+                y += UI.S(56);
+            }
+            y += UI.S(8);
+            addMenu.SetBounds(pad, y, w, UI.S(28));
+            y += UI.S(36);
+            if (win11)
+            {
+                classic.SetBounds(pad, y, w, UI.S(28));
+                y += UI.S(30);
+                classicNote.SetBounds(pad + UI.S(28), y, w - UI.S(28), UI.S(40));
+            }
+            go.SetBounds(ClientSize.Width - pad - UI.S(160), ClientSize.Height - pad - UI.S(36), UI.S(160), UI.S(36));
         }
 
-        string Chosen()
-        {
-            foreach (var rb in choices) if (rb.Checked) return (string)rb.Tag;
-            return "Everyday";
-        }
-
-        void DoInstall()
+        void Finish()
         {
             try
             {
-                string preset = Chosen();
-                bool keep = false;
-                if (again && Settings.Configured && Settings.HasPins)
-                {
-                    var answer = PinChoice.Ask(this);
-                    if (answer == PinChoice.Result.Cancel) return;
-                    keep = answer == PinChoice.Result.Keep;
-                }
-                Settings.ApplyPreset(preset, keep);
-                Shell.Install();
-                installed = true;
+                Settings.MarkConfigured();
+                if (addMenu.Checked) { Shell.Install(); installed = true; }
                 bool restart = false;
-                if (classic.Parent != null && classic.Checked && !Tweaks.Classic) { Tweaks.ToggleClassic(); restart = true; }
-                if (restart && Program.Ask("The classic menu needs Explorer to restart.\n\nRestart Explorer now? Open File Explorer windows will close."))
-                    Actions.RestartExplorerNow();
-                if (again)
-                    foreach (Form f in Application.OpenForms)
-                    {
-                        var m = f as MainForm;
-                        if (m != null) m.AfterSetup();
-                    }
+                if (win11 && classic.Checked != Tweaks.Classic) { Tweaks.ToggleClassic(); restart = true; }
+                if (restart && Program.Ask("The classic menu setting needs Explorer to restart.\n\nRestart Explorer now? Open File Explorer windows will close.")) Actions.RestartExplorerNow();
+                foreach (Form f in Application.OpenForms)
+                {
+                    var m = f as MainForm;
+                    if (m != null) m.AfterSetup();
+                }
                 Close();
             }
             catch (Exception ex) { Program.Fail("Could not install the menu:\n" + ex.Message); }
