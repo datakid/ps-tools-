@@ -4,6 +4,8 @@ A small native Windows tool for the folder you are looking at. Right-click, open
 
 One `PSTools.exe` (C# and WinForms on the .NET Framework that Windows already has). No installer, no background process, no administrator rights for the app itself.
 
+**Download:** https://github.com/datakid/ps-tools-/releases
+
 ## The 30-second tour
 
 **Home.** Pick the working folder (type it, Browse, or drop a folder on the window). Home shows what fits that folder, your favorites, what you ran recently, and a short get-started list.
@@ -29,6 +31,26 @@ One `PSTools.exe` (C# and WinForms on the .NET Framework that Windows already ha
 **Settings.** Theme, the Explorer menu (install, remove, favorites with order, a preview of what Explorer will show), your actions folder with its problems list, Run console options, data and privacy, About.
 
 ![Settings](docs/img/settings.png)
+
+## What it does not do
+
+- It runs on Windows only. It uses WinForms, the registry and Explorer.
+- It has no installer and no background process. The app itself needs no administrator rights. Administrator actions show the exact script first and need UAC.
+- The Explorer menu is a fixed tree plus your favorites. Suggestions for the current folder show on the Home page and in the Power menu, not in the Explorer menu.
+- Undo covers actions that change files: moves, renames, new folders, pasted and downloaded files, zips, extractions, converted images, links, timestamps, attributes and text rewrites. The history keeps the last 10 operations and at most 1 GB of backups. Scripts you run from the Run console or your own actions folder are not covered by Undo.
+- Deletions use the Recycle Bin, except force delete and build-folder delete, which say so.
+- Recipes can only chain actions that finish without opening a window or asking a question. Result lists, clipboard-paste actions, administrator actions and the System module are not offered as steps.
+- Saving recipes fails if the exe sits in a protected folder such as Program Files. Move it somewhere you can write to.
+
+## Privacy
+
+The app's own code makes one kind of network request: the download-link action, which fetches the address you copied. The local server action serves a folder on localhost only. The app reads your theme and accent colour from the registry. Commands you run yourself in the Run console, and the cheat sheet entries you choose to try, do whatever those commands do. The registry keys and folders the app writes are listed under Footprint and clean uninstall.
+
+## Built with
+
+- C# 5 and WinForms on the .NET Framework 4 that Windows already has. `app\build.cmd` compiles it with the `csc.exe` from that framework. No SDK is needed.
+- References only framework assemblies: System, System.Core, System.Drawing, System.Windows.Forms, Microsoft.VisualBasic, System.Web.Extensions, System.IO.Compression and System.IO.Compression.FileSystem. No NuGet packages.
+- Everything is drawn in code. No images or fonts ship with it, and the only runtime files are `actions.json`, `cheatsheet.json` and `commands.json`.
 
 ## Install
 
@@ -104,3 +126,7 @@ app/tests/          check scripts and fixtures, UI scenarios and baselines
 app/tools/          footprint, layout and snippet checks
 docs/               USER_ACTIONS.md, examples, v4 planning documents and FINDINGS.md
 ```
+
+## License
+
+MIT. See `LICENSE`.
