@@ -86,7 +86,7 @@ namespace PSTools
             Title = new Font(SemiFamily, 15f * s);
             Mono = new Font(Pick("Cascadia Mono", "Consolas"), 10f * s);
         }
-        public const string Version = "4.0.0-rc1";
+        public const string Version = "4.0.0";
 
         static string Pick(params string[] names)
         {
