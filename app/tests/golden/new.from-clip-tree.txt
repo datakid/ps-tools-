@@ -1,0 +1,14 @@
+[toast]
+Created 4 folders and 4 files.
+[dialog]
+ASK: Create 4 folders and 4 empty files in
+<FX>\tree-basic ?
+
+sample/
+  docs/
+    guide.md
+  src/
+    util/
+      helpers.py
+    main.py
+  README.md

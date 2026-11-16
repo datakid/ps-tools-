@@ -1,0 +1,17 @@
+[clipboard]
+tree-basic/               2.1 KB
+├── bin/                  2.0 KB
+│   └── out.dll           2.0 KB
+├── docs/                   26 B
+│   └── readme.md           26 B
+├── empty/                   0 B
+├── node_modules/           20 B
+│   └── pkg/                20 B
+│       └── index.js        20 B
+└── src/                    47 B
+    ├── app/                47 B
+    │   ├── main.py         15 B
+    │   └── util.py         32 B
+    └── lib/                 0 B
+[toast]
+Copied 14 lines from Tree with sizes

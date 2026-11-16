@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -52,6 +53,8 @@ namespace PSTools
         }
 
         public static bool Dark;
+        public static Color? AccentOverride;
+        static float fontFactor = 1f;
         static float scale = -1f;
         static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Form, object> scaledForms = new System.Runtime.CompilerServices.ConditionalWeakTable<Form, object>();
 
@@ -70,7 +73,20 @@ namespace PSTools
         }
 
         public static int S(int v) { return (int)Math.Round(v * Scale); }
-        public const string Version = "3.0.0";
+
+        public static void ForceScale(float s)
+        {
+            scale = s;
+            fontFactor = s;
+            Font = new Font(Family, 10f * s);
+            Small = new Font(Family, 9f * s);
+            Bold = new Font(SemiFamily, 10f * s);
+            SmallBold = new Font(SemiFamily, 9f * s);
+            Head = new Font(SemiFamily, 12f * s);
+            Title = new Font(SemiFamily, 15f * s);
+            Mono = new Font(Pick("Cascadia Mono", "Consolas"), 10f * s);
+        }
+        public const string Version = "4.0.0";
 
         static string Pick(params string[] names)
         {
@@ -103,7 +119,7 @@ namespace PSTools
         public static Font Head = new Font(SemiFamily, 12f);
         public static Font Title = new Font(SemiFamily, 15f);
         public static Font Mono = new Font(Pick("Cascadia Mono", "Consolas"), 10f);
-        public static Font Icons(float size) { return new Font(IconFamily ?? "Segoe UI", size); }
+        public static Font Icons(float size) { return new Font(IconFamily ?? "Segoe UI", size * fontFactor); }
 
         public static Color Accent = Color.FromArgb(0, 103, 192);
         public static Color Back = Color.FromArgb(243, 243, 243);
@@ -174,6 +190,7 @@ namespace PSTools
 
         static Color SystemAccent()
         {
+            if (AccentOverride.HasValue) return AccentOverride.Value;
             try
             {
                 using (var k = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM"))
@@ -349,6 +366,7 @@ namespace PSTools
         {
             if (c is Panel || c is TableLayoutPanel || c is FlowLayoutPanel || c is ListView || c is TreeView || c is SplitContainer || c is TabControl || c is Label || c is GroupBox) Buffer(c);
             var tb = c as TextBox;
+            if (tb != null && tb.Tag as string == "raw") { tb.BackColor = Tok.Input; tb.ForeColor = Tok.Text; tb.BorderStyle = BorderStyle.None; return; }
             if (tb != null)
             {
                 tb.BackColor = Field; tb.ForeColor = Text;
@@ -548,9 +566,62 @@ namespace PSTools
 
     static class Clip
     {
+        public static Image GetImage()
+        {
+            if (TestSink.Active) return TestSink.ClipboardImageIn.Length > 0 && System.IO.File.Exists(TestSink.ClipboardImageIn) ? new Bitmap(TestSink.ClipboardImageIn) : null;
+            try { return Clipboard.ContainsImage() ? Clipboard.GetImage() : null; }
+            catch { return null; }
+        }
+
+        public static void SetFiles(IEnumerable<string> files)
+        {
+            var list = files.ToList();
+            if (TestSink.Active) { TestSink.Clips.Add("[files] " + string.Join("; ", list.Select(f => System.IO.Path.GetFileName(f)).ToArray())); return; }
+            var sc = new System.Collections.Specialized.StringCollection();
+            sc.AddRange(list.ToArray());
+            Clipboard.SetFileDropList(sc);
+        }
+
+        public static void SetImageFile(string file, out int width, out int height)
+        {
+            using (var src = Image.FromFile(file))
+            using (var bmp = new Bitmap(src))
+            {
+                width = bmp.Width;
+                height = bmp.Height;
+                if (TestSink.Active) { TestSink.Clips.Add("[image] " + width + "x" + height); return; }
+                var data = new DataObject();
+                data.SetData(DataFormats.Bitmap, true, bmp);
+                var png = new System.IO.MemoryStream();
+                bmp.Save(png, System.Drawing.Imaging.ImageFormat.Png);
+                data.SetData("PNG", false, png);
+                Clipboard.SetDataObject(data, true);
+            }
+        }
+
+        public static List<string> Files()
+        {
+            if (TestSink.Active) return new List<string>(TestSink.ClipboardFilesIn);
+            try
+            {
+                var l = new List<string>();
+                if (Clipboard.ContainsFileDropList()) foreach (string f in Clipboard.GetFileDropList()) l.Add(f);
+                return l;
+            }
+            catch { return new List<string>(); }
+        }
+
+        public static string Text()
+        {
+            if (TestSink.Active) return TestSink.ClipboardIn;
+            try { return Clipboard.ContainsText() ? Clipboard.GetText() : ""; }
+            catch { return ""; }
+        }
+
         public static void Set(string text)
         {
             if (text == null) return;
+            if (TestSink.Active) { TestSink.Clips.Add(text); return; }
             for (int i = 0; i < 5; i++)
             {
                 try { Clipboard.SetDataObject(text, true, 3, 80); return; }

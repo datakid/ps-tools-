@@ -1,0 +1,8 @@
+[clipboard]
+<FX>\tree-basic\bin\out.dll
+<FX>\tree-basic\docs\readme.md
+<FX>\tree-basic\node_modules\pkg\index.js
+<FX>\tree-basic\src\app\main.py
+<FX>\tree-basic\src\app\util.py
+[toast]
+Copied 5 lines from All file paths (absolute)

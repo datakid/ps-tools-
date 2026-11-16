@@ -19,7 +19,9 @@ namespace PSTools
         public const int MaxEntries = 10;
         public static long MaxBackupBytes = 1024L * 1024 * 1024;
 
-        public static string Dir { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PSTools"); } }
+        public static string DirOverride;
+
+        public static string Dir { get { if (DirOverride != null) return DirOverride; return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PSTools"); } }
         static string HistoryDir { get { return Path.Combine(Dir, "undo"); } }
         static string LegacyFile { get { return Path.Combine(Dir, "undo.txt"); } }
         static string DataDir { get { return Path.Combine(Dir, "undo-data"); } }

@@ -1,0 +1,6 @@
+[clipboard]
+a
+b
+c
+[toast]
+Removed 2 duplicates

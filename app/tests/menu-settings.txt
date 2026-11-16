@@ -1,0 +1,16 @@
+version=3
+configured=1
+theme=light
+schema=4
+favorite=copy.path.quoted
+favorite=copy.tree.ascii
+favorite=archive.zip-smart
+favorite=image.png
+favorite=new.paste-image
+favorite=inspect.space-map
+favorite=search.here
+favorite=open.ps
+favorite=new.paste-text
+favorite=git.copy.branch
+used.folder=copy.tree.ascii
+used.folder=copy.path.quoted

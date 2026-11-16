@@ -12,7 +12,7 @@ $issues = New-Object System.Collections.Generic.List[string]
 
 function Scan($parent, $label) {
     foreach ($k in $parent.Controls) {
-        $scrolls = ($parent -is [System.Windows.Forms.ScrollableControl]) -and $parent.AutoScroll
+        $scrolls = (($parent -is [System.Windows.Forms.ScrollableControl]) -and $parent.AutoScroll) -or ($parent.GetType().Name -eq 'ScrollPage') -or ($parent.GetType().BaseType.Name -eq 'ScrollPage')
         if ($k.Visible -and -not $scrolls) {
             $limitH = $parent.ClientSize.Height + 1
             $limitW = $parent.ClientSize.Width + 1
@@ -55,18 +55,14 @@ $mainType = $asm.GetType('PSTools.MainForm')
 $main = [Activator]::CreateInstance($mainType, @($env:USERPROFILE))
 $main.Left = 20; $main.Top = 20
 $showPage = $mainType.GetMethod('ShowPage', $inst)
-foreach ($size in @(@(980, 640), @(860, 520), @(1200, 760))) {
-    $showPage.Invoke($main, @($true))
-    Check $main ("Actions page") $size[0] $size[1]
-    $showPage.Invoke($main, @($false))
-    Check $main ("Menu page") $size[0] $size[1]
+foreach ($size in @(@(1100, 720), @(880, 560), @(1200, 760))) {
+    $showPage.Invoke($main, @(0))
+    Check $main 'Home page' $size[0] $size[1]
+    $showPage.Invoke($main, @(1))
+    Check $main 'Actions page' $size[0] $size[1]
+    $showPage.Invoke($main, @(2))
+    Check $main 'Settings page' $size[0] $size[1]
 }
-
-$set = 'System.Collections.Generic.HashSet[string]'
-$presets = $asm.GetType('PSTools.Presets')
-$ids = $presets.GetMethod('Ids').Invoke($null, @('Everyday'))
-$preview = [Activator]::CreateInstance($asm.GetType('PSTools.PreviewForm'), @($ids, (New-Object $set)))
-Check $preview 'Menu preview' 0 0
 
 $first = [Activator]::CreateInstance($asm.GetType('PSTools.FirstRunForm'))
 Check $first 'First run' 0 0
@@ -90,7 +86,7 @@ $space = [Activator]::CreateInstance($asm.GetType('PSTools.SpaceForm'), @($env:T
 Check $space 'Space map' 0 0
 Check $space 'Space map (minimum)' 640 420
 
-foreach ($f in @($space, $history, $picker, $recipes, $library, $first, $preview, $main)) { $f.Dispose() }
+foreach ($f in @($space, $history, $picker, $recipes, $library, $first, $main)) { $f.Dispose() }
 
 if ($issues.Count -gt 0) {
     Write-Host ''

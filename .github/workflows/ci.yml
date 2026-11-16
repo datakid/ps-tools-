@@ -1,0 +1,152 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-test:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare log folder
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force app\out\logs | Out-Null
+      - name: Build with .NET Framework csc
+        id: build
+        shell: cmd
+        run: cd app && build.cmd
+      - name: Self-test
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\ci\invoke-exe.ps1 -Exe app\out\PSTools.exe -Arguments '--selftest','--quiet' -Log app\out\logs\selftest.txt
+          exit $LASTEXITCODE
+      - name: Fixtures
+        id: fixtures
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\fixtures\make-fixtures.ps1 -Params @{ Out = "$env:RUNNER_TEMP\fx" } -Log app\out\logs\fixtures.txt
+          exit $LASTEXITCODE
+      - name: Generate goldens (artifact only, for review)
+        if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\run-action-tests.ps1 -Exe app\out\PSTools.exe -Fixtures "$env:RUNNER_TEMP\fx" -UpdateGoldens -Goldens app\out\goldens-generated -Report app\out\action-report-generated.json -Log app\out\logs\action-tests-generate.txt
+          exit 0
+      - name: Action tests (goldens)
+        if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\run-action-tests.ps1 -Exe app\out\PSTools.exe -Fixtures "$env:RUNNER_TEMP\fx" -Report app\out\action-report.json -Log app\out\logs\action-tests.txt
+          exit $LASTEXITCODE
+      - name: Menu snapshot
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\menu-snapshot.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\menu-snapshot.txt
+          exit $LASTEXITCODE
+      - name: Actions parse check (Windows PowerShell 5.1)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\actions-check.ps1 -Params @{ File = 'app\actions.json' } -Log app\out\logs\actions-check.txt
+          exit $LASTEXITCODE
+      - name: Coverage gate (POWER_ACTIONS.md)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\coverage-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Doc = 'docs\v4\POWER_ACTIONS.md'; Tests = 'app\tests\action-tests.json' } -Log app\out\logs\coverage.txt
+          exit $LASTEXITCODE
+      - name: Snippet check
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tools\snippet-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\snippet-check.txt
+          exit $LASTEXITCODE
+      - name: Generate PowerShell command list (Windows PowerShell 5.1)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tools\gen-commands-list.ps1 -Params @{ Out = 'app\out\commands-list.json' } -Log app\out\logs\commands-list.txt
+          exit $LASTEXITCODE
+      - name: Cheat sheet check (parse all, run safe entries)
+        if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\cheatsheet-check.ps1 -Params @{ Fixtures = "$env:RUNNER_TEMP\fx"; File = 'app\cheatsheet.json'; Exe = 'app\out\PSTools.exe'; Report = 'app\out\cheatsheet-report.json' } -Log app\out\logs\cheatsheet-check.txt
+          exit $LASTEXITCODE
+      - name: User action examples load and parse
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\user-actions-check.ps1 -Params @{ Examples = 'docs\examples\actions'; Exe = 'app\out\PSTools.exe' } -Log app\out\logs\user-actions.txt
+          exit $LASTEXITCODE
+      - name: Layout lint (v3 has known issues, see docs/v4/FINDINGS.md)
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tools\layout-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\layout-check.txt
+          exit $LASTEXITCODE
+      - name: Screenshots
+        id: shots
+        if: ${{ !cancelled() && steps.fixtures.outcome == 'success' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\capture.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Out = 'app\out\shots'; Fixtures = "$env:RUNNER_TEMP\fx" } -Log app\out\logs\capture.txt
+          exit $LASTEXITCODE
+      - name: UI Automation scenarios
+        id: scenarios
+        if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\scenarios.ps1 -Params @{ Exe = 'app\out\PSTools.exe'; Fixtures = "$env:RUNNER_TEMP\fx"; Out = 'app\out\shots' } -Log app\out\logs\scenarios.txt
+          exit $LASTEXITCODE
+      - name: Visual diff and pixel lint
+        if: ${{ !cancelled() && steps.shots.outcome != 'skipped' }}
+        shell: powershell
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tests\ui\compare.ps1 -Params @{ Shots = 'app\out\shots'; Baseline = 'app\tests\ui\baseline'; Out = 'app\out\ui-report'; StrictPattern = '^(main-|popup-|run-|cheatsheet|save-action|first-run)'; DiffFails = $true } -Log app\out\logs\compare.txt
+          exit $LASTEXITCODE
+      - name: Footprint check
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          app\tests\ci\run-logged.ps1 -Script app\tools\footprint-check.ps1 -Params @{ Exe = 'app\out\PSTools.exe' } -Log app\out\logs\footprint.txt
+          exit $LASTEXITCODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pstools-${{ github.sha }}
+          path: app/out
+          if-no-files-found: warn
+  gallery:
+    needs: build-test
+    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: pstools-${{ github.sha }}
+          path: artifact
+      - name: Publish gallery
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BUILD_RESULT: ${{ needs.build-test.result }}
+        run: bash app/tests/ui/publish-gallery.sh

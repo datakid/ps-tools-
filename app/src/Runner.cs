@@ -12,6 +12,7 @@ namespace PSTools
     {
         static string ClipText()
         {
+            if (TestSink.Active) return TestSink.ClipboardIn;
             try
             {
                 if (!Clipboard.ContainsText()) return "";
@@ -85,6 +86,7 @@ namespace PSTools
             if (error != null) { Program.Fail(error.Message); return; }
             if (result == null) return;
 
+            if (TestSink.Active && result.Rows != null) TestSink.Tables.Add(TestSink.Render(result));
             if (result.ClipText != null)
             {
                 Clip.Set(result.ClipText);
@@ -104,6 +106,7 @@ namespace PSTools
 
         public static void Notify(IWin32Window owner, string text, bool undoable)
         {
+            if (TestSink.Active) { TestSink.Toasts.Add(text); return; }
             var m = owner as MainForm;
             if (m != null) m.SetStatus(text);
             else if (Program.Quiet) Console.WriteLine(text);

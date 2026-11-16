@@ -40,7 +40,7 @@ namespace PSTools
                 Hint = "Saves the image on the clipboard (a screenshot, a copied picture) as clip-<date>.png in this folder.",
                 Run = (paths, c) =>
                 {
-                    Image img = Clipboard.ContainsImage() ? Clipboard.GetImage() : null;
+                    Image img = Clip.GetImage();
                     if (img == null) return new Result { Summary = "The clipboard does not contain an image." };
                     string target = Fs.FreeName(paths[0], "clip-" + Stamp() + ".png");
                     using (img) img.Save(target, ImageFormat.Png);
@@ -57,12 +57,19 @@ namespace PSTools
                 Hint = "Saves the text on the clipboard as clip-<date>.txt (.json or .html when it clearly is one).",
                 Run = (paths, c) =>
                 {
-                    string t = Clipboard.ContainsText() ? Clipboard.GetText() : "";
+                    string t = Clip.Text();
                     if (t.Trim().Length == 0) return new Result { Summary = "The clipboard does not contain text." };
                     string s = t.TrimStart();
                     string ext = ".txt";
                     if ((s.StartsWith("{") || s.StartsWith("[")) && (s.TrimEnd().EndsWith("}") || s.TrimEnd().EndsWith("]"))) ext = ".json";
                     else if (s.StartsWith("<!DOCTYPE html", StringComparison.OrdinalIgnoreCase) || s.StartsWith("<html", StringComparison.OrdinalIgnoreCase)) ext = ".html";
+                    else if (s.StartsWith("<?xml", StringComparison.OrdinalIgnoreCase)) ext = ".xml";
+                    else if (s.StartsWith("# ") || s.Contains("\n## ") || s.Contains("\n```")) ext = ".md";
+                    else
+                    {
+                        var rows = s.Replace("\r", "").Split('\n').Where(l => l.Length > 0).ToArray();
+                        if (rows.Length >= 2 && rows[0].Contains(",") && rows.All(r => r.Count(ch => ch == ',') == rows[0].Count(ch => ch == ','))) ext = ".csv";
+                    }
                     string target = Fs.FreeName(paths[0], "clip-" + Stamp() + ext);
                     File.WriteAllText(target, t, new UTF8Encoding(false));
                     var j = new Journal("Paste text into " + paths[0]);
@@ -78,7 +85,7 @@ namespace PSTools
                 Hint = "Creates a folder named after the first line of the clipboard text (invalid characters become _).",
                 Run = (paths, c) =>
                 {
-                    string t = Clipboard.ContainsText() ? Clipboard.GetText() : "";
+                    string t = Clip.Text();
                     string first = t.Replace("\r", "").Split('\n').FirstOrDefault(l => l.Trim().Length > 0) ?? "";
                     string name = Fs.Sanitize(first);
                     if (name.Length == 0) return new Result { Summary = "The clipboard has no usable text for a folder name." };
@@ -114,7 +121,7 @@ namespace PSTools
                     if (paths.Any(p => !string.Equals(ParentOf(p), parent, StringComparison.OrdinalIgnoreCase)))
                         return new Result { Summary = "The selected items are not all in the same folder." };
                     string first = Path.GetFileNameWithoutExtension(NameOf(paths[0]));
-                    string name = Interaction.InputBox("Folder name for " + paths.Length + (paths.Length == 1 ? " item:" : " items:"), "Move into new folder", first.Length > 0 ? first : "New folder");
+                    string name = PowerActions.Ask("Folder name for " + paths.Length + (paths.Length == 1 ? " item:" : " items:"), first.Length > 0 ? first : "New folder");
                     name = Fs.Sanitize(name ?? "");
                     if (name.Length == 0) return null;
                     string target = Fs.FreeName(parent, name);
